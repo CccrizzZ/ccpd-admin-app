@@ -1,0 +1,31 @@
+@font-face {
+  font-family: 'SFPRO';
+  src: local('SFPRO'), url(./assets/SF-Pro.ttf) format('truetype');
+}
+
+body,
+html {
+  font-family: 'SFPRO', sans-serif;
+  min-width: 1000px;
+  /* Suppose you want minimum width of 1000px */
+  /* width: auto !important; */
+  /* Firefox will set width as auto */
+  /* width: 1000px; */
+  /* As IE6 ignores !important it will set width as 1000px; */
+}
+
+:root {
+  /* font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif; */
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}

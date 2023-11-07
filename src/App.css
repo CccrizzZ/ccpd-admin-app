@@ -1,0 +1,13 @@
+a {
+    -webkit-user-drag: none;
+}
+
+.nav-link:hover {
+    background-color: #605BFF;
+}
+
+
+/* .nav-pills:hover {
+    --bs-nav-pills-link-active-bg: #605BFF;
+    background-color: #605BFF;
+} */
