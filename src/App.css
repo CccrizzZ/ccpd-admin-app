@@ -3,11 +3,14 @@ a {
 }
 
 .nav-link:hover {
-    background-color: #605BFF;
+    background-color: #1b1c29;
 }
 
+.nav-link:focus {
+    background-color: #1b1c29;
+}
 
-/* .nav-pills:hover {
-    --bs-nav-pills-link-active-bg: #605BFF;
-    background-color: #605BFF;
-} */
+.nav-pills .nav-link.active,
+.nav-pills .show>.nav-link {
+    background-color: #424462;
+}

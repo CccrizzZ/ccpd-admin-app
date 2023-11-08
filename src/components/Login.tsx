@@ -21,7 +21,7 @@ const Login: React.FC<LoginProp> = (prop: LoginProp) => {
     await sleep(1000)
     await axios({
       method: 'post',
-      url: server + '/userController/checkToken',
+      url: server + '/adminController/checkAdminToken',
       responseType: 'text',
       data: '',
       withCredentials: true
@@ -61,7 +61,7 @@ const Login: React.FC<LoginProp> = (prop: LoginProp) => {
     await sleep(1000)
     await axios({
       method: 'post',
-      url: server + '/userController/login',
+      url: server + '/adminController/adminLogin',
       responseType: 'text',
       data: JSON.stringify({
         email: userEmail,
@@ -79,7 +79,7 @@ const Login: React.FC<LoginProp> = (prop: LoginProp) => {
 
   return (
     <div style={{ padding: 0 }}>
-      <div className='mt-4' style={{ margin: 'auto', maxWidth: '500px', minWidth: '300px', maxHeight: '300px', backgroundColor: 'black', padding: '20px', borderRadius: '2em' }}>
+      <div className='mt-4' style={{ margin: 'auto', maxWidth: '500px', minWidth: '300px', maxHeight: '300px', backgroundColor: '#1f2937', padding: '20px', borderRadius: '2em' }}>
         <Form>
           <Form.Group className="mb-3" controlId="loginForm.unameInput1">
             <Form.Label>Email address</Form.Label>
