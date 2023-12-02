@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Table,
   TableHead,
@@ -9,15 +9,28 @@ import {
   Badge,
   Card,
   Text,
-  Button
+  Button,
+  Grid,
+  Col,
+  Switch,
+  Title,
+  List,
+  ListItem,
+  DonutChart,
+  Legend,
+  Subtitle
 } from "@tremor/react";
 import {
-  FaUserGear,
-  FaRotate
+  FaRotate,
+  FaSort,
+  FaSortUp,
+  FaSortDown,
 } from "react-icons/fa6";
-import LoadingSpiner from '../utils/LoadingSpinner';
 import { server, sleep } from '../utils/utils'
 import axios from 'axios';
+import '../style/UserManager.css'
+import moment from 'moment';
+import { isExpired } from '../utils/utils';
 
 // type for user rows
 export type UserDetail = {
@@ -26,154 +39,60 @@ export type UserDetail = {
   email: string,
   password: string,
   role: string,
-  registration: string,
+  registrationDate: string,
   userActive: boolean
+}
+
+export type InvitationCode = {
+  code: string,
+  exp: string
 }
 
 type UserManagerProp = {
   setLoading: (isloading: boolean) => void
 }
+const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()} Members`
 
 const UserManager = (prop: UserManagerProp) => {
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [UserArr, setUserArr] = useState<UserDetail[]>([])
+  const [userArr, setUserArr] = useState<UserDetail[]>([])
+  const [invitationArr, setInvitationArr] = useState<InvitationCode[]>([])
+  // const [sortingMethod, setSortingMethod] = useState<(a: UserDetail, b: UserDetail) => number>()
+  const [editMode, setEditMode] = useState<boolean>(false)
 
-  const data = [
+  const pieData = [
     {
-      id: "12332112332111311",
-      name: "Viola Amherd",
-      email: "xxxx@xxxx",
-      password: "x",
-      role: "Q&A Personal",
-      registrationDate: "xx xx xxxx",
-      status: "active",
+      name: "Q&A Personal",
+      member: 12,
     },
     {
-      id: "12332112332111312",
-      name: "Viola Amherd",
-      email: "xxxx@xxxx",
-      password: "x",
-      role: "Q&A Personal",
-      registrationDate: "xx xx xxxx",
-      status: "active",
+      name: "Sales",
+      member: 2
     },
     {
-      id: "12332112332111313",
-      name: "Viola Amherd",
-      email: "xxxx@xxxx",
-      password: "x",
-      role: "Q&A Personal",
-      registrationDate: "xx xx xxxx",
-      status: "active",
+      name: "Shelving Manager",
+      member: 1,
     },
     {
-      id: "12332112332111314",
-      name: "Viola Amherd",
-      email: "xxxx@xxxx",
-      password: "x",
-      role: "Q&A Personal",
-      registrationDate: "xx xx xxxx",
-      status: "active",
+      name: "Admin",
+      member: 4,
     },
     {
-      id: "12332112332111315",
-      name: "Viola Amherd",
-      email: "xxxx@xxxx",
-      password: "x",
-      role: "Q&A Personal",
-      registrationDate: "xx xx xxxx",
-      status: "active",
-    },
-    {
-      id: "12332112332111316",
-      name: "Viola Amherd",
-      email: "xxxx@xxxx",
-      password: "x",
-      role: "Q&A Personal",
-      registrationDate: "xx xx xxxx",
-      status: "active",
-    },
-    {
-      id: "12332112332111317",
-      name: "Viola Amherd",
-      email: "xxxx@xxxx",
-      password: "x",
-      role: "Q&A Personal",
-      registrationDate: "xx xx xxxx",
-      status: "active",
-    },
-    {
-      id: "12332112332111318",
-      name: "Viola Amherd",
-      email: "xxxx@xxxx",
-      password: "x",
-      role: "Q&A Personal",
-      registrationDate: "xx xx xxxx",
-      status: "active",
-    },
-    {
-      id: "12332112332111319",
-      name: "Viola Amherd",
-      email: "xxxx@xxxx",
-      password: "x",
-      role: "Q&A Personal",
-      registrationDate: "xx xx xxxx",
-      status: "active",
-    },
-    {
-      id: "12332112332111320",
-      name: "Viola Amherd",
-      email: "xxxx@xxxx",
-      password: "x",
-      role: "Q&A Personal",
-      registrationDate: "xx xx xxxx",
-      status: "active",
-    },
-    {
-      id: "12332112332111321",
-      name: "Viola Amherd",
-      email: "xxxx@xxxx",
-      password: "x",
-      role: "Q&A Personal",
-      registrationDate: "xx xx xxxx",
-      status: "active",
+      name: "Super Admin",
+      member: 2,
     },
   ];
 
-  const renderTBody = () => {
-    return data.map((user) => (
-      <TableRow key={user.name}>
-        <TableCell>
-          {user.id}
-        </TableCell>
-        <TableCell>
-          {user.name}
-        </TableCell>
-        <TableCell>
-          <Text>{user.email}</Text>
-        </TableCell>
-        <TableCell>
-          <Text>{user.password}</Text>
-        </TableCell>
-        <TableCell>
-          <Text>{user.role}</Text>
-        </TableCell>
-        <TableCell>
-          <Text>{user.registrationDate}</Text>
-        </TableCell>
-        <TableCell>
-          <Badge color="emerald" icon={FaUserGear} style={{ margin: 0 }}>
-            <p style={{ margin: 0, padding: 0 }}>{user.status.toUpperCase()}</p>
-          </Badge>
-        </TableCell>
-      </TableRow>
-    ))
-  }
+  // fetch all users on mount
+  useEffect(() => {
+    console.log('loading user infos')
+    console.log('loading invitations')
+    fetchUserInfo()
+    fetchAllInvitationCode()
+  }, [])
 
-  const refreshUserTable = async () => {
-    // send login request
+  // fetch user data into UserArr
+  const fetchUserInfo = async () => {
     prop.setLoading(true)
-    await sleep(3000)
     await axios({
       method: 'get',
       url: server + '/adminController/getAllUserInfo',
@@ -181,41 +100,178 @@ const UserManager = (prop: UserManagerProp) => {
       data: '',
       withCredentials: true
     }).then((res) => {
-      console.log(res)
+      setUserArr(JSON.parse(res.data))
     }).catch((err) => {
-      console.log(err.response.data)
-      alert('Login Failed: Invalid Credential')
+      alert('Failed Getting All User info: ' + err.response.status)
     })
     prop.setLoading(false)
   }
 
+  // fetch invitation code into invitationArr
+  const fetchAllInvitationCode = async () => {
+    prop.setLoading(true)
+    await axios({
+      method: 'get',
+      url: server + '/adminController/getAllInvitationCode',
+      responseType: 'text',
+      data: '',
+      withCredentials: true
+    }).then((res) => {
+      setInvitationArr(JSON.parse(res.data))
+    }).catch((err) => {
+      alert('Failed Getting All Invitation Code: ' + err.response.status)
+    })
+    prop.setLoading(false)
+  }
+
+  // issue invitation code and refresh invitationArr
+  const IssueInvitation = async () => {
+    prop.setLoading(true)
+    await axios({
+      method: 'post',
+      url: server + '/adminController/issueInvitationCode',
+      responseType: 'text',
+      data: '',
+      withCredentials: true
+    }).then(() => {
+      fetchAllInvitationCode()
+    }).catch((err) => {
+      alert('Failed Getting All Invitation Code: ' + err.response.status)
+    })
+    prop.setLoading(false)
+  }
+
+  // render user info from displayArr
+  const renderTBody = () => {
+    userArr.sort((a, b) => {
+      if (moment(a.registrationDate).valueOf() > moment(b.registrationDate).valueOf()) {
+        return 1
+      }
+      return -1
+    })
+
+    return userArr.map((user) => (
+      <TableRow key={user.name}>
+        <TableCell>
+          <Text>{user.name}</Text>
+        </TableCell>
+        <TableCell>
+          <Text>{user.email}</Text>
+        </TableCell>
+        <TableCell>
+          <Text><Button color='gray' variant='light' size='xs'>Change</Button></Text>
+        </TableCell>
+        <TableCell>
+          <Text>{user.role}</Text>
+        </TableCell>
+        <TableCell>
+          <Text>{(moment(user.registrationDate, "MMM DD YYYY").valueOf())}</Text>
+        </TableCell>
+        <TableCell>
+          {user.userActive ? <Badge size="xs" color="emerald" style={{ margin: 0, padding: 0 }}>Active</Badge> : <Badge size="xs" color="red" style={{ margin: 0, padding: 0 }}>Inactive</Badge>}
+        </TableCell>
+      </TableRow>
+    ))
+  }
+
+  // sort the userArr by index
+  const sortBy = (index: string) => {
+    if (index === 'Registration Date') {
+
+    }
+  }
+
+
+  const renderInvitationPanel = () => {
+    return (
+      <Card decoration="top" decorationColor='emerald'>
+        <Title>Invitations Code</Title>
+        <Subtitle>Issued code for registration</Subtitle>
+        <List>
+          {invitationArr.map((invCode) => (
+            <ListItem key={invCode.code}>
+              <span>{invCode.code}</span>
+              <span>
+                {isExpired(invCode.exp) ? <Badge color="red">Unavailable</Badge> : <Badge color='emerald'>Available</Badge>}
+              </span>
+              <span>{invCode.exp}</span>
+            </ListItem>
+          ))}
+        </List >
+        <div style={{ position: 'absolute', bottom: '20px', width: '95%' }}>
+          <hr />
+          <Button color="emerald" onClick={IssueInvitation}>Issue Invitation Code</Button>
+        </div>
+      </Card>
+    )
+  }
+
+  const renderPieChart = () => {
+    return (
+      <Card className="w-2/3 h-96" decoration='top' decorationColor='indigo'>
+        <Title>Overview</Title>
+        <DonutChart
+          className="h-56"
+          data={pieData}
+          category="member"
+          index="name"
+          valueFormatter={valueFormatter}
+          colors={["orange", "lime", "teal", "indigo", "rose"]}
+        />
+        <Legend
+          enableLegendSlider={true}
+          className="mt-6 mt-12"
+          categories={["Q&A Personal", "Sales", "Shelving Manager", "Admin", "Super Admin"]}
+          colors={["orange", "lime", "teal", "indigo", "rose"]}
+        />
+      </Card >
+    )
+  }
+
+  const toggleEditMode = () => setEditMode(!editMode)
+  const inlineDisplay = { display: 'inline' }
+  const flexDisplay = { display: 'flex' }
   return (
     <div>
-      <LoadingSpiner show={isLoading} />
       <h2 className='mt-6 ml-6'>User Management Console</h2>
-      <Card className='mt-6' style={{ maxWidth: '90%' }}>
-        <div>
-          <Button color='green' onClick={refreshUserTable}><FaRotate style={{ margin: 0, color: 'white' }} /></Button>
-
-        </div>
-        <Table className="mt-5">
-          <TableHead>
-            <TableRow>
-              <TableHeaderCell>ID</TableHeaderCell>
-              <TableHeaderCell>Name</TableHeaderCell>
-              <TableHeaderCell>Email</TableHeaderCell>
-              <TableHeaderCell>Password</TableHeaderCell>
-              <TableHeaderCell>Role</TableHeaderCell>
-              <TableHeaderCell>Registration Date</TableHeaderCell>
-              <TableHeaderCell>User Active</TableHeaderCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {renderTBody()}
-          </TableBody>
-        </Table>
-      </Card>
-
+      <Grid className='mt-6'>
+        {/* top 2 panel */}
+        <Col className='gap-6' style={flexDisplay}>
+          {renderInvitationPanel()}
+          {renderPieChart()}
+        </Col>
+        {/* user table */}
+        <Card className='mt-6' style={{ maxWidth: '100%' }}>
+          <div style={flexDisplay}>
+            <Button color='emerald' onClick={fetchUserInfo}><FaRotate style={{ margin: 0, color: 'white' }} /></Button>
+            <div className="flex items-center space-x-3" style={{ position: 'fixed', right: '50px' }}>
+              <Switch id="switch" name="switch" checked={editMode} onChange={toggleEditMode} />
+              <label htmlFor="switch" className="text-sm text-gray-500">Edit Mode</label>
+            </div>
+          </div>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableHeaderCell>Name</TableHeaderCell>
+                <TableHeaderCell>Email</TableHeaderCell>
+                <TableHeaderCell>Password</TableHeaderCell>
+                <TableHeaderCell>
+                  Role
+                  <FaSort style={inlineDisplay} />
+                </TableHeaderCell>
+                <TableHeaderCell onClick={() => { sortBy('Registration Date') }}>
+                  Registration Date
+                  <FaSort style={inlineDisplay} />
+                </TableHeaderCell>
+                <TableHeaderCell>User Active</TableHeaderCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {renderTBody()}
+            </TableBody>
+          </Table>
+        </Card>
+      </Grid>
     </div>
   )
 }

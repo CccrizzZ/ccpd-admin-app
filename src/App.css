@@ -49,3 +49,7 @@ a {
     overflow-x: hidden;
     overflow-y: hidden;
 }
+
+.text-tremor-content {
+    margin-bottom: 0;
+}

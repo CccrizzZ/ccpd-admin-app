@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Grid,
   Col,
@@ -19,58 +19,30 @@ import { QARecord } from '../utils/Types'
 const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()}`
 
 // mock data
-const LineChartData = [
-  {
-    day: 'Dec 1',
-    "Total QA Inventory": 143,
-    "Defect QA Record": 5,
-  },
-  {
-    day: 'Dec 2',
-    "Total QA Inventory": 112,
-    "Defect QA Record": 2,
-  },
-  {
-    day: 'Dec 3',
-    "Total QA Inventory": 132,
-    "Defect QA Record": 12,
-  },
-  {
-    day: 'Dec 4',
-    "Total QA Inventory": 123,
-    "Defect QA Record": 7,
-  },
-  {
-    day: 'Dec 5',
-    "Total QA Inventory": 154,
-    "Defect QA Record": 8,
-  },
-  //...
-]
 const barChartData = [
   {
     name: "New",
-    "Number of Items": 2488,
+    "Number of Items": 546,
   },
   {
     name: "Sealed",
-    "Number of Items": 1445,
+    "Number of Items": 120,
   },
   {
     name: "Used Like New",
-    "Number of Items": 743,
+    "Number of Items": 25,
   },
   {
     name: "Used",
-    "Number of Items": 281,
+    "Number of Items": 13,
   },
   {
     name: "Damaged",
-    "Number of Items": 251,
+    "Number of Items": 8,
   },
   {
     name: "As Is",
-    "Number of Items": 232,
+    "Number of Items": 2,
   }
 ]
 const chartdata = [
@@ -108,6 +80,11 @@ const chartdata = [
 
 const QARecords = () => {
   const [QARecordArr, setQARecordArr] = useState<QARecord[]>([])
+  const [dateRange, setDateRange] = useState<string>('All Time')
+
+  useEffect(() => {
+    console.log('Loading Qa RECORDS...')
+  }, [])
 
   return (
     <div>
@@ -117,14 +94,14 @@ const QARecords = () => {
           <Card className="mb-3" decoration="top" decorationColor="slate">
             <Title>Daily Q&A Inventory Records</Title>
             <Subtitle>
-              Q&A entry of today.
+              {dateRange}
             </Subtitle>
             <BarChart
               className="h-72"
               data={barChartData}
               index="name"
               categories={["Number of Items"]}
-              colors={["lime", "amber", "fuchsia"]}
+              colors={["amber", "fuchsia"]}
               valueFormatter={valueFormatter}
               yAxisWidth={48}
               layout='horizontal'
@@ -135,7 +112,7 @@ const QARecords = () => {
           <Card className="mb-3" decoration="top" decorationColor="slate">
             <Title>Daily Q&A Inventory Records</Title>
             <Subtitle>
-              Q&A entry of today.
+              {dateRange}
             </Subtitle>
             <AreaChart
               className="h-72"
@@ -146,6 +123,11 @@ const QARecords = () => {
               valueFormatter={valueFormatter}
             />
           </Card>
+        </Col>
+      </Grid>
+      <Grid>
+        <Col>
+
         </Col>
       </Grid>
       {/* actual table */}

@@ -12,9 +12,12 @@ import {
   AreaChart,
   Subtitle,
   List,
-  ListItem
+  ListItem,
+  DonutChart,
+  Legend
 } from '@tremor/react'
 import '../style/Dashboard.css'
+import moment from 'moment'
 
 type dashboardProp = {
   inventoryArr: QARecord[]
@@ -107,6 +110,32 @@ const Dashboard: React.FC<dashboardProp> = (prop: dashboardProp) => {
       "The Pragmatic Engineer": 1726,
     },
   ]
+  const pieData = [
+    {
+      name: "New York",
+      sales: 9800,
+    },
+    {
+      name: "London",
+      sales: 4567,
+    },
+    {
+      name: "Hong Kong",
+      sales: 3908,
+    },
+    {
+      name: "San Francisco",
+      sales: 2400,
+    },
+    {
+      name: "Singapore",
+      sales: 1908,
+    },
+    {
+      name: "Zurich",
+      sales: 1398,
+    },
+  ];
 
   // get all data from server
   const getBarChartData = () => {
@@ -132,7 +161,7 @@ const Dashboard: React.FC<dashboardProp> = (prop: dashboardProp) => {
       <Grid className="gap-2 mt-3" numItems={1} numItemsSm={2} numItemsLg={3} >
         <Col numColSpan={1} numColSpanLg={1}>
           <Card className="mb-3" decoration="top" decorationColor="slate">
-            <Title>December Q&A Inventory Record Defects</Title>
+            <Title>7 Days &A Inventory Record Defects</Title>
             <Subtitle>
               Compare between defected Q&A entry and passed ones.
             </Subtitle>
@@ -149,20 +178,21 @@ const Dashboard: React.FC<dashboardProp> = (prop: dashboardProp) => {
         </Col>
         <Col>
           <Card className="mb-3" decoration="top" decorationColor="slate">
-            <Title>Daily Q&A Inventory Records</Title>
+            <Title>Today's Q&A Record </Title>
             <Subtitle>
-              Q&A entry of today.
+              {moment().format("MMMM DD YYYY")}
             </Subtitle>
-            <BarChart
-              className="h-72"
-              data={barChartData}
+            <DonutChart
+              className="h-64"
+              data={pieData}
+              category="sales"
               index="name"
-              categories={["Number of Items"]}
-              colors={["lime", "amber", "fuchsia"]}
               valueFormatter={valueFormatter}
-              yAxisWidth={48}
-              layout='horizontal'
-              hidden={false}
+              colors={["slate", "violet", "indigo", "rose", "cyan", "amber"]}
+            />
+            <Legend
+              categories={["Active users", "Inactive users"]}
+              colors={["emerald", "red"]}
             />
           </Card>
         </Col>
@@ -217,27 +247,6 @@ const Dashboard: React.FC<dashboardProp> = (prop: dashboardProp) => {
         </Card>
       </Grid>
 
-      {/* bottom 2 charts */}
-      <Grid className="gap-2 mt-3" numItems={1} numItemsSm={2} numItemsLg={2} >
-        <Col numColSpan={1} numColSpanLg={1}>
-          <Card className="mb-3" decoration="top" decorationColor="slate">
-            <Text>TODO List</Text>
-            {/* <List>
-              {cities.map((item) => (
-                <ListItem key={item.city}>
-                  <span>{item.city}</span>
-                  <span>{item.rating}</span>
-                </ListItem>
-              ))}
-            </List> */}
-          </Card>
-        </Col>
-        <Col>
-          <Card className="mb-3" decoration="top" decorationColor="slate">
-
-          </Card>
-        </Col>
-      </Grid>
     </div>
   )
 }

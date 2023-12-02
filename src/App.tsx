@@ -24,7 +24,7 @@ import {
   FaUsersGear,
   FaTableList,
   FaHouseChimney,
-  FaPowerOff,
+  FaMoneyBillTransfer,
   FaDoorOpen
 } from "react-icons/fa6";
 
@@ -80,6 +80,11 @@ function App() {
                 <Nav.Item className='mb-3'>
                   <Nav.Link eventKey="User Management" style={{ color: '#fff', display: 'flex' }}>
                     <FaUsersGear /> User Management
+                  </Nav.Link>
+                </Nav.Item>
+                <Nav.Item className='mb-3'>
+                  <Nav.Link eventKey="Retail & Return" style={{ color: '#fff', display: 'flex' }}>
+                    <FaMoneyBillTransfer /> Retail & Return
                   </Nav.Link>
                 </Nav.Item>
               </Nav>
