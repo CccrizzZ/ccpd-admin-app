@@ -31,7 +31,9 @@ const Login: React.FC<LoginProp> = (prop: LoginProp) => {
         prop.setUserInfo(JSON.parse(res.data))
       }
     }).catch((err) => {
-      console.log('please login')
+      if (err.response) {
+        console.log('Please Login: ' + err.response.data)
+      }
     })
     prop.setLoading(false)
   }
@@ -49,6 +51,12 @@ const Login: React.FC<LoginProp> = (prop: LoginProp) => {
     setUserPass(event.target.value)
   }
 
+  const onEnterKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      login()
+    }
+  }
+
   const login = async () => {
     if (!userEmail || !userPass) return alert('Please Enter Both Username and Password')
 
@@ -58,7 +66,6 @@ const Login: React.FC<LoginProp> = (prop: LoginProp) => {
 
     // send login request
     prop.setLoading(true)
-    await sleep(1000)
     await axios({
       method: 'post',
       url: server + '/adminController/adminLogin',
@@ -72,7 +79,8 @@ const Login: React.FC<LoginProp> = (prop: LoginProp) => {
       prop.setLogin(true)
       prop.setUserInfo(JSON.parse(res.data))
     }).catch((err) => {
-      alert(' Login Error!!!')
+      console.log(err.response.data)
+      alert('Login Failed: Invalid Credential')
     })
     prop.setLoading(false)
   }
@@ -87,7 +95,7 @@ const Login: React.FC<LoginProp> = (prop: LoginProp) => {
           </Form.Group>
           <Form.Group className="mb-3" controlId="loginForm.pwdInput1">
             <Form.Label>Password</Form.Label>
-            <Form.Control type="password" placeholder="Enter your password..." value={userPass} onChange={onPasswordChange} />
+            <Form.Control type="password" placeholder="Enter your password..." value={userPass} onChange={onPasswordChange} onKeyDown={onEnterKeyDown} />
           </Form.Group>
           <div className="d-grid gap-2">
             <Button variant="primary" size='lg' onClick={login}>Login</Button>

@@ -4,9 +4,7 @@ type ListingTableProp<T> = {
   dataArr: T[]
 }
 
-const ListingTable = (prop: ListingTableProp<any>) => {
-
-
+const ListingTable: React.FC<ListingTableProp<any>> = (prop: ListingTableProp<any>) => {
   const renderRow = () => {
     return (
       <>

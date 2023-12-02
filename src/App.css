@@ -14,3 +14,38 @@ a {
 .nav-pills .show>.nav-link {
     background-color: #424462;
 }
+
+/* home layout */
+.wrapper {
+    /* important styles */
+    display: flex;
+    min-height: 100vh;
+
+    /* extra styles */
+    max-width: 100hw;
+    margin: 0 auto;
+}
+
+.sideBar {
+    /* important styles */
+    flex-shrink: 0;
+    width: 280px; /* make this whatever you need */
+    height: 100vh;
+    overflow: auto;
+    position: sticky;
+    top: 0;
+    /* extra styles */
+    padding: 16px;
+    /* border: 3px solid seagreen; */
+}
+
+.mainView {
+    /* important styles */
+    flex-grow: 1;
+
+    /* extra styles */
+    padding: 16px;
+    /* border: 3px solid salmon; */
+    overflow-x: hidden;
+    overflow-y: hidden;
+}

@@ -13,7 +13,7 @@ import {
   Subtitle,
   ListItem
 } from '@tremor/react'
-import ListingTable from './ListingTable'
+import ListingTable from '../components/ListingTable'
 import { QARecord } from '../utils/Types'
 
 const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()}`
@@ -127,7 +127,7 @@ const QARecords = () => {
               colors={["lime", "amber", "fuchsia"]}
               valueFormatter={valueFormatter}
               yAxisWidth={48}
-              layout='vertical'
+              layout='horizontal'
             />
           </Card>
         </Col>

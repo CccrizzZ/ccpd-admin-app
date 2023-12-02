@@ -10,43 +10,17 @@ import {
   BarChart,
   LineChart,
   AreaChart,
-  List,
   Subtitle,
+  List,
   ListItem
 } from '@tremor/react'
-import './Dashboard.css'
+import '../style/Dashboard.css'
 
 type dashboardProp = {
   inventoryArr: QARecord[]
 }
 
 const Dashboard: React.FC<dashboardProp> = (prop: dashboardProp) => {
-  const cities = [
-    {
-      city: "Athens",
-      rating: "2 open PR",
-    },
-    {
-      city: "Luzern",
-      rating: "1 open PR",
-    },
-    {
-      city: "Zürich",
-      rating: "0 open PR",
-    },
-    {
-      city: "Vienna",
-      rating: "1 open PR",
-    },
-    {
-      city: "Ermatingen",
-      rating: "0 open PR",
-    },
-    {
-      city: "Lisbon",
-      rating: "0 open PR",
-    },
-  ]
   const LineChartData = [
     {
       day: 'Dec 1',
@@ -78,27 +52,27 @@ const Dashboard: React.FC<dashboardProp> = (prop: dashboardProp) => {
   const barChartData = [
     {
       name: "New",
-      "Number of Items": 2488,
+      "Number of Items": 153,
     },
     {
       name: "Sealed",
-      "Number of Items": 1445,
+      "Number of Items": 144,
     },
     {
       name: "Used Like New",
-      "Number of Items": 743,
+      "Number of Items": 74,
     },
     {
       name: "Used",
-      "Number of Items": 281,
+      "Number of Items": 28,
     },
     {
       name: "Damaged",
-      "Number of Items": 251,
+      "Number of Items": 4,
     },
     {
       name: "As Is",
-      "Number of Items": 232,
+      "Number of Items": 12,
     }
   ]
   const chartdata = [
@@ -187,7 +161,8 @@ const Dashboard: React.FC<dashboardProp> = (prop: dashboardProp) => {
               colors={["lime", "amber", "fuchsia"]}
               valueFormatter={valueFormatter}
               yAxisWidth={48}
-              layout='vertical'
+              layout='horizontal'
+              hidden={false}
             />
           </Card>
         </Col>
