@@ -18,7 +18,7 @@ import { bgDark, bgLight, server } from './utils/utils'
 import Login from './pages/Login'
 import QARecords from './pages/QARecords'
 import UserManager from './pages/UserManager';
-import LoadingSpiner from './utils/LoadingSpinner'
+import LoadingSpiner from './components/LoadingSpinner'
 import {
   FaBoxesStacked,
   FaUsersGear,
