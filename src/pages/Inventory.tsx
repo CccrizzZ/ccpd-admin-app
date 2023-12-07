@@ -1,14 +1,14 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Button } from 'react-bootstrap'
 
-const Inventory = () => {
+type InventoryProp = {
+  setLoading: (isloading: boolean) => void
+}
+
+const Inventory: React.FC<InventoryProp> = (props: InventoryProp) => {
   const [QARecordArr, setQARecordArr] = useState<boolean>(false)
 
-
-  const onClick = () => {
-    setQARecordArr(!QARecordArr)
-  }
-
+  const onClick = () => setQARecordArr(!QARecordArr)
 
   return (
     <div>

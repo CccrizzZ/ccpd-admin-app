@@ -1,3 +1,4 @@
+/* nav link style */
 a {
     -webkit-user-drag: none;
 }
@@ -15,37 +16,28 @@ a {
     background-color: #424462;
 }
 
-/* home layout */
+
+/* Main page layout */
 .wrapper {
-    /* important styles */
     display: flex;
     min-height: 100vh;
-
-    /* extra styles */
     max-width: 100hw;
     margin: 0 auto;
 }
 
 .sideBar {
-    /* important styles */
     flex-shrink: 0;
-    width: 280px; /* make this whatever you need */
+    width: 280px;
     height: 100vh;
     overflow: auto;
     position: sticky;
     top: 0;
-    /* extra styles */
     padding: 16px;
-    /* border: 3px solid seagreen; */
 }
 
 .mainView {
-    /* important styles */
     flex-grow: 1;
-
-    /* extra styles */
     padding: 16px;
-    /* border: 3px solid salmon; */
     overflow-x: hidden;
     overflow-y: hidden;
 }

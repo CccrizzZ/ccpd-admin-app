@@ -52,6 +52,7 @@ function App() {
     })
   }
 
+  const navLinkStyle = { display: 'flex' }
   const renderHome = () => {
     // if not login prompt login else show app
     if (!isLogin) {
@@ -61,45 +62,45 @@ function App() {
         <div className='wrapper'>
           <TabContainer defaultActiveKey="Dashboard" data-bs-theme="dark">
             <div className='sideBar' style={{ backgroundColor: bgLight, userSelect: 'none' }}>
-              <Nav variant="pills" className="flex-column mt-4" style={{ padding: '10px' }}>
+              <Nav variant="pills" className="flex-column mt-4 p-3">
                 <Nav.Item className='mb-3'>
-                  <Nav.Link eventKey="Dashboard" style={{ color: '#fff', display: 'flex' }}>
+                  <Nav.Link className='text-white' eventKey="Dashboard" style={navLinkStyle}>
                     <FaHouseChimney /> Dashboard
                   </Nav.Link>
                 </Nav.Item>
                 <Nav.Item className='mb-3'>
-                  <Nav.Link eventKey="Q&A Records" style={{ color: '#fff', display: 'flex' }}>
+                  <Nav.Link className='text-white' eventKey="Q&A Records" style={navLinkStyle}>
                     <FaTableList /> Q&A Records
                   </Nav.Link>
                 </Nav.Item>
                 <Nav.Item className='mb-3'>
-                  <Nav.Link eventKey="Inventory" style={{ color: '#fff', display: 'flex' }}>
+                  <Nav.Link className='text-white' eventKey="Inventory" style={navLinkStyle}>
                     <FaBoxesStacked /> Inventory
                   </Nav.Link>
                 </Nav.Item>
                 <Nav.Item className='mb-3'>
-                  <Nav.Link eventKey="User Management" style={{ color: '#fff', display: 'flex' }}>
+                  <Nav.Link className='text-white' eventKey="User Management" style={navLinkStyle}>
                     <FaUsersGear /> User Management
                   </Nav.Link>
                 </Nav.Item>
                 <Nav.Item className='mb-3'>
-                  <Nav.Link eventKey="Retail & Return" style={{ color: '#fff', display: 'flex' }}>
+                  <Nav.Link className='text-white' eventKey="Retail & Return" style={navLinkStyle}>
                     <FaMoneyBillTransfer /> Retail & Return
                   </Nav.Link>
                 </Nav.Item>
               </Nav>
 
-              <Button variant='danger' onClick={logout} style={{ bottom: '10px', position: 'absolute' }}>
+              {/* side panel footer */}
+              <Button className='bottom-2.5 absolute' variant='danger' onClick={logout}>
                 <FaDoorOpen style={{ margin: 'auto' }} />
               </Button>
-
               <p style={{ bottom: '-5px', position: 'absolute', right: '20px', color: '#6B7280' }}>Signed in As: {userInfo.name}</p>
             </div>
             <div className='mainView' style={{ backgroundColor: bgDark, color: '#fff', minWidth: '1250px' }}>
               <Tab.Content>
                 <Tab.Pane eventKey="Dashboard"><Dashboard inventoryArr={inventoryArr} /></Tab.Pane>
-                <Tab.Pane eventKey="Q&A Records"><QARecords /></Tab.Pane>
-                <Tab.Pane eventKey="Inventory"><Inventory /></Tab.Pane>
+                <Tab.Pane eventKey="Q&A Records"><QARecords setLoading={setIsLoading} /></Tab.Pane>
+                <Tab.Pane eventKey="Inventory"><Inventory setLoading={setIsLoading} /></Tab.Pane>
                 <Tab.Pane eventKey="User Management"><UserManager setLoading={setIsLoading} /></Tab.Pane>
               </Tab.Content>
             </div>

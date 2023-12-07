@@ -40,8 +40,8 @@ export const availability = (t1: string, t2: string) => {
   return moment(t1).valueOf() > moment(t2).valueOf()
 }
 
-// if returned false, its not expired
+// if returned false, not expired
 export const isExpired = (exp: string): boolean => {
-  if (moment().valueOf() > moment(exp).valueOf()) return true
+  if (moment.unix(Number(exp)).valueOf() - moment.now().valueOf() < 0) return true
   return false
 }

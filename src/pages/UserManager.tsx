@@ -26,13 +26,15 @@ import {
   FaSortUp,
   FaSortDown,
   FaCopy,
-  FaRegTrashCan
+  FaRegTrashCan,
+  FaPenToSquare
 } from "react-icons/fa6";
 import { server, sleep } from '../utils/utils'
 import axios from 'axios';
 import '../style/UserManager.css'
 import moment from 'moment';
 import { isExpired } from '../utils/utils';
+import EditUserModal from '../components/EditUserModal';
 import { Modal } from 'react-bootstrap';
 
 // type for user rows
@@ -51,15 +53,29 @@ export type InvitationCode = {
   exp: string
 }
 
+const initUser: UserDetail = {
+  id: '',
+  name: '',
+  email: '',
+  password: '',
+  role: '',
+  registrationDate: '',
+  userActive: false
+}
+
+const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()} Members`
 type UserManagerProp = {
   setLoading: (isloading: boolean) => void
 }
-const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()} Members`
-
 const UserManager = (prop: UserManagerProp) => {
   const [userArr, setUserArr] = useState<UserDetail[]>([])
   const [invitationArr, setInvitationArr] = useState<InvitationCode[]>([])
   // const [sortingMethod, setSortingMethod] = useState<(a: UserDetail, b: UserDetail) => number>()
+  // delete
+  const [showDeletePopup, setShowDeletePopup] = useState<boolean>(false)
+
+  const [targetUser, setTargetUser] = useState<UserDetail>(initUser)
+  // edit 
   const [editMode, setEditMode] = useState<boolean>(false)
   const [showEditModal, setShowEditModal] = useState<boolean>(false)
 
@@ -162,14 +178,58 @@ const UserManager = (prop: UserManagerProp) => {
     prop.setLoading(false)
   }
 
+  const deleteUser = async () => {
+    prop.setLoading(true)
+    // await axios({
+    //   method: 'delete',
+    //   url: server + '/adminController/delete',
+    //   responseType: 'text',
+    //   data: { 'name': user.name, 'email': user.email, 'role': user.role },
+    //   withCredentials: true
+    // }).then(() => {
+    //   fetchAllInvitationCode()
+    // }).catch((err) => {
+    //   alert('Failed Deleting User: ' + err.response.status)
+    // })
+    alert('deleted ' + targetUser.name)
+    prop.setLoading(false)
+    setShowDeletePopup(false)
+    setTargetUser(initUser)
+  }
+
+  // called by row delete button
+  const showAndSetDelPopup = (user: UserDetail) => {
+    setTargetUser(user)
+    setShowDeletePopup(true)
+  }
+
+  // called by row edit button
+  const showAndSetEditPopup = (user: UserDetail) => {
+    setTargetUser(user)
+    setShowEditModal(true)
+  }
+
+  // called by edit user modal
+  const hideAndSetEditPopup = () => {
+    setShowEditModal(false)
+    setTargetUser(initUser)
+  }
+
+  // sort the userArr by index
+  const sortBy = (index: string) => {
+    if (index === 'Registration Date') {
+
+    }
+  }
+
   // render user info from displayArr
   const renderTBody = () => {
-    userArr.sort((a, b) => {
-      if (moment(a.registrationDate).valueOf() > moment(b.registrationDate).valueOf()) {
-        return 1
-      }
-      return -1
-    })
+    // userArr.sort((a, b) => {
+    //   if (moment(a.registrationDate).valueOf() > moment(b.registrationDate).valueOf()) {
+    //     return 1
+    //   }
+    //   return -1
+    // })
 
     return userArr.map((user) => (
       <TableRow key={user.name}>
@@ -189,20 +249,13 @@ const UserManager = (prop: UserManagerProp) => {
           <Text>{(moment(user.registrationDate, "MMM DD YYYY").valueOf())}</Text>
         </TableCell>
         <TableCell>
-          {user.userActive ? <Badge size="xs" color="emerald" style={{ margin: 0, padding: 0 }}>Active</Badge> : <Badge size="xs" color="red" style={{ margin: 0, padding: 0 }}>Inactive</Badge>}
+          {user.userActive ? <Badge className='m-0' size="xs" color="emerald" style={{}}>Active</Badge> : <Badge size="xs" color="red" className='m-0'>Inactive</Badge>}
         </TableCell>
-        {editMode ? <TableCell><Button size="xs" color='amber'>Edit</Button><Button size="xs" color='red'>Delete</Button></TableCell> : undefined}
+        {editMode ? <TableCell><Button className='mr-1' size="xs" color='blue' onClick={() => showAndSetEditPopup(user)}><FaPenToSquare /></Button>
+          <Button size="xs" color='red' onClick={() => showAndSetDelPopup(user)}><FaRegTrashCan /></Button></TableCell> : undefined}
       </TableRow>
     ))
   }
-
-  // sort the userArr by index
-  const sortBy = (index: string) => {
-    if (index === 'Registration Date') {
-
-    }
-  }
-
 
   const renderInvitationPanel = () => {
     return (
@@ -223,7 +276,8 @@ const UserManager = (prop: UserManagerProp) => {
                 {isExpired(invCode.exp) ? <Badge color="red">Unavailable</Badge> : <Badge color='emerald'>Available</Badge>}
               </span>
               <span>
-                Use Before {moment(invCode.exp).format('MMM DD YYYY')}
+                {/* {moment.unix(Number(invCode.exp)).valueOf() - moment.now().valueOf()} */}
+                Use Before {moment.unix(Number(invCode.exp)).format("MMMM Do, YYYY h:mm A")}
               </span>
               <span className='mr-3'>
                 <Button size='xs' color="stone" onClick={() => { deleteInvitationCode(invCode.code) }}><FaRegTrashCan /></Button>
@@ -231,7 +285,7 @@ const UserManager = (prop: UserManagerProp) => {
             </ListItem>
           ))}
         </div >
-        <div style={{ position: 'absolute', bottom: '12px', width: '95%' }}>
+        <div className='absolute bottom-3' style={{ width: '95%' }}>
           <hr />
           <Button color='emerald' onClick={IssueInvitation}>Issue Invitation Code</Button>
         </div>
@@ -261,66 +315,69 @@ const UserManager = (prop: UserManagerProp) => {
     )
   }
 
-
-  const renderEditUserPopup = () => {
+  const renderDeletePopup = () => {
     return (
       <Modal
-        show={showEditModal}
-        onHide={() => setShowEditModal(false)}
+        size='sm'
+        show={showDeletePopup}
+        onHide={() => setShowDeletePopup(false)}
+        aria-labelledby="example-modal-sizes-title-sm"
         backdrop="static"
-        keyboard={false}
+        centered
       >
         <Modal.Header closeButton>
-          <Modal.Title>Modal title</Modal.Title>
+          <Modal.Title id="example-modal-sizes-title-sm">
+            Confirm Delete User {targetUser.name}?
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          I will not close if you click outside me. Do not even try to press
-          escape key.
+
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowEditModal(false)}>
+          <Button color='slate' onClick={() => setShowDeletePopup(false)}>
             Close
           </Button>
-          <Button color='emerald'>Confirm</Button>
+          <Button color='red' onClick={deleteUser}>Confirm</Button>
         </Modal.Footer>
       </Modal>
     )
   }
 
   const toggleEditMode = () => setEditMode(!editMode)
-  const inlineDisplay = { display: 'inline' }
-  const flexDisplay = { display: 'flex' }
   return (
     <div>
+      {showDeletePopup ? renderDeletePopup() : undefined}
+      <EditUserModal show={showEditModal} handleClose={hideAndSetEditPopup} targetUser={() => targetUser} setLoading={prop.setLoading} />
       <h2 className='mt-6 ml-6'>User Management Console</h2>
       <Grid className='mt-6'>
         {/* top 2 panel */}
-        <Col className='gap-6' style={flexDisplay}>
+        <Col className='gap-6 flex'>
           {renderInvitationPanel()}
           {renderPieChart()}
         </Col>
         {/* user table */}
         <Card className='mt-6' style={{ maxWidth: '100%' }}>
-          <div style={flexDisplay}>
-            <Button color='emerald' onClick={fetchUserInfo}><FaRotate style={{ margin: 0, color: 'white' }} /></Button>
-            <div className="flex items-center space-x-3" style={{ position: 'fixed', right: '50px' }}>
+          <div className='flex'>
+            <Button color='emerald' onClick={fetchUserInfo}><FaRotate className='m-0 text-white' /></Button>
+            <div className="absolute right-12 flex">
+              <label className="text-sm text-gray-500 mr-4">Edit Mode</label>
               <Switch id="switcswitchh" name="switch" checked={editMode} onChange={toggleEditMode} />
-              <label className="text-sm text-gray-500">Edit Mode</label>
             </div>
           </div>
+          <hr />
           <Table>
-            <TableHead>
-              <TableRow>
+            <TableHead >
+              <TableRow className='th-row'>
                 <TableHeaderCell>Name</TableHeaderCell>
                 <TableHeaderCell>Email</TableHeaderCell>
                 <TableHeaderCell>Password</TableHeaderCell>
                 <TableHeaderCell>
                   Role
-                  <FaSort style={inlineDisplay} />
+                  <FaSort className='inline' />
                 </TableHeaderCell>
                 <TableHeaderCell onClick={() => { sortBy('Registration Date') }}>
                   Registration Date
-                  <FaSort style={inlineDisplay} />
+                  <FaSort className='inline' />
                 </TableHeaderCell>
                 <TableHeaderCell>User Active</TableHeaderCell>
                 {editMode ? <TableHeaderCell>Actions</TableHeaderCell> : undefined}

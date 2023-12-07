@@ -3,17 +3,11 @@ import {
   Grid,
   Col,
   Card,
-  Text,
-  Metric,
   Title,
   BarChart,
-  LineChart,
   AreaChart,
-  List,
   Subtitle,
-  ListItem
 } from '@tremor/react'
-import ListingTable from '../components/ListingTable'
 import { QARecord } from '../utils/Types'
 
 const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()}`
@@ -78,7 +72,11 @@ const chartdata = [
   },
 ]
 
-const QARecords = () => {
+type QARecordProps = {
+  setLoading: (isloading: boolean) => void
+}
+
+const QARecords: React.FC<QARecordProps> = (prop: QARecordProps) => {
   const [QARecordArr, setQARecordArr] = useState<QARecord[]>([])
   const [dateRange, setDateRange] = useState<string>('All Time')
 
@@ -132,7 +130,6 @@ const QARecords = () => {
       </Grid>
       {/* actual table */}
       <div>
-        <ListingTable dataArr={QARecordArr} />
       </div>
     </div>
   )
