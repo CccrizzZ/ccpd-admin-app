@@ -52,32 +52,6 @@ const Dashboard: React.FC<dashboardProp> = (prop: dashboardProp) => {
     },
     //...
   ]
-  const barChartData = [
-    {
-      name: "New",
-      "Number of Items": 153,
-    },
-    {
-      name: "Sealed",
-      "Number of Items": 144,
-    },
-    {
-      name: "Used Like New",
-      "Number of Items": 74,
-    },
-    {
-      name: "Used",
-      "Number of Items": 28,
-    },
-    {
-      name: "Damaged",
-      "Number of Items": 4,
-    },
-    {
-      name: "As Is",
-      "Number of Items": 12,
-    }
-  ]
   const chartdata = [
     {
       date: "Jan 22",

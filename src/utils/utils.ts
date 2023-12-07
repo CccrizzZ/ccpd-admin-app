@@ -31,15 +31,6 @@ export const getVariant = (condition: string) => {
   }
 }
 
-export const compareDate = () => {
-
-}
-
-// t2 later than t1 (t2 > t1)
-export const availability = (t1: string, t2: string) => {
-  return moment(t1).valueOf() > moment(t2).valueOf()
-}
-
 // if returned false, not expired
 export const isExpired = (exp: string): boolean => {
   if (moment.unix(Number(exp)).valueOf() - moment.now().valueOf() < 0) return true

@@ -22,6 +22,7 @@ const Login: React.FC<LoginProp> = (prop: LoginProp) => {
     await axios({
       method: 'post',
       url: server + '/adminController/checkAdminToken',
+      timeout: 3000,
       responseType: 'text',
       data: '',
       withCredentials: true
@@ -61,7 +62,6 @@ const Login: React.FC<LoginProp> = (prop: LoginProp) => {
     if (!userEmail || !userPass) return alert('Please Enter Both Username and Password')
 
     // encode password to sha256 Base 64 string
-    // so database only store sha256 hash
     const passwordHash = SHA256(userPass).toString(enc.Base64)
 
     // send login request
@@ -70,6 +70,7 @@ const Login: React.FC<LoginProp> = (prop: LoginProp) => {
       method: 'post',
       url: server + '/adminController/adminLogin',
       responseType: 'text',
+      timeout: 3000,
       data: JSON.stringify({
         email: userEmail,
         password: passwordHash,
@@ -79,14 +80,14 @@ const Login: React.FC<LoginProp> = (prop: LoginProp) => {
       prop.setLogin(true)
       prop.setUserInfo(JSON.parse(res.data))
     }).catch((err) => {
-      console.log(err.response.data)
-      alert('Login Failed: Invalid Credential')
+      prop.setLoading(false)
+      alert('Login Failed ' + err.code)
     })
     prop.setLoading(false)
   }
 
   return (
-    <div style={{ padding: 0 }}>
+    <div className='p-0'>
       <div className='mt-4' style={{ margin: 'auto', maxWidth: '500px', minWidth: '300px', maxHeight: '300px', backgroundColor: '#1f2937', padding: '20px', borderRadius: '2em' }}>
         <Form>
           <Form.Group className="mb-3" controlId="loginForm.unameInput1">
@@ -104,9 +105,6 @@ const Login: React.FC<LoginProp> = (prop: LoginProp) => {
       </div>
     </div>
   )
-
-
-
 }
 
 export default Login

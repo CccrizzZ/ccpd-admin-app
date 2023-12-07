@@ -1,42 +1,52 @@
-import React, { useEffect, useState } from 'react'
-import { Modal, Button } from 'react-bootstrap'
-import { UserDetail } from '../pages/UserManager'
+import React, { useContext, useEffect, useState } from 'react'
+import {
+  Modal,
+  Button,
+  Form,
+  InputGroup,
+} from 'react-bootstrap'
+import { UserDetail, initUser } from '../pages/UserManager'
+import { SetLoadingContext } from '../App'
+import axios from 'axios'
+import { server } from '../utils/utils'
 
 type EditUserModalProp = {
   show: boolean,
   handleClose: () => void,
-  setLoading: (loading: boolean) => void,
   targetUser: () => UserDetail
+  setTargetUser: React.Dispatch<React.SetStateAction<UserDetail>>
 }
 
 const EditUserModal: React.FC<EditUserModalProp> = (props: EditUserModalProp) => {
-  const [targetUserDetail, setTargetUserDetail] = useState<UserDetail>(props.targetUser())
+  const setLoading = useContext(SetLoadingContext)
+  const [targetUserDetail, setTargetUserDetail] = useState<UserDetail>(initUser)
 
-  const onUserNameChange = (event: React.ChangeEvent<HTMLInputElement>) => setTargetUserDetail({ ...targetUserDetail, email: event.target.value })
-  const onEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => setTargetUserDetail({ ...targetUserDetail, email: event.target.value })
-  const onPasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => setTargetUserDetail({ ...targetUserDetail, email: event.target.value })
-  const onRoleChange = (event: React.ChangeEvent<HTMLInputElement>) => setTargetUserDetail({ ...targetUserDetail, email: event.target.value })
-  const onUserActiveChange = (event: React.ChangeEvent<HTMLInputElement>) => setTargetUserDetail({ ...targetUserDetail, email: event.target.value })
+  const onUserNameChange = (event: React.ChangeEvent<HTMLInputElement>) => props.setTargetUser({ ...targetUserDetail, name: event.target.value })
+  const onEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => props.setTargetUser({ ...targetUserDetail, email: event.target.value })
+  const onPasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => props.setTargetUser({ ...targetUserDetail, password: event.target.value })
+  const onRoleChange = (event: React.ChangeEvent<HTMLSelectElement>) => props.setTargetUser({ ...targetUserDetail, role: event.target.value })
+  const onUserActiveChange = () => props.setTargetUser({ ...targetUserDetail, userActive: !targetUserDetail.userActive })
 
   useEffect(() => {
-    setTargetUserDetail(props.targetUser())
+    setTargetUserDetail(props.targetUser)
   })
 
   const updateUser = async () => {
-    props.setLoading(true)
-    // await axios({
-    //   method: 'delete',
-    //   url: server + '/adminController/delete',
-    //   responseType: 'text',
-    //   data: { 'name': user.name, 'email': user.email, 'role': user.role },
-    //   withCredentials: true
-    // }).then(() => {
-    //   fetchAllInvitationCode()
-    // }).catch((err) => {
-    //   alert('Failed Deleting User: ' + err.response.status)
-    // })
+    setLoading(true)
+    console.log(targetUserDetail)
+    await axios({
+      method: 'delete',
+      url: server + '/adminController/delete',
+      responseType: 'text',
+      data: { 'Id': 'xx' },
+      withCredentials: true
+    }).then((res) => {
+
+    }).catch((err) => {
+      alert('Failed Deleting User: ' + err.response.status)
+    })
     alert('updated ' + targetUserDetail.name)
-    props.setLoading(false)
+    setLoading(false)
     props.handleClose()
   }
 
@@ -47,20 +57,45 @@ const EditUserModal: React.FC<EditUserModalProp> = (props: EditUserModalProp) =>
       onHide={props.handleClose}
       backdrop="static"
       keyboard={false}
-      size="lg"
       centered
     >
       <Modal.Header closeButton>
-        <Modal.Title>Edit {props.targetUser().name}</Modal.Title>
+        <Modal.Title>📝 Edit {props.targetUser().name}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-
-        {targetUserDetail.name}
-        {targetUserDetail.email}
-        {targetUserDetail.password}
-        {targetUserDetail.registrationDate}
-        {targetUserDetail.role}
-        {targetUserDetail.userActive}
+        <InputGroup className="mb-3">
+          <InputGroup.Text>Name</InputGroup.Text>
+          <Form.Control value={targetUserDetail.name} onChange={onUserNameChange} />
+        </InputGroup>
+        <InputGroup className="mb-3">
+          <InputGroup.Text>Email</InputGroup.Text>
+          <Form.Control value={targetUserDetail.email} onChange={onEmailChange} />
+        </InputGroup>
+        <InputGroup className="mb-3">
+          <InputGroup.Text>Password</InputGroup.Text>
+          <Form.Control placeholder="************" value={targetUserDetail.password} onChange={onPasswordChange} />
+        </InputGroup>
+        <InputGroup className="mb-3">
+          <InputGroup.Text>Role</InputGroup.Text>
+          <Form.Select value={targetUserDetail.role} onChange={onRoleChange}>
+            <option>Select Role</option>
+            <option value="QAPersonal">Q&A Personal</option>
+            <option value="Sales">Sales</option>
+            <option value="Shelving Manager">Shelving Manager</option>
+            <option value="Admin">Admin</option>
+            <option value="Super Admin">Super Admin</option>
+          </Form.Select>
+        </InputGroup>
+        <InputGroup className="mb-2 mt-3 ml-2">
+          <Form.Check
+            className='text-xl'
+            type="switch"
+            id="custom-switch"
+            label={targetUserDetail.userActive ? 'User Active' : 'User Inactive'}
+            checked={targetUserDetail.userActive}
+            onChange={onUserActiveChange}
+          />
+        </InputGroup>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={props.handleClose}>

@@ -39,7 +39,7 @@ import { Modal } from 'react-bootstrap';
 
 // type for user rows
 export type UserDetail = {
-  id: string,
+  _id: string,
   name: string,
   email: string,
   password: string,
@@ -53,8 +53,8 @@ export type InvitationCode = {
   exp: string
 }
 
-const initUser: UserDetail = {
-  id: '',
+export const initUser: UserDetail = {
+  _id: '',
   name: '',
   email: '',
   password: '',
@@ -71,12 +71,11 @@ const UserManager = (prop: UserManagerProp) => {
   const [userArr, setUserArr] = useState<UserDetail[]>([])
   const [invitationArr, setInvitationArr] = useState<InvitationCode[]>([])
   // const [sortingMethod, setSortingMethod] = useState<(a: UserDetail, b: UserDetail) => number>()
-  // delete
-  const [showDeletePopup, setShowDeletePopup] = useState<boolean>(false)
 
-  const [targetUser, setTargetUser] = useState<UserDetail>(initUser)
-  // edit 
+  // manipulation states
   const [editMode, setEditMode] = useState<boolean>(false)
+  const [targetUser, setTargetUser] = useState<UserDetail>(initUser)
+  const [showDeletePopup, setShowDeletePopup] = useState<boolean>(false)
   const [showEditModal, setShowEditModal] = useState<boolean>(false)
 
   const pieData = [
@@ -102,16 +101,14 @@ const UserManager = (prop: UserManagerProp) => {
     },
   ];
 
-  // fetch all users on mount
+  // fetch all users info and invite code on mount
   useEffect(() => {
-    console.log('loading user infos')
-    console.log('loading invitations')
-    fetchUserInfo()
+    fetchAllUserInfo()
     fetchAllInvitationCode()
   }, [])
 
   // fetch user data into UserArr
-  const fetchUserInfo = async () => {
+  const fetchAllUserInfo = async () => {
     prop.setLoading(true)
     await axios({
       method: 'get',
@@ -178,20 +175,20 @@ const UserManager = (prop: UserManagerProp) => {
     prop.setLoading(false)
   }
 
+  // request delete user by id
   const deleteUser = async () => {
     prop.setLoading(true)
-    // await axios({
-    //   method: 'delete',
-    //   url: server + '/adminController/delete',
-    //   responseType: 'text',
-    //   data: { 'name': user.name, 'email': user.email, 'role': user.role },
-    //   withCredentials: true
-    // }).then(() => {
-    //   fetchAllInvitationCode()
-    // }).catch((err) => {
-    //   alert('Failed Deleting User: ' + err.response.status)
-    // })
-    alert('deleted ' + targetUser.name)
+    await axios({
+      method: 'delete',
+      url: server + '/adminController/deleteUserById',
+      responseType: 'text',
+      data: { id: targetUser._id },
+      withCredentials: true
+    }).then(() => {
+      fetchAllUserInfo()
+    }).catch((err) => {
+      alert('Failed Deleting User: ' + targetUser._id + err.response.status)
+    })
     prop.setLoading(false)
     setShowDeletePopup(false)
     setTargetUser(initUser)
@@ -234,6 +231,9 @@ const UserManager = (prop: UserManagerProp) => {
     return userArr.map((user) => (
       <TableRow key={user.name}>
         <TableCell>
+          <Text>{user._id}</Text>
+        </TableCell>
+        <TableCell>
           <Text>{user.name}</Text>
         </TableCell>
         <TableCell>
@@ -246,12 +246,12 @@ const UserManager = (prop: UserManagerProp) => {
           <Text>{user.role}</Text>
         </TableCell>
         <TableCell>
-          <Text>{(moment(user.registrationDate, "MMM DD YYYY").valueOf())}</Text>
+          <Text>{(moment(user.registrationDate, "MMM DD YYYY").format('MMM DD YYYY'))}</Text>
         </TableCell>
         <TableCell>
           {user.userActive ? <Badge className='m-0' size="xs" color="emerald" style={{}}>Active</Badge> : <Badge size="xs" color="red" className='m-0'>Inactive</Badge>}
         </TableCell>
-        {editMode ? <TableCell><Button className='mr-1' size="xs" color='blue' onClick={() => showAndSetEditPopup(user)}><FaPenToSquare /></Button>
+        {editMode ? <TableCell><Button className='mr-1' size="xs" color='amber' onClick={() => showAndSetEditPopup(user)}><FaPenToSquare /></Button>
           <Button size="xs" color='red' onClick={() => showAndSetDelPopup(user)}><FaRegTrashCan /></Button></TableCell> : undefined}
       </TableRow>
     ))
@@ -318,27 +318,21 @@ const UserManager = (prop: UserManagerProp) => {
   const renderDeletePopup = () => {
     return (
       <Modal
-        size='sm'
         show={showDeletePopup}
         onHide={() => setShowDeletePopup(false)}
         aria-labelledby="example-modal-sizes-title-sm"
         backdrop="static"
         centered
       >
-        <Modal.Header closeButton>
-          <Modal.Title id="example-modal-sizes-title-sm">
-            Confirm Delete User {targetUser.name}?
-          </Modal.Title>
-        </Modal.Header>
         <Modal.Body>
-
+          <h4 className='m-6 ml-6'>❌ Confirm Delete User {targetUser.name}?</h4>
+          <div className='text-center'>
+            <Button color='slate' onClick={() => setShowDeletePopup(false)}>
+              Close
+            </Button>
+            <Button className='ml-12' color='red' onClick={deleteUser}>Confirm</Button>
+          </div>
         </Modal.Body>
-        <Modal.Footer>
-          <Button color='slate' onClick={() => setShowDeletePopup(false)}>
-            Close
-          </Button>
-          <Button color='red' onClick={deleteUser}>Confirm</Button>
-        </Modal.Footer>
       </Modal>
     )
   }
@@ -347,7 +341,7 @@ const UserManager = (prop: UserManagerProp) => {
   return (
     <div>
       {showDeletePopup ? renderDeletePopup() : undefined}
-      <EditUserModal show={showEditModal} handleClose={hideAndSetEditPopup} targetUser={() => targetUser} setLoading={prop.setLoading} />
+      <EditUserModal show={showEditModal} handleClose={hideAndSetEditPopup} targetUser={() => targetUser} setTargetUser={setTargetUser} />
       <h2 className='mt-6 ml-6'>User Management Console</h2>
       <Grid className='mt-6'>
         {/* top 2 panel */}
@@ -356,9 +350,9 @@ const UserManager = (prop: UserManagerProp) => {
           {renderPieChart()}
         </Col>
         {/* user table */}
-        <Card className='mt-6' style={{ maxWidth: '100%' }}>
+        <Card className='mt-6 max-w-full'>
           <div className='flex'>
-            <Button color='emerald' onClick={fetchUserInfo}><FaRotate className='m-0 text-white' /></Button>
+            <Button color='emerald' onClick={fetchAllUserInfo}><FaRotate className='m-0 text-white' /></Button>
             <div className="absolute right-12 flex">
               <label className="text-sm text-gray-500 mr-4">Edit Mode</label>
               <Switch id="switcswitchh" name="switch" checked={editMode} onChange={toggleEditMode} />
@@ -368,6 +362,7 @@ const UserManager = (prop: UserManagerProp) => {
           <Table>
             <TableHead >
               <TableRow className='th-row'>
+                <TableHeaderCell>ID</TableHeaderCell>
                 <TableHeaderCell>Name</TableHeaderCell>
                 <TableHeaderCell>Email</TableHeaderCell>
                 <TableHeaderCell>Password</TableHeaderCell>

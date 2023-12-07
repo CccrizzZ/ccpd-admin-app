@@ -79,10 +79,29 @@ type QARecordProps = {
 const QARecords: React.FC<QARecordProps> = (prop: QARecordProps) => {
   const [QARecordArr, setQARecordArr] = useState<QARecord[]>([])
   const [dateRange, setDateRange] = useState<string>('All Time')
+  const [currPage, setCurrPage] = useState<Number>(0)
+  const [itemPerPage, setItemPerPage] = useState<Number>(20)
+  const [sortBy, setSortBy] = useState<string>('Time Created')
 
   useEffect(() => {
     console.log('Loading Qa RECORDS...')
   }, [])
+
+  const updateInventory = () => {
+
+  }
+
+  const deleteInventory = () => {
+
+  }
+
+  const renderInventoryTable = () => {
+
+  }
+
+  const renderDeleteInventoryPopup = () => {
+
+  }
 
   return (
     <div>

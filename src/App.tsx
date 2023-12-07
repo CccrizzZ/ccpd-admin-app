@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { createContext, useState } from 'react'
 import {
   Tab,
   Row,
@@ -27,6 +27,9 @@ import {
   FaMoneyBillTransfer,
   FaDoorOpen
 } from "react-icons/fa6";
+
+// loading spinner context
+export const SetLoadingContext = createContext((loading: boolean) => { })
 
 function App() {
   const [isLogin, setIsLogin] = useState<boolean>(false)
@@ -60,7 +63,7 @@ function App() {
     } else {
       return (
         <div className='wrapper'>
-          <TabContainer defaultActiveKey="Dashboard" data-bs-theme="dark">
+          <TabContainer defaultActiveKey="User Management" data-bs-theme="dark">
             <div className='sideBar' style={{ backgroundColor: bgLight, userSelect: 'none' }}>
               <Nav variant="pills" className="flex-column mt-4 p-3">
                 <Nav.Item className='mb-3'>
@@ -111,10 +114,10 @@ function App() {
   }
 
   return (
-    <>
+    <SetLoadingContext.Provider value={setIsLoading}>
       <LoadingSpiner show={isLoading} />
       {renderHome()}
-    </>
+    </SetLoadingContext.Provider>
   )
 
 }

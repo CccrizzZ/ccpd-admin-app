@@ -8,10 +8,10 @@ type LoadingSpinerProp = {
 const LoadingSpiner: React.FC<LoadingSpinerProp> = ({ show }) => {
     if (show) {
         return (
-            <div style={{ width: '100%', height: '100%', textAlign: 'center', backgroundColor: '#222', zIndex: '10', position: 'absolute', opacity: '0.9' }}>
-                <div style={{ backgroundColor: '#000', borderRadius: '2em', display: 'inline-block', marginTop: '25vh', padding: '35px' }}>
+            <div className='fixed h-screen w-full text-center select-none z-10 opacity-90 bg-neutral-800' >
+                <div className='fixed' style={{ backgroundColor: '#000', borderRadius: '2em', display: 'inline-block', marginTop: '25vh', padding: '35px' }}>
                     <DotLoader color='#0d6efd' speedMultiplier={1.5} />
-                    <h4 style={{ color: 'white', marginTop: '20px' }}>Loading...</h4>
+                    <h4 className='mt-5 text-white'>Loading...</h4>
                 </div>
             </div>
         )
