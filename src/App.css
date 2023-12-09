@@ -45,3 +45,8 @@ a {
 .text-tremor-content {
     margin-bottom: 0;
 }
+
+.gradient-background {
+    background: linear-gradient(125deg,rgb(0, 143, 119),rgb(52, 0, 75),rgb(0, 73, 116));
+    background-size: 180% 180%;
+  }

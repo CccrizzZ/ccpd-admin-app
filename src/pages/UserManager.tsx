@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import {
   Table,
   TableHead,
@@ -36,6 +36,7 @@ import moment from 'moment';
 import { isExpired } from '../utils/utils';
 import EditUserModal from '../components/EditUserModal';
 import { Modal } from 'react-bootstrap';
+import { AppContext } from '../App';
 
 // type for user rows
 export type UserDetail = {
@@ -68,6 +69,7 @@ type UserManagerProp = {
   setLoading: (isloading: boolean) => void
 }
 const UserManager = (prop: UserManagerProp) => {
+  const { userInfo } = useContext(AppContext)
   const [userArr, setUserArr] = useState<UserDetail[]>([])
   const [invitationArr, setInvitationArr] = useState<InvitationCode[]>([])
   // const [sortingMethod, setSortingMethod] = useState<(a: UserDetail, b: UserDetail) => number>()
@@ -251,7 +253,8 @@ const UserManager = (prop: UserManagerProp) => {
         <TableCell>
           {user.userActive ? <Badge className='m-0' size="xs" color="emerald" style={{}}>Active</Badge> : <Badge size="xs" color="red" className='m-0'>Inactive</Badge>}
         </TableCell>
-        {editMode ? <TableCell><Button className='mr-1' size="xs" color='amber' onClick={() => showAndSetEditPopup(user)}><FaPenToSquare /></Button>
+        {/* gona hide edit option for current user */}
+        {editMode && user._id !== userInfo.id ? <TableCell><Button className='mr-1' size="xs" color='amber' onClick={() => showAndSetEditPopup(user)}><FaPenToSquare /></Button>
           <Button size="xs" color='red' onClick={() => showAndSetDelPopup(user)}><FaRegTrashCan /></Button></TableCell> : undefined}
       </TableRow>
     ))
@@ -266,8 +269,8 @@ const UserManager = (prop: UserManagerProp) => {
           <Button className='right-6 absolute' size='xs' color='emerald' onClick={fetchAllInvitationCode}><FaRotate /></Button>
         </Subtitle>
         <hr />
-        <div style={{ maxHeight: '180px', overflow: 'hidden', overflowY: 'scroll' }}>
-          {invitationArr.map((invCode) => (
+        <div style={{ maxHeight: '180px', overflow: 'hidden', overflowY: 'scroll', textAlign: 'center' }}>
+          {invitationArr.length > 0 ? invitationArr.map((invCode) => (
             <ListItem key={invCode.code}>
               <span>
                 <Badge color="indigo">{invCode.code}</Badge>
@@ -276,14 +279,13 @@ const UserManager = (prop: UserManagerProp) => {
                 {isExpired(invCode.exp) ? <Badge color="red">Unavailable</Badge> : <Badge color='emerald'>Available</Badge>}
               </span>
               <span>
-                {/* {moment.unix(Number(invCode.exp)).valueOf() - moment.now().valueOf()} */}
                 Use Before {moment.unix(Number(invCode.exp)).format("MMMM Do, YYYY h:mm A")}
               </span>
               <span className='mr-3'>
                 <Button size='xs' color="stone" onClick={() => { deleteInvitationCode(invCode.code) }}><FaRegTrashCan /></Button>
               </span>
             </ListItem>
-          ))}
+          )) : <Subtitle className='mt-6'>No Invitation Code, Issued Invitation Code Will Display Here</Subtitle>}
         </div >
         <div className='absolute bottom-3' style={{ width: '95%' }}>
           <hr />
@@ -341,7 +343,7 @@ const UserManager = (prop: UserManagerProp) => {
   return (
     <div>
       {showDeletePopup ? renderDeletePopup() : undefined}
-      <EditUserModal show={showEditModal} handleClose={hideAndSetEditPopup} targetUser={() => targetUser} setTargetUser={setTargetUser} />
+      <EditUserModal show={showEditModal} handleClose={hideAndSetEditPopup} targetUser={() => targetUser} setTargetUser={setTargetUser} refreshUserArr={fetchAllUserInfo} />
       <h2 className='mt-6 ml-6'>User Management Console</h2>
       <Grid className='mt-6'>
         {/* top 2 panel */}

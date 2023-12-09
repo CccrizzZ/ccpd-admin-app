@@ -14,7 +14,8 @@ import {
   List,
   ListItem,
   DonutChart,
-  Legend
+  Legend,
+  BadgeDelta
 } from '@tremor/react'
 import '../style/Dashboard.css'
 import moment from 'moment'
@@ -48,41 +49,34 @@ const Dashboard: React.FC<dashboardProp> = (prop: dashboardProp) => {
     {
       day: 'Dec 5',
       "Total QA Inventory": 154,
+      "Defect QA Record": 5,
+    },
+    {
+      day: 'Dec 6',
+      "Total QA Inventory": 154,
       "Defect QA Record": 8,
     },
+    {
+      day: 'Dec 7',
+      "Total QA Inventory": 134,
+      "Defect QA Record": 3,
+    },
+    {
+      day: 'Dec 8',
+      "Total QA Inventory": 154,
+      "Defect QA Record": 8,
+    },
+    {
+      day: 'Dec 9',
+      "Total QA Inventory": 180,
+      "Defect QA Record": 12,
+    },
+    {
+      day: 'Dec 10',
+      "Total QA Inventory": 134,
+      "Defect QA Record": 4,
+    },
     //...
-  ]
-  const chartdata = [
-    {
-      date: "Jan 22",
-      SemiAnalysis: 2890,
-      "The Pragmatic Engineer": 2338,
-    },
-    {
-      date: "Feb 22",
-      SemiAnalysis: 2756,
-      "The Pragmatic Engineer": 2103,
-    },
-    {
-      date: "Mar 22",
-      SemiAnalysis: 3322,
-      "The Pragmatic Engineer": 2194,
-    },
-    {
-      date: "Apr 22",
-      SemiAnalysis: 3470,
-      "The Pragmatic Engineer": 2108,
-    },
-    {
-      date: "May 22",
-      SemiAnalysis: 3475,
-      "The Pragmatic Engineer": 1812,
-    },
-    {
-      date: "Jun 22",
-      SemiAnalysis: 3129,
-      "The Pragmatic Engineer": 1726,
-    },
   ]
   const pieData = [
     {
@@ -131,15 +125,36 @@ const Dashboard: React.FC<dashboardProp> = (prop: dashboardProp) => {
 
   return (
     <div style={{ userSelect: 'none' }}>
-      {/* top 3 charts */}
+      {/* top 4 card */}
+      <Grid className="gap-2 mb-6" numItems={1} numItemsSm={2} numItemsLg={4} >
+        <Card decoration="top" decorationColor="indigo">
+          <Text>Today's QA Inventory</Text>
+          <Metric>55</Metric>
+        </Card>
+        <Card decoration="top" decorationColor="green">
+          <Text>Today's Retail</Text>
+          <Metric>$ 1,024 / 12 Items</Metric>
+        </Card>
+        <Card decoration="top" decorationColor="amber">
+          <Text>Turnover Rate</Text>
+          <div className='flex'>
+            <Metric>56%</Metric>
+          </div>
+        </Card>
+        <Card decoration="top" decorationColor="red">
+          <Text>Today's Return</Text>
+          <Metric>$ 45 / 1 Item</Metric>
+        </Card>
+      </Grid>
+      {/* top 2 charts */}
       <Grid className="gap-2 mt-3" numItems={1} numItemsSm={2} numItemsLg={3} >
-        <Col numColSpan={1} numColSpanLg={1}>
+        <Col numColSpan={1} numColSpanLg={2}>
           <Card className="mb-3" decoration="top" decorationColor="slate">
             <Title>7 Days &A Inventory Record Defects</Title>
             <Subtitle>
               Compare between defected Q&A entry and passed ones.
             </Subtitle>
-            <LineChart
+            <AreaChart
               className="h-72"
               data={LineChartData}
               index="day"
@@ -157,7 +172,7 @@ const Dashboard: React.FC<dashboardProp> = (prop: dashboardProp) => {
               {moment().format("MMMM DD YYYY")}
             </Subtitle>
             <DonutChart
-              className="h-64"
+              className="h-60"
               data={pieData}
               category="sales"
               index="name"
@@ -170,26 +185,10 @@ const Dashboard: React.FC<dashboardProp> = (prop: dashboardProp) => {
             />
           </Card>
         </Col>
-        <Col>
-          <Card className="mb-3" decoration="top" decorationColor="slate">
-            <Title>Daily Q&A Inventory Records</Title>
-            <Subtitle>
-              Q&A entry of today.
-            </Subtitle>
-            <AreaChart
-              className="h-72"
-              data={chartdata}
-              index="date"
-              categories={["SemiAnalysis", "The Pragmatic Engineer"]}
-              colors={["indigo", "cyan"]}
-              valueFormatter={valueFormatter}
-            />
-          </Card>
-        </Col>
       </Grid>
 
       {/* live datas overview */}
-      <Grid numItems={1} numItemsSm={2} numItemsLg={3} className="gap-2">
+      {/* <Grid numItems={1} numItemsSm={2} numItemsLg={3} className="gap-2">
         <Col numColSpan={1} numColSpanLg={1}>
           <Card decoration="top" decorationColor="indigo">
             <Text>Today's QA Inventory</Text>
@@ -219,6 +218,26 @@ const Dashboard: React.FC<dashboardProp> = (prop: dashboardProp) => {
           <Text>Today's Working Q&A Employee</Text>
           <Metric>7 People</Metric>
         </Card>
+      </Grid> */}
+
+      <Grid numItems={1} numItemsSm={2} numItemsLg={3} className="gap-2">
+        <Col numColSpanLg={2}>
+          <Card>
+            <Text>Today's Working Q&A Employee</Text>
+            <Metric>7 People</Metric>
+            <p>
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Earum vel libero, officiis cumque soluta consequatur amet vero error numquam mollitia ipsam ratione fugiat ipsa laborum expedita explicabo nemo, iste architecto!
+            </p>
+          </Card>
+
+        </Col>
+        <Col>
+          <Card>
+            <Text>Today's Working Q&A Employee</Text>
+            <Metric>Title</Metric>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Veniam consequatur, nisi non officia optio ullam expedita, veritatis cumque quasi vitae magnam amet. At error assumenda harum quae cupiditate officiis atque.
+          </Card>
+        </Col>
       </Grid>
 
     </div>

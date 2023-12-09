@@ -6,7 +6,7 @@ import {
   InputGroup,
 } from 'react-bootstrap'
 import { UserDetail, initUser } from '../pages/UserManager'
-import { SetLoadingContext } from '../App'
+import { AppContext } from '../App'
 import axios from 'axios'
 import { server } from '../utils/utils'
 
@@ -14,11 +14,12 @@ type EditUserModalProp = {
   show: boolean,
   handleClose: () => void,
   targetUser: () => UserDetail
-  setTargetUser: React.Dispatch<React.SetStateAction<UserDetail>>
+  setTargetUser: React.Dispatch<React.SetStateAction<UserDetail>>,
+  refreshUserArr: () => void
 }
 
 const EditUserModal: React.FC<EditUserModalProp> = (props: EditUserModalProp) => {
-  const setLoading = useContext(SetLoadingContext)
+  const { setLoading } = useContext(AppContext)
   const [targetUserDetail, setTargetUserDetail] = useState<UserDetail>(initUser)
 
   const onUserNameChange = (event: React.ChangeEvent<HTMLInputElement>) => props.setTargetUser({ ...targetUserDetail, name: event.target.value })
@@ -35,19 +36,20 @@ const EditUserModal: React.FC<EditUserModalProp> = (props: EditUserModalProp) =>
     setLoading(true)
     console.log(targetUserDetail)
     await axios({
-      method: 'delete',
-      url: server + '/adminController/delete',
+      method: 'put',
+      url: server + '/adminController/updateUserById/' + targetUserDetail._id,
       responseType: 'text',
-      data: { 'Id': 'xx' },
+      data: targetUserDetail,
       withCredentials: true
     }).then((res) => {
-
+      console.log(String(res))
     }).catch((err) => {
       alert('Failed Deleting User: ' + err.response.status)
     })
     alert('updated ' + targetUserDetail.name)
     setLoading(false)
     props.handleClose()
+    props.refreshUserArr()
   }
 
   return (
@@ -60,7 +62,7 @@ const EditUserModal: React.FC<EditUserModalProp> = (props: EditUserModalProp) =>
       centered
     >
       <Modal.Header closeButton>
-        <Modal.Title>📝 Edit {props.targetUser().name}</Modal.Title>
+        <Modal.Title>📝 Edit {targetUserDetail.name}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <InputGroup className="mb-3">
@@ -94,6 +96,7 @@ const EditUserModal: React.FC<EditUserModalProp> = (props: EditUserModalProp) =>
             label={targetUserDetail.userActive ? 'User Active' : 'User Inactive'}
             checked={targetUserDetail.userActive}
             onChange={onUserActiveChange}
+            value={Number(targetUserDetail.userActive)}
           />
         </InputGroup>
       </Modal.Body>

@@ -25,11 +25,18 @@ import {
   FaTableList,
   FaHouseChimney,
   FaMoneyBillTransfer,
-  FaDoorOpen
+  FaDoorOpen,
+  FaGear
 } from "react-icons/fa6";
 
+// type for app context
+type ContextType = {
+  setLoading: (l: boolean) => void
+  userInfo: UserInfo
+}
+
 // loading spinner context
-export const SetLoadingContext = createContext((loading: boolean) => { })
+export const AppContext = createContext({} as ContextType)
 
 function App() {
   const [isLogin, setIsLogin] = useState<boolean>(false)
@@ -64,6 +71,7 @@ function App() {
       return (
         <div className='wrapper'>
           <TabContainer defaultActiveKey="User Management" data-bs-theme="dark">
+            {/* side navigation */}
             <div className='sideBar' style={{ backgroundColor: bgLight, userSelect: 'none' }}>
               <Nav variant="pills" className="flex-column mt-4 p-3">
                 <Nav.Item className='mb-3'>
@@ -94,12 +102,18 @@ function App() {
               </Nav>
 
               {/* side panel footer */}
-              <Button className='bottom-2.5 absolute' variant='danger' onClick={logout}>
-                <FaDoorOpen style={{ margin: 'auto' }} />
-              </Button>
-              <p style={{ bottom: '-5px', position: 'absolute', right: '20px', color: '#6B7280' }}>Signed in As: {userInfo.name}</p>
+              <div className='bottom-2.5 absolute'>
+                <p className='mt-3' style={{ color: '#6B7280' }}>Signed in As: {userInfo.name}</p>
+                <Button className='mr-3' variant='danger' onClick={logout}>
+                  <FaDoorOpen className='m-auto' />
+                </Button>
+                <Button variant='secondary'>
+                  <FaGear className='m-auto' />
+                </Button>
+              </div>
             </div>
-            <div className='mainView' style={{ backgroundColor: bgDark, color: '#fff', minWidth: '1250px' }}>
+            {/* main content */}
+            <div className='mainView gradient-background' style={{ backgroundColor: bgDark, color: '#fff', minWidth: '1250px' }}>
               <Tab.Content>
                 <Tab.Pane eventKey="Dashboard"><Dashboard inventoryArr={inventoryArr} /></Tab.Pane>
                 <Tab.Pane eventKey="Q&A Records"><QARecords setLoading={setIsLoading} /></Tab.Pane>
@@ -107,17 +121,17 @@ function App() {
                 <Tab.Pane eventKey="User Management"><UserManager setLoading={setIsLoading} /></Tab.Pane>
               </Tab.Content>
             </div>
-          </TabContainer>
-        </div>
+          </TabContainer >
+        </div >
       )
     }
   }
 
   return (
-    <SetLoadingContext.Provider value={setIsLoading}>
+    <AppContext.Provider value={{ setLoading: setIsLoading, userInfo: userInfo }}>
       <LoadingSpiner show={isLoading} />
       {renderHome()}
-    </SetLoadingContext.Provider>
+    </AppContext.Provider>
   )
 
 }
