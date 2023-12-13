@@ -1,19 +1,15 @@
 import { createContext, useState } from 'react'
 import {
   Tab,
-  Row,
-  Col,
   Nav,
   TabContainer,
   Button,
-  Navbar,
-  Container,
 } from 'react-bootstrap'
 import './App.css'
 import axios from 'axios'
 import Dashboard from './pages/Dashboard'
 import Inventory from './pages/Inventory'
-import { QARecord, UserInfo } from './utils/Types'
+import { UserInfo } from './utils/Types'
 import { bgDark, bgLight, server } from './utils/utils'
 import Login from './pages/Login'
 import QARecords from './pages/QARecords'
@@ -45,7 +41,6 @@ function App() {
     name: ''
   })
   const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [inventoryArr, setInventoryArr] = useState<QARecord[]>([])
 
   const logout = async () => {
     await axios({
@@ -115,7 +110,7 @@ function App() {
             {/* main content */}
             <div className='mainView gradient-background' style={{ backgroundColor: bgDark, color: '#fff', minWidth: '1250px' }}>
               <Tab.Content>
-                <Tab.Pane eventKey="Dashboard"><Dashboard inventoryArr={inventoryArr} /></Tab.Pane>
+                <Tab.Pane eventKey="Dashboard"><Dashboard /></Tab.Pane>
                 <Tab.Pane eventKey="Q&A Records"><QARecords setLoading={setIsLoading} /></Tab.Pane>
                 <Tab.Pane eventKey="Inventory"><Inventory setLoading={setIsLoading} /></Tab.Pane>
                 <Tab.Pane eventKey="User Management"><UserManager setLoading={setIsLoading} /></Tab.Pane>

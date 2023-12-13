@@ -15,16 +15,12 @@ import {
   ListItem,
   DonutChart,
   Legend,
-  BadgeDelta
+  // BadgeDelta
 } from '@tremor/react'
 import '../style/Dashboard.css'
 import moment from 'moment'
 
-type dashboardProp = {
-  inventoryArr: QARecord[]
-}
-
-const Dashboard: React.FC<dashboardProp> = (prop: dashboardProp) => {
+const Dashboard: React.FC = () => {
   const LineChartData = [
     {
       day: 'Dec 1',

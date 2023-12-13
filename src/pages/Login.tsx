@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
-import { SHA256, enc } from 'crypto-js';
 import { UserInfo } from '../utils/Types'
-import { sleep, server } from '../utils/utils'
+import { sleep, server, hashPass } from '../utils/utils'
 import { Form, Button } from 'react-bootstrap'
 
 type LoginProp = {
@@ -62,7 +61,7 @@ const Login: React.FC<LoginProp> = (prop: LoginProp) => {
     if (!userEmail || !userPass) return alert('Please Enter Both Username and Password')
 
     // encode password to sha256 Base 64 string
-    const passwordHash = SHA256(userPass).toString(enc.Base64)
+    const passwordHash = hashPass(userPass)
 
     // send login request
     prop.setLoading(true)

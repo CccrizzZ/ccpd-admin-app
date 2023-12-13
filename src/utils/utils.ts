@@ -1,3 +1,4 @@
+import { SHA256, enc } from "crypto-js";
 import moment from "moment";
 
 export const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
@@ -5,6 +6,8 @@ export const server = import.meta.env.VITE_APP_SERVER
 
 export const bgDark = '#212332'
 export const bgLight = '#2A2D3E'
+
+export const hashPass = (userPass: string) => SHA256(userPass).toString(enc.Base64)
 
 // sealed = primary
 // new = success
@@ -36,3 +39,10 @@ export const isExpired = (exp: string): boolean => {
   if (moment.unix(Number(exp)).valueOf() - moment.now().valueOf() < 0) return true
   return false
 }
+
+// loop object
+// for (const [key, value] of Object.entries(initUserInfo)) {
+//   console.log(`${key}: ${value}`);
+//   // console(Object.entries(initUserInfo)[key, value])
+//   console.log((targetUserDetail as any)[key])
+// }

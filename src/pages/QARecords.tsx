@@ -87,6 +87,10 @@ const QARecords: React.FC<QARecordProps> = (prop: QARecordProps) => {
     console.log('Loading Qa RECORDS...')
   }, [])
 
+  const fetchAllQARecords = () => {
+
+  }
+
   const updateInventory = () => {
 
   }

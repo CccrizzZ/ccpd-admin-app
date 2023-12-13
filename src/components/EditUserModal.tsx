@@ -5,10 +5,10 @@ import {
   Form,
   InputGroup,
 } from 'react-bootstrap'
-import { UserDetail, initUser } from '../pages/UserManager'
+import { UserDetail } from '../pages/UserManager'
 import { AppContext } from '../App'
 import axios from 'axios'
-import { server } from '../utils/utils'
+import { server, hashPass } from '../utils/utils'
 
 type EditUserModalProp = {
   show: boolean,
@@ -20,34 +20,57 @@ type EditUserModalProp = {
 
 const EditUserModal: React.FC<EditUserModalProp> = (props: EditUserModalProp) => {
   const { setLoading } = useContext(AppContext)
-  const [targetUserDetail, setTargetUserDetail] = useState<UserDetail>(initUser)
-
-  const onUserNameChange = (event: React.ChangeEvent<HTMLInputElement>) => props.setTargetUser({ ...targetUserDetail, name: event.target.value })
-  const onEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => props.setTargetUser({ ...targetUserDetail, email: event.target.value })
-  const onPasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => props.setTargetUser({ ...targetUserDetail, password: event.target.value })
-  const onRoleChange = (event: React.ChangeEvent<HTMLSelectElement>) => props.setTargetUser({ ...targetUserDetail, role: event.target.value })
-  const onUserActiveChange = () => props.setTargetUser({ ...targetUserDetail, userActive: !targetUserDetail.userActive })
+  const [targetUserDetail, setTargetUserDetail] = useState<UserDetail>(props.targetUser)
+  const [userInfoToSend, setUserInfoToSend] = useState<Record<string, string | boolean>>({})
 
   useEffect(() => {
     setTargetUserDetail(props.targetUser)
   })
 
+  // input will be set when changed
+  const onUserNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    props.setTargetUser({ ...targetUserDetail, name: event.target.value })
+    userInfoToSend.name = event.target.value
+  }
+  const onEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    props.setTargetUser({ ...targetUserDetail, email: event.target.value })
+    userInfoToSend.email = event.target.value
+  }
+  const onPasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    props.setTargetUser({ ...targetUserDetail, password: event.target.value })
+    userInfoToSend.password = event.target.value
+  }
+  const onRoleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    props.setTargetUser({ ...targetUserDetail, role: event.target.value })
+    userInfoToSend.role = event.target.value
+  }
+  const onUserActiveChange = () => {
+    props.setTargetUser({ ...targetUserDetail, userActive: !targetUserDetail.userActive })
+    userInfoToSend.userActive = !targetUserDetail.userActive
+  }
+
   const updateUser = async () => {
+    // alert if no changes made
+    if (Object.keys(userInfoToSend).length === 0) return alert('Cannot Submit Without Making Changes')
+    if (userInfoToSend['password']) userInfoToSend['password'] = hashPass(String(userInfoToSend['password']))
+    if (userInfoToSend['userActive'] !== undefined) userInfoToSend['userActive'] = String(userInfoToSend['userActive'])
     setLoading(true)
-    console.log(targetUserDetail)
+    // send request
     await axios({
       method: 'put',
       url: server + '/adminController/updateUserById/' + targetUserDetail._id,
       responseType: 'text',
-      data: targetUserDetail,
+      data: userInfoToSend,
       withCredentials: true
     }).then((res) => {
-      console.log(String(res))
+      console.log(res.status)
+      alert('updated ' + targetUserDetail.name)
     }).catch((err) => {
       alert('Failed Deleting User: ' + err.response.status)
     })
-    alert('updated ' + targetUserDetail.name)
+    // clean up
     setLoading(false)
+    setUserInfoToSend({})
     props.handleClose()
     props.refreshUserArr()
   }
@@ -75,7 +98,7 @@ const EditUserModal: React.FC<EditUserModalProp> = (props: EditUserModalProp) =>
         </InputGroup>
         <InputGroup className="mb-3">
           <InputGroup.Text>Password</InputGroup.Text>
-          <Form.Control placeholder="************" value={targetUserDetail.password} onChange={onPasswordChange} />
+          <Form.Control type='password' placeholder="************" value={targetUserDetail.password} onChange={onPasswordChange} />
         </InputGroup>
         <InputGroup className="mb-3">
           <InputGroup.Text>Role</InputGroup.Text>
@@ -96,7 +119,6 @@ const EditUserModal: React.FC<EditUserModalProp> = (props: EditUserModalProp) =>
             label={targetUserDetail.userActive ? 'User Active' : 'User Inactive'}
             checked={targetUserDetail.userActive}
             onChange={onUserActiveChange}
-            value={Number(targetUserDetail.userActive)}
           />
         </InputGroup>
       </Modal.Body>

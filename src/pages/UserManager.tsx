@@ -25,11 +25,11 @@ import {
   FaSort,
   FaSortUp,
   FaSortDown,
-  FaCopy,
+  FaUserPlus,
   FaRegTrashCan,
   FaPenToSquare
 } from "react-icons/fa6";
-import { server, sleep } from '../utils/utils'
+import { server } from '../utils/utils'
 import axios from 'axios';
 import '../style/UserManager.css'
 import moment from 'moment';
@@ -37,6 +37,7 @@ import { isExpired } from '../utils/utils';
 import EditUserModal from '../components/EditUserModal';
 import { Modal } from 'react-bootstrap';
 import { AppContext } from '../App';
+import CreateUserModal from '../components/CreateUserModal';
 
 // type for user rows
 export type UserDetail = {
@@ -78,6 +79,7 @@ const UserManager = (prop: UserManagerProp) => {
   const [editMode, setEditMode] = useState<boolean>(false)
   const [targetUser, setTargetUser] = useState<UserDetail>(initUser)
   const [showDeletePopup, setShowDeletePopup] = useState<boolean>(false)
+  const [showCreatePopup, setShowCreatePopup] = useState<boolean>(false)
   const [showEditModal, setShowEditModal] = useState<boolean>(false)
 
   const pieData = [
@@ -214,6 +216,12 @@ const UserManager = (prop: UserManagerProp) => {
     setTargetUser(initUser)
   }
 
+  // called by create user model
+  const hideCreatePopup = () => {
+    setShowCreatePopup(false)
+    fetchAllUserInfo()
+  }
+
   // sort the userArr by index
   const sortBy = (index: string) => {
     if (index === 'Registration Date') {
@@ -223,6 +231,7 @@ const UserManager = (prop: UserManagerProp) => {
 
   // render user info from displayArr
   const renderTBody = () => {
+    // TODO: user table sorting
     // userArr.sort((a, b) => {
     //   if (moment(a.registrationDate).valueOf() > moment(b.registrationDate).valueOf()) {
     //     return 1
@@ -251,7 +260,7 @@ const UserManager = (prop: UserManagerProp) => {
           <Text>{(moment(user.registrationDate, "MMM DD YYYY").format('MMM DD YYYY'))}</Text>
         </TableCell>
         <TableCell>
-          {user.userActive ? <Badge className='m-0' size="xs" color="emerald" style={{}}>Active</Badge> : <Badge size="xs" color="red" className='m-0'>Inactive</Badge>}
+          {user.userActive ? <Badge className='m-0' size="xs" color="emerald">Active</Badge> : <Badge size="xs" color="red" className='m-0'>Inactive</Badge>}
         </TableCell>
         {/* gona hide edit option for current user */}
         {editMode && user._id !== userInfo.id ? <TableCell><Button className='mr-1' size="xs" color='amber' onClick={() => showAndSetEditPopup(user)}><FaPenToSquare /></Button>
@@ -273,7 +282,7 @@ const UserManager = (prop: UserManagerProp) => {
           {invitationArr.length > 0 ? invitationArr.map((invCode) => (
             <ListItem key={invCode.code}>
               <span>
-                <Badge color="indigo">{invCode.code}</Badge>
+                <Badge color="amber">{invCode.code}</Badge>
               </span>
               <span>
                 {isExpired(invCode.exp) ? <Badge color="red">Unavailable</Badge> : <Badge color='emerald'>Available</Badge>}
@@ -344,6 +353,7 @@ const UserManager = (prop: UserManagerProp) => {
     <div>
       {showDeletePopup ? renderDeletePopup() : undefined}
       <EditUserModal show={showEditModal} handleClose={hideAndSetEditPopup} targetUser={() => targetUser} setTargetUser={setTargetUser} refreshUserArr={fetchAllUserInfo} />
+      <CreateUserModal show={showCreatePopup} handleClose={(hideCreatePopup)} />
       <h2 className='mt-6 ml-6'>User Management Console</h2>
       <Grid className='mt-6'>
         {/* top 2 panel */}
@@ -355,9 +365,10 @@ const UserManager = (prop: UserManagerProp) => {
         <Card className='mt-6 max-w-full'>
           <div className='flex'>
             <Button color='emerald' onClick={fetchAllUserInfo}><FaRotate className='m-0 text-white' /></Button>
+            {editMode ? <Button color='blue' className='ml-2' onClick={() => setShowCreatePopup(true)}><FaUserPlus /></Button> : undefined}
             <div className="absolute right-12 flex">
               <label className="text-sm text-gray-500 mr-4">Edit Mode</label>
-              <Switch id="switcswitchh" name="switch" checked={editMode} onChange={toggleEditMode} />
+              <Switch checked={editMode} onChange={toggleEditMode} />
             </div>
           </div>
           <hr />
