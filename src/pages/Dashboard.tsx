@@ -17,8 +17,10 @@ import {
   Legend,
   // BadgeDelta
 } from '@tremor/react'
+import { FaMagnifyingGlass } from 'react-icons/fa6'
 import '../style/Dashboard.css'
 import moment from 'moment'
+import SKULookupPanel from '../components/SKULookupPanel'
 
 const Dashboard: React.FC = () => {
   const LineChartData = [
@@ -218,14 +220,7 @@ const Dashboard: React.FC = () => {
 
       <Grid numItems={1} numItemsSm={2} numItemsLg={3} className="gap-2">
         <Col numColSpanLg={2}>
-          <Card>
-            <Text>Today's Working Q&A Employee</Text>
-            <Metric>7 People</Metric>
-            <p>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Earum vel libero, officiis cumque soluta consequatur amet vero error numquam mollitia ipsam ratione fugiat ipsa laborum expedita explicabo nemo, iste architecto!
-            </p>
-          </Card>
-
+          <SKULookupPanel />
         </Col>
         <Col>
           <Card>

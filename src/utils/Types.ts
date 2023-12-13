@@ -25,13 +25,29 @@ export interface QARecord {
   images?: string[]
 }
 
-export interface User {
-  email: string,
-  password: string, // sha256 hash only
-}
-
-// for storing user info in App.tsx
-export interface UserInfo {
+// for user info context in App.tsx
+export type UserInfo = {
   id: string,
   name: string,
 }
+
+// used in user manager
+export type InvitationCode = {
+  code: string,
+  exp: string
+}
+
+// type for user rows
+export type UserDetail = CreateUser & {
+  _id: string,
+  registrationDate: string,
+  userActive: boolean
+}
+
+export type CreateUser = {
+  name: string,
+  email: string,
+  password: string,
+  role: string,
+}
+

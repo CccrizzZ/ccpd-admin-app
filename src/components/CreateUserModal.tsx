@@ -1,8 +1,8 @@
-import React, { useContext, useState } from 'react'
-import { UserDetail, initUser } from '../pages/UserManager'
+import React, { useContext, useEffect, useState } from 'react'
 import { AppContext } from '../App'
 import axios from 'axios'
-import { server } from '../utils/utils'
+import { server, initCreateUser, deSpace } from '../utils/utils'
+import { CreateUser } from '../utils/Types'
 import {
   Form,
   InputGroup,
@@ -12,32 +12,41 @@ import { Button } from '@tremor/react'
 
 type CreateUserModalProps = {
   show: boolean
-  handleClose: () => void,
+  handleClose: (refresh: boolean) => void,
 }
 
 const CreateUserModal: React.FC<CreateUserModalProps> = (props: CreateUserModalProps) => {
   const { setLoading } = useContext(AppContext)
-  const [newUser, setNewUser] = useState<UserDetail>(initUser)
+  const [newUser, setNewUser] = useState<CreateUser>(initCreateUser)
 
   // create a custom user
   const createUser = async () => {
-    // null check
+    // remove space in password and email
+    setNewUser({
+      ...newUser,
+      password: deSpace(newUser.password),
+      email: deSpace(newUser.email)
+    })
 
+    // null check for all values of newUser
+    const fieldsEmpty = Object.values(newUser).some((val) => { return (deSpace(val).length < 1) })
+    if (fieldsEmpty) return alert('Please Complete The Form')
 
+    // post the request to server
     setLoading(true)
     await axios({
-      method: 'delete',
+      method: 'post',
       url: server + '/adminController/createUser',
       responseType: 'text',
       data: newUser,
       withCredentials: true
     }).then(() => {
-      props.handleClose()
+      alert('User Created!')
     }).catch((err) => {
       alert('Create User Failed: ' + err.response.status)
     })
     setLoading(false)
-    props.handleClose()
+    props.handleClose(true)
   }
 
   // setters
@@ -49,14 +58,14 @@ const CreateUserModal: React.FC<CreateUserModalProps> = (props: CreateUserModalP
   return (
     <Modal
       show={props.show}
-      onHide={props.handleClose}
+      onHide={() => props.handleClose(false)}
       aria-labelledby="contained-modal-title-vcenter"
       backdrop="static"
       keyboard={false}
       centered
     >
       <Modal.Header>
-        <h4 className=''>✳️ Create New User</h4>
+        <h4>✳️ Create New User</h4>
       </Modal.Header>
       <Modal.Body>
         <InputGroup className="mb-3">
@@ -74,7 +83,7 @@ const CreateUserModal: React.FC<CreateUserModalProps> = (props: CreateUserModalP
         <InputGroup className="mb-3">
           <InputGroup.Text>Role</InputGroup.Text>
           <Form.Select value={newUser.role} onChange={onRoleChange}>
-            <option>Select Role</option>
+            <option value="">Select Role</option>
             <option value="QAPersonal">Q&A Personal</option>
             <option value="Sales">Sales</option>
             <option value="Shelving Manager">Shelving Manager</option>
@@ -85,7 +94,7 @@ const CreateUserModal: React.FC<CreateUserModalProps> = (props: CreateUserModalP
       </Modal.Body>
       <Modal.Footer>
         <div className='text-center'>
-          <Button color='slate' onClick={props.handleClose}>
+          <Button color='slate' onClick={() => props.handleClose(false)}>
             Close
           </Button>
           <Button className='ml-2' color='emerald' onClick={createUser}>Create</Button>

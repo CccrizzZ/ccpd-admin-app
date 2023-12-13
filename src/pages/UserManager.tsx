@@ -14,7 +14,6 @@ import {
   Col,
   Switch,
   Title,
-  List,
   ListItem,
   DonutChart,
   Legend,
@@ -29,7 +28,7 @@ import {
   FaRegTrashCan,
   FaPenToSquare
 } from "react-icons/fa6";
-import { server } from '../utils/utils'
+import { server, initUser } from '../utils/utils'
 import axios from 'axios';
 import '../style/UserManager.css'
 import moment from 'moment';
@@ -38,38 +37,16 @@ import EditUserModal from '../components/EditUserModal';
 import { Modal } from 'react-bootstrap';
 import { AppContext } from '../App';
 import CreateUserModal from '../components/CreateUserModal';
-
-// type for user rows
-export type UserDetail = {
-  _id: string,
-  name: string,
-  email: string,
-  password: string,
-  role: string,
-  registrationDate: string,
-  userActive: boolean
-}
-
-export type InvitationCode = {
-  code: string,
-  exp: string
-}
-
-export const initUser: UserDetail = {
-  _id: '',
-  name: '',
-  email: '',
-  password: '',
-  role: '',
-  registrationDate: '',
-  userActive: false
-}
+import {
+  UserDetail,
+  InvitationCode,
+} from '../utils/Types'
 
 const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()} Members`
 type UserManagerProp = {
   setLoading: (isloading: boolean) => void
 }
-const UserManager = (prop: UserManagerProp) => {
+const UserManager: React.FC<UserManagerProp> = (prop: UserManagerProp) => {
   const { userInfo } = useContext(AppContext)
   const [userArr, setUserArr] = useState<UserDetail[]>([])
   const [invitationArr, setInvitationArr] = useState<InvitationCode[]>([])
@@ -217,9 +194,9 @@ const UserManager = (prop: UserManagerProp) => {
   }
 
   // called by create user model
-  const hideCreatePopup = () => {
+  const hideCreatePopup = (refresh: boolean) => {
     setShowCreatePopup(false)
-    fetchAllUserInfo()
+    if (refresh) fetchAllUserInfo()
   }
 
   // sort the userArr by index
@@ -262,7 +239,7 @@ const UserManager = (prop: UserManagerProp) => {
         <TableCell>
           {user.userActive ? <Badge className='m-0' size="xs" color="emerald">Active</Badge> : <Badge size="xs" color="red" className='m-0'>Inactive</Badge>}
         </TableCell>
-        {/* gona hide edit option for current user */}
+        {/* hide edit option for current user */}
         {editMode && user._id !== userInfo.id ? <TableCell><Button className='mr-1' size="xs" color='amber' onClick={() => showAndSetEditPopup(user)}><FaPenToSquare /></Button>
           <Button size="xs" color='red' onClick={() => showAndSetDelPopup(user)}><FaRegTrashCan /></Button></TableCell> : undefined}
       </TableRow>
@@ -353,7 +330,7 @@ const UserManager = (prop: UserManagerProp) => {
     <div>
       {showDeletePopup ? renderDeletePopup() : undefined}
       <EditUserModal show={showEditModal} handleClose={hideAndSetEditPopup} targetUser={() => targetUser} setTargetUser={setTargetUser} refreshUserArr={fetchAllUserInfo} />
-      <CreateUserModal show={showCreatePopup} handleClose={(hideCreatePopup)} />
+      <CreateUserModal show={showCreatePopup} handleClose={hideCreatePopup} />
       <h2 className='mt-6 ml-6'>User Management Console</h2>
       <Grid className='mt-6'>
         {/* top 2 panel */}

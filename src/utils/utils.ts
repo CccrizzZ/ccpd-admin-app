@@ -1,5 +1,6 @@
 import { SHA256, enc } from "crypto-js";
 import moment from "moment";
+import { CreateUser, QARecord, UserDetail } from "./Types";
 
 export const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 export const server = import.meta.env.VITE_APP_SERVER
@@ -40,9 +41,32 @@ export const isExpired = (exp: string): boolean => {
   return false
 }
 
-// loop object
-// for (const [key, value] of Object.entries(initUserInfo)) {
-//   console.log(`${key}: ${value}`);
-//   // console(Object.entries(initUserInfo)[key, value])
-//   console.log((targetUserDetail as any)[key])
-// }
+export const deSpace = (s: string) => s.replace(/ /g, '')
+
+export const initUser: UserDetail = {
+  _id: '',
+  name: '',
+  email: '',
+  password: '',
+  role: '',
+  registrationDate: '',
+  userActive: false
+}
+
+export const initCreateUser: CreateUser = {
+  name: '',
+  email: '',
+  password: '',
+  role: '',
+}
+
+export const initQARecord: QARecord = {
+  sku: 0,
+  time: '',
+  itemCondition: 'New',
+  comment: '',
+  link: '',
+  platform: 'Amazon',
+  shelfLocation: '',
+  amount: 0,
+}

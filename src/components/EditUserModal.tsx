@@ -5,7 +5,7 @@ import {
   Form,
   InputGroup,
 } from 'react-bootstrap'
-import { UserDetail } from '../pages/UserManager'
+import { UserDetail } from '../utils/Types'
 import { AppContext } from '../App'
 import axios from 'axios'
 import { server, hashPass } from '../utils/utils'
@@ -103,7 +103,7 @@ const EditUserModal: React.FC<EditUserModalProp> = (props: EditUserModalProp) =>
         <InputGroup className="mb-3">
           <InputGroup.Text>Role</InputGroup.Text>
           <Form.Select value={targetUserDetail.role} onChange={onRoleChange}>
-            <option>Select Role</option>
+            <option value="">Select Role</option>
             <option value="QAPersonal">Q&A Personal</option>
             <option value="Sales">Sales</option>
             <option value="Shelving Manager">Shelving Manager</option>
