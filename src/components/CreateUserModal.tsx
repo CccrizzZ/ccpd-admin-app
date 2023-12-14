@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { AppContext } from '../App'
 import axios from 'axios'
 import { server, initCreateUser, deSpace } from '../utils/utils'
@@ -24,6 +24,7 @@ const CreateUserModal: React.FC<CreateUserModalProps> = (props: CreateUserModalP
     // remove space in password and email
     setNewUser({
       ...newUser,
+      name: newUser.name.trim(),
       password: deSpace(newUser.password),
       email: deSpace(newUser.email)
     })

@@ -69,4 +69,5 @@ export const initQARecord: QARecord = {
   platform: 'Amazon',
   shelfLocation: '',
   amount: 0,
+  owner: ''
 }

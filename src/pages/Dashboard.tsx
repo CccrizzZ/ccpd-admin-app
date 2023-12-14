@@ -220,11 +220,15 @@ const Dashboard: React.FC = () => {
 
       <Grid numItems={1} numItemsSm={2} numItemsLg={3} className="gap-2">
         <Col numColSpanLg={2}>
-          <SKULookupPanel />
+          <Card>
+            <Text>Main Title</Text>
+            <Metric>Title</Metric>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Veniam consequatur, nisi non officia optio ullam expedita, veritatis cumque quasi vitae magnam amet. At error assumenda harum quae cupiditate officiis atque.
+          </Card>
         </Col>
         <Col>
           <Card>
-            <Text>Today's Working Q&A Employee</Text>
+            <Text>Main Title</Text>
             <Metric>Title</Metric>
             Lorem ipsum dolor sit amet consectetur adipisicing elit. Veniam consequatur, nisi non officia optio ullam expedita, veritatis cumque quasi vitae magnam amet. At error assumenda harum quae cupiditate officiis atque.
           </Card>

@@ -65,7 +65,7 @@ function App() {
     } else {
       return (
         <div className='wrapper'>
-          <TabContainer defaultActiveKey="User Management" data-bs-theme="dark">
+          <TabContainer defaultActiveKey="Q&A Records" data-bs-theme="dark">
             {/* side navigation */}
             <div className='sideBar' style={{ backgroundColor: bgLight, userSelect: 'none' }}>
               <Nav variant="pills" className="flex-column mt-4 p-3">
@@ -95,7 +95,6 @@ function App() {
                   </Nav.Link>
                 </Nav.Item>
               </Nav>
-
               {/* side panel footer */}
               <div className='bottom-2.5 absolute'>
                 <p className='mt-3' style={{ color: '#6B7280' }}>Signed in As: {userInfo.name}</p>
@@ -111,7 +110,7 @@ function App() {
             <div className='mainView gradient-background' style={{ backgroundColor: bgDark, color: '#fff', minWidth: '1250px' }}>
               <Tab.Content>
                 <Tab.Pane eventKey="Dashboard"><Dashboard /></Tab.Pane>
-                <Tab.Pane eventKey="Q&A Records"><QARecords setLoading={setIsLoading} /></Tab.Pane>
+                <Tab.Pane eventKey="Q&A Records"><QARecords /></Tab.Pane>
                 <Tab.Pane eventKey="Inventory"><Inventory setLoading={setIsLoading} /></Tab.Pane>
                 <Tab.Pane eventKey="User Management"><UserManager setLoading={setIsLoading} /></Tab.Pane>
               </Tab.Content>
