@@ -148,11 +148,12 @@ const Dashboard: React.FC = () => {
       <Grid className="gap-2 mt-3" numItems={1} numItemsSm={2} numItemsLg={3} >
         <Col numColSpan={1} numColSpanLg={2}>
           <Card className="mb-3" decoration="top" decorationColor="slate">
-            <Title>7 Days &A Inventory Record Defects</Title>
+            <Title>7 Days Q&A Inventory Record Defects</Title>
             <Subtitle>
               Compare between defected Q&A entry and passed ones.
             </Subtitle>
             <AreaChart
+              showAnimation={true}
               className="h-72"
               data={LineChartData}
               index="day"
@@ -172,6 +173,7 @@ const Dashboard: React.FC = () => {
             <DonutChart
               className="h-60"
               data={pieData}
+              showAnimation={true}
               category="sales"
               index="name"
               valueFormatter={valueFormatter}

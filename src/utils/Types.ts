@@ -22,7 +22,8 @@ export interface QARecord {
   shelfLocation: string,
   amount: number,
   owner?: string
-  images?: string[]
+  ownerName?: string
+  marketplace?: string
 }
 
 // for user info context in App.tsx

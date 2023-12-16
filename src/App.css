@@ -27,7 +27,7 @@ a {
 
 .sideBar {
     flex-shrink: 0;
-    width: 280px;
+    width: 270px;
     height: 100vh;
     overflow: auto;
     position: sticky;

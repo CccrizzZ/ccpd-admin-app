@@ -41,6 +41,7 @@ function App() {
     name: ''
   })
   const [isLoading, setIsLoading] = useState<boolean>(false)
+  // const [userSettings, setUserSettings] = useState<UserSettings>([])
 
   const logout = async () => {
     await axios({

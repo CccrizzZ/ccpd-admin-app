@@ -10,6 +10,28 @@ export const bgLight = '#2A2D3E'
 
 export const hashPass = (userPass: string) => SHA256(userPass).toString(enc.Base64)
 
+// return tremor color pallete string
+export const getPlatformBadgeColor = (platform: string) => {
+  switch (platform) {
+    case 'Amazon' || 'amazon':
+      return 'orange'
+    case 'eBay' || 'Ebay' || 'ebay':
+      return 'lime';
+    case 'Official Website' || 'official website':
+      return 'slate';
+    case 'Hibid' || 'hibid':
+      return 'cyan';
+    case 'Wholesale' || 'wholesale':
+      return 'rose';
+    case 'Retail' || 'retail':
+      return 'sky';
+    case 'Other' || 'other':
+      return 'slate';
+    default:
+      break;
+  }
+}
+
 // sealed = primary
 // new = success
 // used like new = secondary

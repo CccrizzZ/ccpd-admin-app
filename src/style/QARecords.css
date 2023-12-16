@@ -1,0 +1,13 @@
+table {
+    table-layout: fixed;
+}
+
+td {
+    overflow: hidden;
+    word-wrap: break-word;
+    white-space: nowrap;
+}
+
+p {
+    text-wrap: wrap;
+}

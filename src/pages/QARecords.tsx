@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import {
   Grid,
+  Badge,
   Col,
   Card,
   Title,
@@ -17,15 +18,18 @@ import {
   DatePicker,
   BarChart,
   Subtitle,
-  AreaChart
+  AreaChart,
 } from '@tremor/react'
 import { QARecord } from '../utils/Types'
 import { AppContext } from '../App'
 import moment from 'moment'
 import { FaRotate } from 'react-icons/fa6'
 import axios, { AxiosResponse } from 'axios'
-import { initQARecord, server } from '../utils/utils'
-import { Form } from 'react-bootstrap'
+import { initQARecord, server, getPlatformBadgeColor } from '../utils/utils'
+import {
+  Form
+} from 'react-bootstrap'
+import '../style/QARecords.css'
 
 const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()}`
 
@@ -96,20 +100,20 @@ type QARecordProps = {
 
 const QARecords: React.FC<QARecordProps> = (prop: QARecordProps) => {
   const { setLoading } = useContext(AppContext)
-  const [selectedRecord, setSelectedRecord] = useState<QARecord>(initQARecord)
   const [QARecordArr, setQARecordArr] = useState<QARecord[]>([])
   const [currPage, setCurrPage] = useState<Number>(0)
   const [itemsPerPage, setItemsPerPage] = useState<Number>(20)
+  const [editMode, setEditMode] = useState<boolean>(false)
+  const [selectedRecord, setSelectedRecord] = useState<QARecord>(initQARecord)
   // sorting & filtering
   const [dateRange, setDateRange] = useState<string>('All Time')
-
 
   useEffect(() => {
     fetchQARecords()
     console.log('Loading Qa RECORDS...')
   }, [])
 
-  // fetch QA records according to page and size
+  // fetch QA records according to page and size into QARecordArr
   const fetchQARecords = async () => {
     setLoading(true)
     await axios({
@@ -120,7 +124,6 @@ const QARecords: React.FC<QARecordProps> = (prop: QARecordProps) => {
       withCredentials: true
     }).then((res: AxiosResponse) => {
       setQARecordArr(JSON.parse(res.data))
-
     }).catch((err) => {
       alert('Failed Fetching QA Records: ' + err.response.status)
     })
@@ -133,44 +136,78 @@ const QARecords: React.FC<QARecordProps> = (prop: QARecordProps) => {
     setLoading(false)
   }
 
-  const deleteInventory = () => {
+  const deleteInventory = async (sku: number) => {
     setLoading(true)
-
+    await axios({
+      method: 'delete',
+      url: server + '/adminController/deleteQARecordsBySku/' + sku,
+      responseType: 'text',
+      data: '',
+      withCredentials: true
+    }).then(() => {
+      alert('QA Record Deleted!')
+    }).catch((err) => {
+      alert('Delete QA Record Failed: ' + err.response.status)
+    })
     setLoading(false)
+    fetchQARecords()
   }
 
   const onItemsPerPageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setItemsPerPage(Number(event.target.value))
   }
 
+  const onEditModeChange = () => setEditMode(!editMode)
+
+  // main control panel
   const renderRecordingPanel = () => {
     return (
-      <div>
+      <div className='h-full'>
+        <h2>{selectedRecord.sku}</h2>
+        <div className='flex'>
+          <div className='w-3/5'>
 
+          </div>
+          <div className='w-2/5'>
+            <Card className='min-h-fit'>
+              <h2></h2>
+              <hr />
+              Lorem ipsum, dolor sit amet consectetur adipisicing elit. Repellendus neque perspiciatis tempora iusto voluptatum nisi ipsam non? Non libero corporis nihil culpa, reprehenderit assumenda eveniet ex provident officia doloribus ut!
+            </Card>
+          </div>
+        </div>
+        <div className='flex absolute bottom-3'>
+          <Button className='left-2.5' color='blue'>Prev</Button>
+          <Button color='emerald'>Submit & Next</Button>
+        </div>
       </div>
     )
   }
 
+  // QA records table row
   const renderInventoryTableBody = () => {
     return QARecordArr.map((record) => (
       <TableRow key={record.sku}>
         <TableCell>
-          <Button className='text-white' color='indigo'>{record.sku}</Button>
+          <Button className='text-white' color='indigo' onClick={() => setSelectedRecord(record)}>{record.sku}</Button>
         </TableCell>
         <TableCell>
-          <Text>{record.owner}</Text>
+          <Text>{record.ownerName}</Text>
         </TableCell>
         <TableCell>
-          <Text>{record.shelfLocation}</Text>
+          <Badge color='slate'>{record.shelfLocation}</Badge>
         </TableCell>
         <TableCell>
-          <Text>{record.comment}</Text>
+          <p>{record.comment}</p>
         </TableCell>
         <TableCell>
-          <Text>{record.link}</Text>
+          <p>{record.link.slice(0, 100)}</p>
         </TableCell>
         <TableCell>
-          <Text>{record.platform}</Text>
+          <Badge color={getPlatformBadgeColor(record.platform)}>{record.platform}</Badge>
+        </TableCell>
+        <TableCell>
+          <Badge color={getPlatformBadgeColor(record.marketplace ?? 'None')}>{record.marketplace}</Badge>
         </TableCell>
         <TableCell>
           <Text>{record.amount}</Text>
@@ -187,7 +224,7 @@ const QARecords: React.FC<QARecordProps> = (prop: QARecordProps) => {
       {/* top 3 charts */}
       <Grid className="gap-2" numItems={3} >
         <Col numColSpan={2}>
-          <Card className="h-full" decoration='top' decorationColor='green'>
+          <Card className="h-full">
             <Title>Inventory Recording</Title>
             <hr />
             {selectedRecord.sku === 0 ? <Subtitle className='text-center mt-64'>Selected QA Records Details Will Be Shown Here!</Subtitle> : renderRecordingPanel()}
@@ -205,6 +242,7 @@ const QARecords: React.FC<QARecordProps> = (prop: QARecordProps) => {
               colors={["rose"]}
               valueFormatter={valueFormatter}
               yAxisWidth={32}
+              showAnimation={true}
             />
           </Card>
           <Card className="h-96 mt-2">
@@ -217,6 +255,7 @@ const QARecords: React.FC<QARecordProps> = (prop: QARecordProps) => {
               categories={["Recorded", "QARecorded"]}
               colors={["green", "red"]}
               valueFormatter={valueFormatter}
+              showAnimation={true}
             />
           </Card>
         </Col>
@@ -247,11 +286,12 @@ const QARecords: React.FC<QARecordProps> = (prop: QARecordProps) => {
             <TableRow className='th-row'>
               <TableHeaderCell>SKU</TableHeaderCell>
               <TableHeaderCell>Owner</TableHeaderCell>
-              <TableHeaderCell>Shelf Location</TableHeaderCell>
+              <TableHeaderCell className='w-36'>Shelf Location</TableHeaderCell>
               <TableHeaderCell>Comment</TableHeaderCell>
               <TableHeaderCell>Link</TableHeaderCell>
               <TableHeaderCell>Platform</TableHeaderCell>
-              <TableHeaderCell>Amount</TableHeaderCell>
+              <TableHeaderCell>Target Marketplace</TableHeaderCell>
+              <TableHeaderCell className='w-36'>Amount</TableHeaderCell>
               <TableHeaderCell>Time Created</TableHeaderCell>
             </TableRow>
           </TableHead>

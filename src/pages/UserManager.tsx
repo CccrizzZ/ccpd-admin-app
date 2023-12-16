@@ -287,6 +287,7 @@ const UserManager: React.FC<UserManagerProp> = (prop: UserManagerProp) => {
         <Title>Overview</Title>
         <DonutChart
           className="h-56"
+          showAnimation={true}
           data={pieData}
           category="member"
           index="name"
@@ -295,7 +296,7 @@ const UserManager: React.FC<UserManagerProp> = (prop: UserManagerProp) => {
         />
         <Legend
           enableLegendSlider={true}
-          className="mt-6 mt-12"
+          className="mt-12"
           categories={["Q&A Personal", "Sales", "Shelving Manager", "Admin", "Super Admin"]}
           colors={["orange", "lime", "teal", "indigo", "rose"]}
         />
