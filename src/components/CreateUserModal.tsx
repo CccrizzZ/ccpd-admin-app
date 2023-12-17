@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react'
 import { AppContext } from '../App'
 import axios from 'axios'
-import { server, initCreateUser, deSpace } from '../utils/utils'
+import { server, initCreateUser, deSpace, renderUserRoleOptions } from '../utils/utils'
 import { CreateUser } from '../utils/Types'
 import {
   Form,
@@ -84,12 +84,7 @@ const CreateUserModal: React.FC<CreateUserModalProps> = (props: CreateUserModalP
         <InputGroup className="mb-3">
           <InputGroup.Text>Role</InputGroup.Text>
           <Form.Select value={newUser.role} onChange={onRoleChange}>
-            <option value="">Select Role</option>
-            <option value="QAPersonal">Q&A Personal</option>
-            <option value="Sales">Sales</option>
-            <option value="Shelving Manager">Shelving Manager</option>
-            <option value="Admin">Admin</option>
-            <option value="Super Admin">Super Admin</option>
+            {renderUserRoleOptions()}
           </Form.Select>
         </InputGroup>
       </Modal.Body>

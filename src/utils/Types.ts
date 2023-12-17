@@ -9,6 +9,10 @@ export type Condition =
 export type Platform =
   'Amazon' |
   'eBay' |
+  'AliExpress' |
+  'Hibid' |
+  'Retail' |
+  'Wholesale' |
   'Official Website' |
   'Other'
 

@@ -8,7 +8,7 @@ import {
 import { UserDetail } from '../utils/Types'
 import { AppContext } from '../App'
 import axios from 'axios'
-import { server, hashPass } from '../utils/utils'
+import { server, hashPass, renderUserRoleOptions } from '../utils/utils'
 
 type EditUserModalProp = {
   show: boolean,
@@ -103,12 +103,7 @@ const EditUserModal: React.FC<EditUserModalProp> = (props: EditUserModalProp) =>
         <InputGroup className="mb-3">
           <InputGroup.Text>Role</InputGroup.Text>
           <Form.Select value={targetUserDetail.role} onChange={onRoleChange}>
-            <option value="">Select Role</option>
-            <option value="QAPersonal">Q&A Personal</option>
-            <option value="Sales">Sales</option>
-            <option value="Shelving Manager">Shelving Manager</option>
-            <option value="Admin">Admin</option>
-            <option value="Super Admin">Super Admin</option>
+            {renderUserRoleOptions()}
           </Form.Select>
         </InputGroup>
         <InputGroup className="mb-2 mt-3 ml-2">

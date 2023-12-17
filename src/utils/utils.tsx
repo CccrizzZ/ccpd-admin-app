@@ -2,12 +2,15 @@ import { SHA256, enc } from "crypto-js";
 import moment from "moment";
 import { CreateUser, QARecord, UserDetail } from "./Types";
 
+// server connection
 export const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 export const server = import.meta.env.VITE_APP_SERVER
 
+// color
 export const bgDark = '#212332'
 export const bgLight = '#2A2D3E'
 
+// hashing
 export const hashPass = (userPass: string) => SHA256(userPass).toString(enc.Base64)
 
 // return tremor color pallete string
@@ -30,6 +33,49 @@ export const getPlatformBadgeColor = (platform: string) => {
     default:
       break;
   }
+}
+
+// for user role Form.Select
+export const renderUserRoleOptions = () => {
+  return (
+    <>
+      <option value="">Select Role</option>
+      <option value="QAPersonal">Q&A Personal</option>
+      <option value="Sales">Sales</option>
+      <option value="Shelving Manager">Shelving Manager</option>
+      <option value="Admin">Admin</option>
+      <option value="Super Admin">Super Admin</option>
+    </>
+  )
+}
+
+// for item condition Form.Select
+export const renderItemConditionOptions = () => {
+  return (
+    <>
+      <option value="">Select Condition</option>
+      <option value="New">New</option>
+      <option value="Sealed">Sealed</option>
+      <option value="Used">Used</option>
+      <option value="Used Like New">Used Like New</option>
+      <option value="Damaged">Damaged</option>
+      <option value="As Is">As Is</option>
+    </>
+  )
+}
+
+// for QARecord platform Form.Select
+export const renderPlatformOptions = () => {
+  return (
+    <>
+      <option value="">Select Platform</option>
+      <option value="Amazon">Amazon</option>
+      <option value="eBay">eBay</option>
+      <option value="AliExpress">AliExpress</option>
+      <option value="Official Website">Official Website</option>
+      <option value="Other">Other</option>
+    </>
+  )
 }
 
 // sealed = primary
