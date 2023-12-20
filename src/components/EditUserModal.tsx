@@ -113,6 +113,7 @@ const EditUserModal: React.FC<EditUserModalProp> = (props: EditUserModalProp) =>
             id="custom-switch"
             label={targetUserDetail.userActive ? 'User Active' : 'User Inactive'}
             checked={targetUserDetail.userActive}
+            value={String(targetUserDetail.userActive)}
             onChange={onUserActiveChange}
           />
         </InputGroup>

@@ -78,28 +78,23 @@ export const renderPlatformOptions = () => {
   )
 }
 
-// sealed = primary
-// new = success
-// used like new = secondary
-// used = dark
-// damaged = danger
-// missing parts = warning
+// for tremor color palette
 export const getVariant = (condition: string) => {
   switch (condition) {
     case 'Sealed':
-      return 'primary'
+      return 'blue'
     case 'New':
-      return 'success'
+      return 'emerald'
     case 'Used Like New':
-      return 'secondary'
+      return 'lime'
     case 'Used':
-      return 'dark'
+      return 'yellow'
     case 'Damaged':
-      return 'dark'
+      return 'red'
     case 'As Is':
-      return 'warning'
+      return 'red'
     default:
-      'secondary'
+      'slate'
   }
 }
 

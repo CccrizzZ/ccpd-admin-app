@@ -31,7 +31,7 @@ import {
   FaShareFromSquare
 } from 'react-icons/fa6'
 import axios, { AxiosResponse } from 'axios'
-import { initQARecord, server, getPlatformBadgeColor, renderItemConditionOptions, renderPlatformOptions } from '../utils/utils'
+import { initQARecord, server, getPlatformBadgeColor, renderItemConditionOptions, renderPlatformOptions, getVariant } from '../utils/utils'
 import {
   ListGroup,
   Form,
@@ -180,6 +180,14 @@ const QARecords: React.FC = () => {
     if (event.key === 'Enter') searchRecordBySKU()
   }
 
+  const setSorting = () => {
+
+  }
+
+  const setShowRecordsCreated = () => {
+
+  }
+
   // reset search panel
   const resetSearch = () => {
     setSearchSKU('')
@@ -274,6 +282,9 @@ const QARecords: React.FC = () => {
         </TableCell>
         <TableCell>
           <Badge color='slate'>{record.shelfLocation}</Badge>
+        </TableCell>
+        <TableCell>
+          <Badge color={getVariant(record.itemCondition)}>{record.itemCondition}</Badge>
         </TableCell>
         <TableCell>
           <p>{record.comment}</p>
@@ -406,7 +417,7 @@ const QARecords: React.FC = () => {
         <div className='flex'>
           <Button
             className='text-white mt-auto mb-auto'
-            color='slate'
+            color='emerald'
             onClick={fetchQARecords}
             tooltip='Refresh QA Records Table'
           >
@@ -415,7 +426,7 @@ const QARecords: React.FC = () => {
           <div className='flex ml-auto mr-auto gap-6' style={{ minWidth: '80%' }}>
             <div>
               <label className='text-gray-500'>Sort By:</label>
-              <Form.Select className='mr-2' value={showOnly}>
+              <Form.Select className='mr-2' value={showOnly} onChange={setSorting}>
                 <option value="SKU Dsc">SKU Dsc</option>
                 <option value="SKU Asc">SKU Asc</option>
                 <option value="Time Dsc">Time Dsc</option>
@@ -424,7 +435,7 @@ const QARecords: React.FC = () => {
             </div>
             <div>
               <label className='text-gray-500'>Show Records Created:</label>
-              <Form.Select className='mr-2' value={showOnly}>
+              <Form.Select className='mr-2' value={showOnly} onChange={setShowRecordsCreated}>
                 <option value="All Time">All Time</option>
                 <option value="Today">Today</option>
                 <option value="This Week">This Week</option>
@@ -449,6 +460,7 @@ const QARecords: React.FC = () => {
               <TableHeaderCell>SKU</TableHeaderCell>
               <TableHeaderCell className='w-36'>Owner</TableHeaderCell>
               <TableHeaderCell className='w-36'>Shelf Location</TableHeaderCell>
+              <TableHeaderCell className='w-36'>Condition</TableHeaderCell>
               <TableHeaderCell>Comment</TableHeaderCell>
               <TableHeaderCell>Link</TableHeaderCell>
               <TableHeaderCell>Platform</TableHeaderCell>

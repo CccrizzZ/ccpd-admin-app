@@ -22,8 +22,10 @@ import {
   FaHouseChimney,
   FaMoneyBillTransfer,
   FaDoorOpen,
-  FaGear
+  FaGear,
+  FaCommentDollar
 } from "react-icons/fa6";
+import RetailManager from './pages/RetailManager'
 
 // type for app context
 type ContextType = {
@@ -33,8 +35,7 @@ type ContextType = {
 
 // loading spinner context
 export const AppContext = createContext({} as ContextType)
-
-function App() {
+const App = () => {
   const [isLogin, setIsLogin] = useState<boolean>(false)
   const [userInfo, setUserInfo] = useState<UserInfo>({
     id: '',
@@ -43,6 +44,7 @@ function App() {
   const [isLoading, setIsLoading] = useState<boolean>(false)
   // const [userSettings, setUserSettings] = useState<UserSettings>([])
 
+  // logout user (delete http only cookies)
   const logout = async () => {
     await axios({
       method: 'post',
@@ -58,7 +60,36 @@ function App() {
     })
   }
 
-  const navLinkStyle = { display: 'flex' }
+  // map all navigation items
+  const renderNavItem = () => {
+    const pages = [
+      'Dashboard',
+      'Q&A Records',
+      'Inventory',
+      'User Management',
+      'Retail & Return',
+      // 'Procurement'
+    ]
+    const icons = [
+      <FaHouseChimney />,
+      <FaTableList />,
+      <FaBoxesStacked />,
+      <FaUsersGear />,
+      <FaMoneyBillTransfer />,
+      <FaCommentDollar />
+    ]
+    return pages.map((item, index) => {
+      return (
+        <Nav.Item className='mb-3' key={item}>
+          <Nav.Link className='text-white' eventKey={item} style={{ display: 'flex' }}>
+            {icons[index]} {item}
+          </Nav.Link>
+        </Nav.Item>
+      )
+    })
+  }
+
+  // render main content
   const renderHome = () => {
     // if not login prompt login else show app
     if (!isLogin) {
@@ -66,35 +97,11 @@ function App() {
     } else {
       return (
         <div className='wrapper'>
-          <TabContainer defaultActiveKey="Q&A Records" data-bs-theme="dark">
+          <TabContainer defaultActiveKey="Retail & Return" data-bs-theme="dark">
             {/* side navigation */}
             <div className='sideBar' style={{ backgroundColor: bgLight, userSelect: 'none' }}>
               <Nav variant="pills" className="flex-column mt-4 p-3">
-                <Nav.Item className='mb-3'>
-                  <Nav.Link className='text-white' eventKey="Dashboard" style={navLinkStyle}>
-                    <FaHouseChimney /> Dashboard
-                  </Nav.Link>
-                </Nav.Item>
-                <Nav.Item className='mb-3'>
-                  <Nav.Link className='text-white' eventKey="Q&A Records" style={navLinkStyle}>
-                    <FaTableList /> Q&A Records
-                  </Nav.Link>
-                </Nav.Item>
-                <Nav.Item className='mb-3'>
-                  <Nav.Link className='text-white' eventKey="Inventory" style={navLinkStyle}>
-                    <FaBoxesStacked /> Inventory
-                  </Nav.Link>
-                </Nav.Item>
-                <Nav.Item className='mb-3'>
-                  <Nav.Link className='text-white' eventKey="User Management" style={navLinkStyle}>
-                    <FaUsersGear /> User Management
-                  </Nav.Link>
-                </Nav.Item>
-                <Nav.Item className='mb-3'>
-                  <Nav.Link className='text-white' eventKey="Retail & Return" style={navLinkStyle}>
-                    <FaMoneyBillTransfer /> Retail & Return
-                  </Nav.Link>
-                </Nav.Item>
+                {renderNavItem()}
               </Nav>
               {/* side panel footer */}
               <div className='bottom-2.5 absolute'>
@@ -114,6 +121,7 @@ function App() {
                 <Tab.Pane eventKey="Q&A Records"><QARecords /></Tab.Pane>
                 <Tab.Pane eventKey="Inventory"><Inventory setLoading={setIsLoading} /></Tab.Pane>
                 <Tab.Pane eventKey="User Management"><UserManager setLoading={setIsLoading} /></Tab.Pane>
+                <Tab.Pane eventKey="Retail & Return"><RetailManager /></Tab.Pane>
               </Tab.Content>
             </div>
           </TabContainer >

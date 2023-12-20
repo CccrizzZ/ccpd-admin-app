@@ -43,54 +43,92 @@ import {
 } from '../utils/Types'
 
 const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()} Members`
+type chartData = {
+  name: string,
+  members: number
+}
 type UserManagerProp = {
   setLoading: (isloading: boolean) => void
 }
+
+// to manage existing users and add new users
+// need user table pagination
 const UserManager: React.FC<UserManagerProp> = (prop: UserManagerProp) => {
   const { userInfo } = useContext(AppContext)
   const [userArr, setUserArr] = useState<UserDetail[]>([])
   const [invitationArr, setInvitationArr] = useState<InvitationCode[]>([])
   // const [sortingMethod, setSortingMethod] = useState<(a: UserDetail, b: UserDetail) => number>()
+  const [pieOverviewData, setPieOverviewData] = useState<chartData[]>([])
 
-  // manipulation states
+  // user manipulation states
   const [editMode, setEditMode] = useState<boolean>(false)
   const [targetUser, setTargetUser] = useState<UserDetail>(initUser)
   const [showDeletePopup, setShowDeletePopup] = useState<boolean>(false)
   const [showCreatePopup, setShowCreatePopup] = useState<boolean>(false)
   const [showEditModal, setShowEditModal] = useState<boolean>(false)
 
-  const pieData = [
-    {
-      name: "Q&A Personal",
-      member: 12,
-    },
-    {
-      name: "Sales",
-      member: 2
-    },
-    {
-      name: "Shelving Manager",
-      member: 1,
-    },
-    {
-      name: "Admin",
-      member: 4,
-    },
-    {
-      name: "Super Admin",
-      member: 2,
-    },
-  ];
-
   // fetch all users info and invite code on mount
   useEffect(() => {
     fetchAllUserInfo()
     fetchAllInvitationCode()
+    getPieData(userArr)
   }, [])
+
+  // generate pie data by user array
+  const getPieData = (data: UserDetail[]) => {
+    // clear data
+    setPieOverviewData([])
+    const newArr = [
+      {
+        name: "Q&A Personal",
+        members: 0,
+      },
+      {
+        name: "Sales",
+        members: 0
+      },
+      {
+        name: "Shelving Manager",
+        members: 0,
+      },
+      {
+        name: "Admin",
+        members: 0,
+      },
+      {
+        name: "Super Admin",
+        members: 0,
+      },
+    ]
+    // populate chart data
+    data.map((val) => {
+      switch (val.role) {
+        case 'QAPersonal':
+          newArr[0].members++
+          break;
+        case 'Sales':
+          newArr[1].members++
+          break;
+        case 'Shelving Manager':
+          newArr[2].members++
+          break;
+        case 'Admin':
+          newArr[3].members++
+          break;
+        case 'Super Admin':
+          newArr[4].members++
+          break;
+        default:
+          break;
+      }
+    })
+    setPieOverviewData(newArr)
+  }
 
   // fetch user data into UserArr
   const fetchAllUserInfo = async () => {
     prop.setLoading(true)
+    // get all user rows without password
     await axios({
       method: 'get',
       url: server + '/adminController/getAllUserInfo',
@@ -98,7 +136,9 @@ const UserManager: React.FC<UserManagerProp> = (prop: UserManagerProp) => {
       data: '',
       withCredentials: true
     }).then((res) => {
-      setUserArr(JSON.parse(res.data))
+      const parsedData = JSON.parse(res.data)
+      setUserArr(parsedData)
+      getPieData(parsedData)
     }).catch((err) => {
       alert('Failed Getting All User info: ' + err.response.status)
     })
@@ -288,8 +328,8 @@ const UserManager: React.FC<UserManagerProp> = (prop: UserManagerProp) => {
         <DonutChart
           className="h-56"
           showAnimation={true}
-          data={pieData}
-          category="member"
+          data={pieOverviewData}
+          category="members"
           index="name"
           valueFormatter={valueFormatter}
           colors={["orange", "lime", "teal", "indigo", "rose"]}
