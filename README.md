@@ -14,24 +14,26 @@ Administration control console, full control over ccpd backend.
 - Today's retail and return chart.
 - SKU lookup tool (shows steped status & images & detailed info).
 
-### QA Records
-- QA inventory overview charts.
-- Edit and Delete QA records from table.
-- QA to instock conversion panel.
-- Instock inventory sortable charts.
+### Q&A Records
+- Q&A inventory overview charts and sortable table.
+- Edit and Delete Q&A records from table.
+- Q&A records to instock inventory records conversion panel.
+- Check later ledger panel for check-it-later records.
 
 ### Inventory
 - Inventory overview charts.
-- Inventory sortable data by inventory index.
+- Inventory sortable table.
 - Edit and delete instock inventory records.
+- Instock vs sold graphic representation for each item.
 
 ### User Management
-- User data chart.
-- Issue invitation code for new users.
+- User data overview chart.
+- Invitation code manager panel.
 - Create custom user.
-- Update and delete users informations.
+- Update and delete existing users.
 
 ### Retail & Return
 - Retail and return overview charts.
 - Retail sortable & editable table.
+- Create retail or return records. 
 - Edit and delete refund records.

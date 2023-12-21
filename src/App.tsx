@@ -20,7 +20,7 @@ import {
   FaUsersGear,
   FaTableList,
   FaHouseChimney,
-  FaMoneyBillTransfer,
+  FaFileInvoiceDollar,
   FaDoorOpen,
   FaGear,
   FaCommentDollar
@@ -75,7 +75,7 @@ const App = () => {
       <FaTableList />,
       <FaBoxesStacked />,
       <FaUsersGear />,
-      <FaMoneyBillTransfer />,
+      <FaFileInvoiceDollar />,
       <FaCommentDollar />
     ]
     return pages.map((item, index) => {

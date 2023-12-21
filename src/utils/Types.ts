@@ -24,10 +24,10 @@ export type PaymentMethod =
   'Store Credit'
 
 export interface RetailRecord {
-  sku: string;
+  sku: number;
   time: string;
-  amount: string;
-  quantity: string;
+  amount: number;
+  quantity: number;
   marketplace: string;
   paymentMethod: PaymentMethod;
   buyerName: string;
@@ -62,6 +62,7 @@ export interface QARecord {
   owner?: string;
   ownerName?: string;
   marketplace?: string;
+  recorded?: boolean;
 }
 
 // for user info context in App.tsx

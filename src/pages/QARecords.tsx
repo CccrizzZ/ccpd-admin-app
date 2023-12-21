@@ -115,6 +115,8 @@ const QARecords: React.FC = () => {
   const [displaySearchRecords, setDisplaySearchRecords] = useState<boolean>(true)
   const [searchSKU, setSearchSKU] = useState<string>('')
   const [searchRes, setSearchRes] = useState<QARecord>(initQARecord)
+  // check later panel
+  const [checkLaterArr, setCheckLaterArr] = useState<QARecord[]>([])
   // sorting & filtering
   const [dateRange, setDateRange] = useState<string>('All Time')
   const [showOnly, setShowOnly] = useState<string>('')
@@ -145,7 +147,7 @@ const QARecords: React.FC = () => {
   }
 
   // update QA record
-  const updateInventory = () => {
+  const updateInventory = async () => {
     setLoading(true)
 
     setLoading(false)
@@ -170,6 +172,10 @@ const QARecords: React.FC = () => {
       alert('Failed Searching QA Records: ' + err.response.status)
     })
     setLoading(false)
+  }
+
+  const record = async () => {
+
   }
 
   // input,select,keydown event
@@ -330,6 +336,51 @@ const QARecords: React.FC = () => {
 
   // flip side of the chart on the top 
   const renderSearchPanel = () => {
+    return (
+      <>
+        <Title>Search Record</Title>
+        <InputGroup size="sm" className="mb-3">
+          <InputGroup.Text>SKU</InputGroup.Text>
+          <Form.Control value={searchSKU} onChange={onSearchSKUChange} onKeyDown={handleEnterKeySearch} />
+        </InputGroup>
+        <Card className='h-52 overflow-y-scroll p-3 pt-0'>
+          {searchRes.sku !== 0 ? <List>
+            <ListItem>
+              <span>SKU</span>
+              <span>{searchRes.sku}</span>
+            </ListItem>
+            <ListItem>
+              <span>Owner</span>
+              <span>{searchRes.ownerName}</span>
+            </ListItem>
+            <ListItem>
+              <span>Shelf Location</span>
+              <span>{searchRes.shelfLocation}</span>
+            </ListItem>
+            <ListItem>
+              <span>Item Condition</span>
+              <span>{searchRes.itemCondition}</span>
+            </ListItem>
+            <ListItem>
+              <span>Amount</span>
+              <span>{searchRes.amount}</span>
+            </ListItem>
+            <ListItem>
+              <span>Platform</span>
+              <span>{searchRes.platform}</span>
+            </ListItem>
+            <ListItem>
+              <Button onClick={() => setSelectedRecord(searchRes)} color='slate'>Select</Button>
+            </ListItem>
+          </List> : <Subtitle className='text-center'>Search Result Will Be Shown Here</Subtitle>}
+        </Card>
+        <Button className='absolute bottom-3' color='emerald' size='xs' onClick={searchRecordBySKU}>Search</Button>
+        <Button className='absolute bottom-3 right-6' color='rose' size='xs' onClick={resetSearch}>Reset Search</Button>
+      </>
+    )
+  }
+
+  const renderLaterPanel = () => {
     return (
       <>
         <Title>Search Record</Title>

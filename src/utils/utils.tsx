@@ -1,6 +1,6 @@
 import { SHA256, enc } from "crypto-js";
 import moment from "moment";
-import { CreateUser, QARecord, UserDetail } from "./Types";
+import { CreateUser, PaymentMethod, QARecord, RetailRecord, UserDetail } from "./Types";
 
 // server connection
 export const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
@@ -133,4 +133,15 @@ export const initQARecord: QARecord = {
   shelfLocation: '',
   amount: 0,
   owner: ''
+}
+
+export const initRetailRecord: RetailRecord = {
+  sku: 0,
+  time: '',
+  amount: 0,
+  quantity: 0,
+  marketplace: '',
+  paymentMethod: '' as PaymentMethod,
+  buyerName: '',
+  adminName: '',
 }
