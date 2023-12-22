@@ -18,17 +18,16 @@ import {
 } from 'react-bootstrap'
 import { Button } from '@tremor/react'
 
-type CreateSalesRecordModalProps = {
+type CreateReturnRecordModalProps = {
   show: boolean
   handleClose: (refresh: boolean) => void,
 }
 
-const CreateSalesRecordModal: React.FC<CreateSalesRecordModalProps> = (props: CreateSalesRecordModalProps) => {
+const CreateReturnRecordModal: React.FC<CreateReturnRecordModalProps> = (props: CreateReturnRecordModalProps) => {
   const { setLoading, userInfo } = useContext(AppContext)
   const [newRecord, setNewRecord] = useState<RetailRecord>(initRetailRecord)
 
-  // create a single retail record
-  const createRetailRecord = async () => {
+  const createReturnRecord = async () => {
     // null check on forms
     const fieldsEmpty = Object.values(newRecord).some((val) => { return (deSpace(val).length < 1) })
     if (fieldsEmpty) return alert('Please Complete The Form')
@@ -37,13 +36,13 @@ const CreateSalesRecordModal: React.FC<CreateSalesRecordModalProps> = (props: Cr
     setLoading(true)
     await axios({
       method: 'post',
-      url: server + '/adminController/createSalesRecord',
+      url: server + '/adminController/createReturnRecord',
       responseType: 'text',
       data: newRecord,
       withCredentials: true
     }).then((res) => {
-      if (res.status < 230) {
-        alert('Retail Record Created!')
+      if (res.status < 204) {
+        alert('Return Record Created!')
         props.handleClose(true)
       } else {
         alert('Record Not Created: ' + res.status)
@@ -55,16 +54,9 @@ const CreateSalesRecordModal: React.FC<CreateSalesRecordModalProps> = (props: Cr
     props.handleClose(true)
   }
 
-  const getInstockBySku = async () => {
+  // search for sales record to create a return record
+  const getSalesRecordByInvoice = async () => {
 
-  }
-
-  const renderInventoryInfoCard = () => {
-    return (
-      <>
-
-      </>
-    )
   }
 
   // setters
@@ -80,6 +72,14 @@ const CreateSalesRecordModal: React.FC<CreateSalesRecordModalProps> = (props: Cr
   const onBuyerNameChange = (event: React.ChangeEvent<HTMLSelectElement>) => setNewRecord({ ...newRecord, buyerName: event.target.value })
   const onInvoiceNumberChange = (event: React.ChangeEvent<HTMLSelectElement>) => setNewRecord({ ...newRecord, buyerName: event.target.value })
 
+  const renderSalesRecordCard = () => {
+    return (
+      <>
+
+      </>
+    )
+  }
+
   return (
     <Modal
       show={props.show}
@@ -90,15 +90,15 @@ const CreateSalesRecordModal: React.FC<CreateSalesRecordModalProps> = (props: Cr
       centered
     >
       <Modal.Header>
-        <h4>💵 Create Sales Record</h4>
+        <h4>🚩 Create Return Record</h4>
       </Modal.Header>
-      {renderInventoryInfoCard()}
+      {renderSalesRecordCard()}
       <Modal.Body>
         <InputGroup className="mb-3">
           <InputGroup.Text>SKU</InputGroup.Text>
           <Form.Control value={newRecord.sku} onChange={onSkuChange} />
         </InputGroup>
-        <Button className='mb-3' color='emerald' onClick={getInstockBySku}>Search</Button>
+        <Button className='mb-3' color='emerald' onClick={getSalesRecordByInvoice}>Search</Button>
         <InputGroup className="mb-3">
           <InputGroup.Text>Quantity</InputGroup.Text>
           <Form.Control value={newRecord.quantity} onChange={onQuantityChange} />
@@ -125,11 +125,11 @@ const CreateSalesRecordModal: React.FC<CreateSalesRecordModalProps> = (props: Cr
           <Button color='slate' onClick={() => props.handleClose(false)}>
             Cancel
           </Button>
-          <Button className='ml-2' color='emerald' onClick={createRetailRecord}>Create</Button>
+          <Button className='ml-2' color='emerald' onClick={createReturnRecord}>Create</Button>
         </div>
       </Modal.Footer>
     </Modal>
   )
 }
 
-export default CreateSalesRecordModal
+export default CreateReturnRecordModal

@@ -14,13 +14,17 @@ export type Platform =
   'Retail' |
   'Wholesale' |
   'Official Website' |
-  'Other'
+  'Other' |
+  'Facebook' |
+  'Kijiji'
 
 export type PaymentMethod =
   'Cash' |
+  'Card' |
+  'Card Online' |
   'E-transfer' |
-  'Check' |
   'Online' |
+  'Check' |
   'Store Credit'
 
 export interface RetailRecord {
@@ -32,15 +36,18 @@ export interface RetailRecord {
   paymentMethod: PaymentMethod;
   buyerName: string;
   adminName: string;
+  invoiceNumber?: string;
   adminId?: string;
 }
 
 export interface ReturnRecord {
   retailRecord: RetailRecord;
   returnTime: string;
+  returnAmount: string,
+  returnQuantity: string
   refundMethod: PaymentMethod;
   reason: string;
-  admin: string;
+  adminName: string;
 }
 
 export interface Inventory {
@@ -91,3 +98,7 @@ export type CreateUser = {
   role: string,
 }
 
+export type Paging = {
+  currPage: number,
+  itemsPerPage: number
+}

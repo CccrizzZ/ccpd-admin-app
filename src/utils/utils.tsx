@@ -78,6 +78,43 @@ export const renderPlatformOptions = () => {
   )
 }
 
+export const renderMarketPlaceOptions = () => {
+  return (
+    <>
+      <option value="Hibid">Hibid</option>
+      <option value="eBay">eBay</option>
+      <option value="Facebook">Facebook</option>
+      <option value="Wholesale">Wholesale</option>
+      <option value="Retail">Retail</option>
+      <option value="Kijiji">Kijiji</option>
+      <option value="Other">Other</option>
+    </>
+  )
+}
+
+export const renderItemPerPageOptions = () => {
+  return (
+    <>
+      <option value="10">10</option>
+      <option value="20">20</option>
+      <option value="50">50</option>
+      <option value="100">100</option>
+    </>
+  )
+}
+
+export const renderPaymentMethodOptions = () => {
+  return (
+    <>
+      <option value="Cash">Cash</option>
+      <option value="Card">Card</option>
+      <option value="Card Online">Card Online</option>
+      <option value="E-transfer">E-transfer</option>
+      <option value="Check">Check</option>
+    </>
+  )
+}
+
 // for tremor color palette
 export const getVariant = (condition: string) => {
   switch (condition) {

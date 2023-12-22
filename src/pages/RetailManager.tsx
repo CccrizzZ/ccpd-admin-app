@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import {
   Grid,
   Card,
@@ -25,12 +25,17 @@ import { RetailRecord, ReturnRecord, Condition } from '../utils/Types'
 import '../style/RetailManager.css'
 import { Form } from 'react-bootstrap';
 import CreateSalesRecordModal from '../components/CreateSalesRecordModal';
+import { AppContext } from '../App';
+import { renderItemPerPageOptions, server } from '../utils/utils';
+import axios from 'axios';
 
 const itemValueFormatter = (num: number) => `${new Intl.NumberFormat("us").format(num).toString()} Items`;
 const priceValueFormatter = (num: number) => `$ ${new Intl.NumberFormat("us").format(num).toString()}`;
 
 const RetailManager: React.FC = () => {
+  const { setLoading, userInfo } = useContext(AppContext)
   const [retailArr, setRetailArr] = useState<RetailRecord[]>([])
+  const [currPage, setCurrPage] = useState<number>(0)
   const [itemsPerPage, setItemsPerPage] = useState<number>(20)
   const [timeRange, setTimeRange] = useState<string>('All Time')
   const [showSalesRecordModal, setShowSalesRecordModal] = useState<boolean>(false)
@@ -47,8 +52,24 @@ const RetailManager: React.FC = () => {
   ]
 
   useEffect(() => {
-
+    // fetchRetailDataByPage()
   }, [])
+
+  const fetchRetailDataByPage = async () => {
+    setLoading(true)
+    await axios({
+      method: 'post',
+      url: server + '/adminController/getSalesRecordsByPage',
+      responseType: 'text',
+      data: { 'currPage': currPage, 'itemsPerPage': itemsPerPage },
+      withCredentials: true
+    }).then((res) => {
+      setRetailArr(JSON.parse(res.data))
+    }).catch((err) => {
+      alert('Cannot Fetch Retail Record: ' + err.response.status)
+    })
+    setLoading(false)
+  }
 
   // 6 month, quarterly or weekly
   const retailReturnData = [
@@ -285,10 +306,7 @@ const RetailManager: React.FC = () => {
           <div className="right-12 w-32 absolute text-left">
             <label className='text-gray-500'>Items Per Page</label>
             <Form.Select className='mr-2' value={String(itemsPerPage)} onChange={onItemsPerPageChange}>
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
+              {renderItemPerPageOptions()}
             </Form.Select>
           </div>
         </div>
@@ -323,11 +341,16 @@ const RetailManager: React.FC = () => {
     )
   }
 
+  const closeSalesRecordModal = (refresh: boolean) => {
+    if (refresh) fetchRetailDataByPage()
+    setShowSalesRecordModal(false)
+  }
+
   return (
     <div>
       <CreateSalesRecordModal
         show={showSalesRecordModal}
-        handleClose={() => setShowSalesRecordModal(false)}
+        handleClose={closeSalesRecordModal}
       />
       {/* top 3 charts */}
       <Grid className='gap-2' numItems={4}>

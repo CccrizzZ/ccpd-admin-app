@@ -31,7 +31,7 @@ import {
   FaShareFromSquare
 } from 'react-icons/fa6'
 import axios, { AxiosResponse } from 'axios'
-import { initQARecord, server, getPlatformBadgeColor, renderItemConditionOptions, renderPlatformOptions, getVariant } from '../utils/utils'
+import { initQARecord, server, getPlatformBadgeColor, renderItemConditionOptions, renderPlatformOptions, getVariant, renderItemPerPageOptions } from '../utils/utils'
 import {
   ListGroup,
   Form,
@@ -174,6 +174,7 @@ const QARecords: React.FC = () => {
     setLoading(false)
   }
 
+  // turn qa record into official instock inventory
   const record = async () => {
 
   }
@@ -497,10 +498,7 @@ const QARecords: React.FC = () => {
           <div className="right-12 mt-auto mb-auto">
             <label className='text-gray-500'>Items Per Page</label>
             <Form.Select className='mr-2' value={String(itemsPerPage)} onChange={onItemsPerPageChange}>
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
+              {renderItemPerPageOptions()}
             </Form.Select>
           </div>
         </div>
