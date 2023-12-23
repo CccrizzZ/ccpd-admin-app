@@ -47,14 +47,11 @@ type chartData = {
   name: string,
   members: number
 }
-type UserManagerProp = {
-  setLoading: (isloading: boolean) => void
-}
 
 // to manage existing users and add new users
 // need user table pagination
-const UserManager: React.FC<UserManagerProp> = (prop: UserManagerProp) => {
-  const { userInfo } = useContext(AppContext)
+const UserManager: React.FC = () => {
+  const { userInfo, setLoading } = useContext(AppContext)
   const [userArr, setUserArr] = useState<UserDetail[]>([])
   const [invitationArr, setInvitationArr] = useState<InvitationCode[]>([])
   // const [sortingMethod, setSortingMethod] = useState<(a: UserDetail, b: UserDetail) => number>()
@@ -127,7 +124,7 @@ const UserManager: React.FC<UserManagerProp> = (prop: UserManagerProp) => {
 
   // fetch user data into UserArr
   const fetchAllUserInfo = async () => {
-    prop.setLoading(true)
+    setLoading(true)
     // get all user rows without password
     await axios({
       method: 'get',
@@ -142,12 +139,12 @@ const UserManager: React.FC<UserManagerProp> = (prop: UserManagerProp) => {
     }).catch((err) => {
       alert('Failed Getting All User info: ' + err.response.status)
     })
-    prop.setLoading(false)
+    setLoading(false)
   }
 
   // fetch invitation code into invitationArr
   const fetchAllInvitationCode = async () => {
-    prop.setLoading(true)
+    setLoading(true)
     await axios({
       method: 'get',
       url: server + '/adminController/getAllInvitationCode',
@@ -159,12 +156,12 @@ const UserManager: React.FC<UserManagerProp> = (prop: UserManagerProp) => {
     }).catch((err) => {
       alert('Failed Getting All Invitation Code: ' + err.response.status)
     })
-    prop.setLoading(false)
+    setLoading(false)
   }
 
   // issue invitation code and refresh invitationArr
   const IssueInvitation = async () => {
-    prop.setLoading(true)
+    setLoading(true)
     await axios({
       method: 'post',
       url: server + '/adminController/issueInvitationCode',
@@ -176,12 +173,12 @@ const UserManager: React.FC<UserManagerProp> = (prop: UserManagerProp) => {
     }).catch((err) => {
       alert('Failed Getting All Invitation Code: ' + err.response.status)
     })
-    prop.setLoading(false)
+    setLoading(false)
   }
 
   // delete invitation code by code and refresh invitationArr
   const deleteInvitationCode = async (code: string) => {
-    prop.setLoading(true)
+    setLoading(true)
     await axios({
       method: 'delete',
       url: server + '/adminController/deleteInvitationCode',
@@ -193,12 +190,12 @@ const UserManager: React.FC<UserManagerProp> = (prop: UserManagerProp) => {
     }).catch((err) => {
       alert('Failed Getting All Invitation Code: ' + err.response.status)
     })
-    prop.setLoading(false)
+    setLoading(false)
   }
 
   // request delete user by id
   const deleteUser = async () => {
-    prop.setLoading(true)
+    setLoading(true)
     await axios({
       method: 'delete',
       url: server + '/adminController/deleteUserById',
@@ -210,7 +207,7 @@ const UserManager: React.FC<UserManagerProp> = (prop: UserManagerProp) => {
     }).catch((err) => {
       alert('Failed Deleting User: ' + targetUser._id + err.response.status)
     })
-    prop.setLoading(false)
+    setLoading(false)
     setShowDeletePopup(false)
     setTargetUser(initUser)
   }

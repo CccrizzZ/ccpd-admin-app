@@ -50,11 +50,12 @@ export interface ReturnRecord {
   adminName: string;
 }
 
-export interface Inventory {
-  recordOwner: string;
-  recordTime: string;
-  tags: Record<string, string>;  // tag requested by James
+export interface InstockInventory {
   qaRecord: QARecord;
+  recordAdmin: string;
+  recordTime: string;
+  quantityInstock: number;
+  tags: Record<string, string>;  // tag requested by James
 }
 
 export interface QARecord {
@@ -70,6 +71,7 @@ export interface QARecord {
   ownerName?: string;
   marketplace?: string;
   recorded?: boolean;
+  problem?: boolean
 }
 
 // for user info context in App.tsx

@@ -66,16 +66,16 @@ const App = () => {
       'Dashboard',
       'Q&A Records',
       'Inventory',
-      'User Management',
       'Retail & Return',
+      'User Management',
       // 'Procurement'
     ]
     const icons = [
       <FaHouseChimney />,
       <FaTableList />,
       <FaBoxesStacked />,
-      <FaUsersGear />,
       <FaFileInvoiceDollar />,
+      <FaUsersGear />,
       <FaCommentDollar />
     ]
     return pages.map((item, index) => {
@@ -97,7 +97,7 @@ const App = () => {
     } else {
       return (
         <div className='wrapper'>
-          <TabContainer defaultActiveKey="Retail & Return" data-bs-theme="dark">
+          <TabContainer defaultActiveKey="Inventory" data-bs-theme="dark">
             {/* side navigation */}
             <div className='sideBar' style={{ backgroundColor: bgLight, userSelect: 'none' }}>
               <Nav variant="pills" className="flex-column mt-4 p-3">
@@ -119,8 +119,8 @@ const App = () => {
               <Tab.Content>
                 <Tab.Pane eventKey="Dashboard"><Dashboard /></Tab.Pane>
                 <Tab.Pane eventKey="Q&A Records"><QARecords /></Tab.Pane>
-                <Tab.Pane eventKey="Inventory"><Inventory setLoading={setIsLoading} /></Tab.Pane>
-                <Tab.Pane eventKey="User Management"><UserManager setLoading={setIsLoading} /></Tab.Pane>
+                <Tab.Pane eventKey="Inventory"><Inventory /></Tab.Pane>
+                <Tab.Pane eventKey="User Management"><UserManager /></Tab.Pane>
                 <Tab.Pane eventKey="Retail & Return"><RetailManager /></Tab.Pane>
               </Tab.Content>
             </div>

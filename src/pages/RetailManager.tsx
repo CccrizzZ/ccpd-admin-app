@@ -177,7 +177,7 @@ const RetailManager: React.FC = () => {
     },
   ]
 
-
+  // return vs retail amount
   const renderGraph1 = () => {
     return (
       <Card className='h-full pl-2 pr-2'>

@@ -116,14 +116,15 @@ const QARecords: React.FC = () => {
   const [searchSKU, setSearchSKU] = useState<string>('')
   const [searchRes, setSearchRes] = useState<QARecord>(initQARecord)
   // check later panel
-  const [checkLaterArr, setCheckLaterArr] = useState<QARecord[]>([])
+  const [displayProblemRecordsPanel, setDisplayProblemRecordsPanel] = useState<boolean>(true)
+  const [problemRecordsArr, setProblemRecordsArr] = useState<QARecord[]>([])
   // sorting & filtering
   const [dateRange, setDateRange] = useState<string>('All Time')
   const [showOnly, setShowOnly] = useState<string>('')
   const [sortingMethod, setSortingMethod] = useState<string>('')
 
   useEffect(() => {
-    fetchQARecords()
+    fetchProblemRecordsByPage()
     console.log('Loading Qa RECORDS...')
   }, [])
 
@@ -146,15 +147,48 @@ const QARecords: React.FC = () => {
     setLoading(false)
   }
 
-  // update QA record
-  const updateInventory = async () => {
+  // fetch all unconverted QA records labeled problematic
+  const fetchProblemRecordsByPage = async () => {
     setLoading(true)
+    await axios({
+      method: 'get',
+      url: server + '/adminController/getProblematicRecordsByPage',
+      responseType: 'text',
+      timeout: 3000,
+      data: { currPage, itemsPerPage },
+      withCredentials: true
+    }).then((res: AxiosResponse) => {
+      setProblemRecordsArr(JSON.parse(res.data))
+    }).catch((err) => {
+      setLoading(false)
+      alert('Failed Fetching Problematic Records: ' + err.response.status)
+    })
+    setLoading(false)
+  }
 
+  const setRecordProblematic = async (sku: string) => {
+    // add problematic label to unconverted QA records by sku
+    setLoading(true)
+    await axios({
+      method: 'post',
+      url: server + '/adminController/setProblematicBySku/' + sku,
+      responseType: 'text',
+      timeout: 3000,
+      data: '',
+      withCredentials: true
+    }).then(() => {
+      // refresh
+      fetchProblemRecordsByPage()
+    }).catch((err) => {
+      setLoading(false)
+      alert('Failed Fetching QA Records: ' + err.response.status)
+    })
     setLoading(false)
   }
 
   // for search panel
   const searchRecordBySKU = async () => {
+    if (searchSKU.length < 2) return alert('Please Enter Target SKU')
     if (searchSKU === String(searchRes.sku)) return
     setLoading(true)
     // send searchSKU with axios
@@ -176,6 +210,7 @@ const QARecords: React.FC = () => {
 
   // turn qa record into official instock inventory
   const record = async () => {
+    // call admin create in stock inventory
 
   }
 
@@ -217,7 +252,8 @@ const QARecords: React.FC = () => {
       if (event.target.value.length < 100) setSelectedRecord({ ...selectedRecord, comment: event.target.value })
     }
     const onLinkChange = (event: React.ChangeEvent<HTMLInputElement>) => setSelectedRecord({ ...selectedRecord, comment: event.target.value })
-
+    const copyLink = (link: string) => navigator.clipboard.writeText(link)
+    const openLink = (link: string) => window.open(link, '_blank', 'noreferrer')
 
     return (
       <div className='h-full'>
@@ -259,7 +295,8 @@ const QARecords: React.FC = () => {
             <InputGroup size="sm" className="mb-3">
               <InputGroup.Text>Link</InputGroup.Text>
               <Form.Control className='resize-none h-32' as={Textarea} value={selectedRecord.link} onChange={onLinkChange} />
-              <Button size='xs' color='orange'>Copy</Button>
+              <Button size='xs' color='slate' onClick={() => copyLink(selectedRecord.link)}>Copy</Button>
+              <Button size='xs' color='gray' onClick={() => openLink(selectedRecord.link)}>Open</Button>
             </InputGroup>
           </div>
           <div className='w-3/6'>
@@ -339,7 +376,7 @@ const QARecords: React.FC = () => {
   const renderSearchPanel = () => {
     return (
       <>
-        <Title>Search Record</Title>
+        <Title>🔍 Search Record</Title>
         <InputGroup size="sm" className="mb-3">
           <InputGroup.Text>SKU</InputGroup.Text>
           <Form.Control value={searchSKU} onChange={onSearchSKUChange} onKeyDown={handleEnterKeySearch} />
@@ -381,47 +418,45 @@ const QARecords: React.FC = () => {
     )
   }
 
-  const renderLaterPanel = () => {
+  const renderProblemRecordsList = () => {
+    return (
+      <></>
+    )
+  }
+
+  const renderProblemRecordsPanel = () => {
     return (
       <>
-        <Title>Search Record</Title>
-        <InputGroup size="sm" className="mb-3">
-          <InputGroup.Text>SKU</InputGroup.Text>
-          <Form.Control value={searchSKU} onChange={onSearchSKUChange} onKeyDown={handleEnterKeySearch} />
-        </InputGroup>
+        <Title>❓Problematic Records</Title>
+        <Button
+          color='emerald'
+          className='right-16 absolute p-2 top-6'
+          onClick={() => fetchProblemRecordsByPage()}
+          tooltip='Refresh Problematic Records'
+        ><FaRotate /></Button>
         <Card className='h-52 overflow-y-scroll p-3 pt-0'>
-          {searchRes.sku !== 0 ? <List>
-            <ListItem>
-              <span>SKU</span>
-              <span>{searchRes.sku}</span>
-            </ListItem>
-            <ListItem>
-              <span>Owner</span>
-              <span>{searchRes.ownerName}</span>
-            </ListItem>
-            <ListItem>
-              <span>Shelf Location</span>
-              <span>{searchRes.shelfLocation}</span>
-            </ListItem>
-            <ListItem>
-              <span>Item Condition</span>
-              <span>{searchRes.itemCondition}</span>
-            </ListItem>
-            <ListItem>
-              <span>Amount</span>
-              <span>{searchRes.amount}</span>
-            </ListItem>
-            <ListItem>
-              <span>Platform</span>
-              <span>{searchRes.platform}</span>
-            </ListItem>
-            <ListItem>
-              <Button onClick={() => setSelectedRecord(searchRes)} color='slate'>Select</Button>
-            </ListItem>
-          </List> : <Subtitle className='text-center'>Search Result Will Be Shown Here</Subtitle>}
+          {searchRes.sku !== 0 ? renderProblemRecordsList() : <Subtitle className='text-center'>Records With Problems Will Be Shown Here</Subtitle>}
         </Card>
         <Button className='absolute bottom-3' color='emerald' size='xs' onClick={searchRecordBySKU}>Search</Button>
         <Button className='absolute bottom-3 right-6' color='rose' size='xs' onClick={resetSearch}>Reset Search</Button>
+      </>
+    )
+  }
+
+  const renderBottomOverviewChart = () => {
+    return (
+      <>
+        <Title>Compare QA Records and Recorded Records</Title>
+        <Subtitle>Last 7 Days (Dec 7 - Dec 14)</Subtitle>
+        <AreaChart
+          className="h-64"
+          data={chartdata}
+          index="date"
+          categories={["Recorded", "QARecorded"]}
+          colors={["green", "red"]}
+          valueFormatter={valueFormatter}
+          showAnimation={true}
+        />
       </>
     )
   }
@@ -450,17 +485,15 @@ const QARecords: React.FC = () => {
             {displaySearchRecords ? renderSearchPanel() : renderTopOverViewChart()}
           </Card>
           <Card className="h-96 mt-2">
-            <Title>Compare QA Records and Recorded Records</Title>
-            <Subtitle>Last 7 Days (Dec 7 - Dec 14)</Subtitle>
-            <AreaChart
-              className="h-64"
-              data={chartdata}
-              index="date"
-              categories={["Recorded", "QARecorded"]}
-              colors={["green", "red"]}
-              valueFormatter={valueFormatter}
-              showAnimation={true}
-            />
+            <Button
+              color='rose'
+              className='right-6 absolute p-2'
+              onClick={() => setDisplayProblemRecordsPanel(!displayProblemRecordsPanel)}
+              tooltip='Flip Card'
+            >
+              <FaArrowRightArrowLeft />
+            </Button>
+            {displayProblemRecordsPanel ? renderProblemRecordsPanel() : renderBottomOverviewChart()}
           </Card>
         </Col>
       </Grid>

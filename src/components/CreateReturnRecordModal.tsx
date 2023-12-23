@@ -61,7 +61,9 @@ const CreateReturnRecordModal: React.FC<CreateReturnRecordModalProps> = (props: 
 
   // setters
   const onSkuChange = (event: React.ChangeEvent<HTMLInputElement>) => setNewRecord({ ...newRecord, sku: Number(event.target.value) })
-  const onAmountChange = (event: React.ChangeEvent<HTMLInputElement>) => setNewRecord({ ...newRecord, amount: Number(event.target.value) })
+  const onAmountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setNewRecord({ ...newRecord, amount: Number(event.target.value) })
+  }
   const onQuantityChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setNewRecord({ ...newRecord, quantity: Number(event.target.value) })
   }
@@ -96,16 +98,16 @@ const CreateReturnRecordModal: React.FC<CreateReturnRecordModalProps> = (props: 
       <Modal.Body>
         <InputGroup className="mb-3">
           <InputGroup.Text>SKU</InputGroup.Text>
-          <Form.Control value={newRecord.sku} onChange={onSkuChange} />
+          <Form.Control type="number" value={newRecord.sku} onChange={onSkuChange} />
         </InputGroup>
         <Button className='mb-3' color='emerald' onClick={getSalesRecordByInvoice}>Search</Button>
         <InputGroup className="mb-3">
           <InputGroup.Text>Quantity</InputGroup.Text>
-          <Form.Control value={newRecord.quantity} onChange={onQuantityChange} />
+          <Form.Control type="number" value={newRecord.quantity} onChange={onQuantityChange} />
         </InputGroup>
         <InputGroup className="mb-3">
           <InputGroup.Text>Sales Amount (CAD)</InputGroup.Text>
-          <Form.Control value={newRecord.amount} onChange={onAmountChange} />
+          <Form.Control type="number" step="0.1" value={newRecord.amount} onChange={onAmountChange} />
         </InputGroup>
         <InputGroup className="mb-3">
           <InputGroup.Text>Market Place</InputGroup.Text>

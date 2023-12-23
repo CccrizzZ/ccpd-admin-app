@@ -1,6 +1,6 @@
 import { SHA256, enc } from "crypto-js";
 import moment from "moment";
-import { CreateUser, PaymentMethod, QARecord, RetailRecord, UserDetail } from "./Types";
+import { CreateUser, InstockInventory, PaymentMethod, QARecord, RetailRecord, UserDetail } from "./Types";
 
 // server connection
 export const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
@@ -143,6 +143,8 @@ export const isExpired = (exp: string): boolean => {
 
 export const deSpace = (s: string) => s.replace(/ /g, '')
 
+
+// init value of custom type
 export const initUser: UserDetail = {
   _id: '',
   name: '',
@@ -181,4 +183,12 @@ export const initRetailRecord: RetailRecord = {
   paymentMethod: '' as PaymentMethod,
   buyerName: '',
   adminName: '',
+}
+
+export const initInstockInventory: InstockInventory = {
+  qaRecord: initQARecord,
+  recordAdmin: '',
+  recordTime: '',
+  quantityInstock: 0,
+  tags: {}
 }
