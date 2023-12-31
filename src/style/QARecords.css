@@ -11,3 +11,21 @@ td {
 p {
     text-wrap: wrap;
 }
+
+span {
+    display: flex;
+}
+
+button > .tremor-Button-text {
+    line-height: 1;
+}
+
+#headlessui-listbox-button-\:re4\: {
+    height: -webkit-fill-available
+}
+#headlessui-listbox-button-\:rh\: {
+    height: -webkit-fill-available
+}
+.truncate {
+    margin-bottom: 0;
+}

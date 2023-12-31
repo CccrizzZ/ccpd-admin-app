@@ -81,6 +81,7 @@ export const renderPlatformOptions = () => {
 export const renderMarketPlaceOptions = () => {
   return (
     <>
+      <option value="">Select Marketplace</option>
       <option value="Hibid">Hibid</option>
       <option value="eBay">eBay</option>
       <option value="Facebook">Facebook</option>
@@ -116,7 +117,7 @@ export const renderPaymentMethodOptions = () => {
 }
 
 // for tremor color palette
-export const getVariant = (condition: string) => {
+export const getConditionVariant = (condition: string) => {
   switch (condition) {
     case 'Sealed':
       return 'blue'

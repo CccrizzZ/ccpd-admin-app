@@ -21,7 +21,12 @@ import {
 import { InstockInventory } from '../utils/Types'
 import { AppContext } from '../App'
 import axios, { AxiosResponse } from 'axios'
-import { getPlatformBadgeColor, getVariant, initInstockInventory, server } from '../utils/utils'
+import {
+  getPlatformBadgeColor,
+  getConditionVariant,
+  initInstockInventory,
+  server
+} from '../utils/utils'
 import moment from 'moment'
 import { Form, InputGroup } from 'react-bootstrap'
 const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()}`
@@ -117,7 +122,7 @@ const Inventory: React.FC = () => {
           <Badge color='slate'>{instock.recordAdmin}</Badge>
         </TableCell>
         <TableCell>
-          <Badge color={getVariant(instock.qaRecord.itemCondition)}>{instock.qaRecord.itemCondition}</Badge>
+          <Badge color={getConditionVariant(instock.qaRecord.itemCondition)}>{instock.qaRecord.itemCondition}</Badge>
         </TableCell>
         <TableCell>
           <p>{instock.qaRecord.comment}</p>
@@ -153,9 +158,10 @@ const Inventory: React.FC = () => {
               <TableHeaderCell className='w-36'>Condition</TableHeaderCell>
               <TableHeaderCell>Comment</TableHeaderCell>
               <TableHeaderCell>Link</TableHeaderCell>
-              <TableHeaderCell className='w-36'>Platform</TableHeaderCell>
-              <TableHeaderCell>Target Marketplace</TableHeaderCell>
-              <TableHeaderCell className='w-36'>Amount</TableHeaderCell>
+              <TableHeaderCell className='w-46'>Platform</TableHeaderCell>
+              <TableHeaderCell className='w-36'>Marketplace</TableHeaderCell>
+              <TableHeaderCell className='w-32'>Instock</TableHeaderCell>
+              <TableHeaderCell className='w-36'>Sold</TableHeaderCell>
               <TableHeaderCell>Time Created</TableHeaderCell>
             </TableRow>
           </TableHead>

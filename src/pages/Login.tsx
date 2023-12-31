@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { UserInfo } from '../utils/Types'
-import { sleep, server, hashPass } from '../utils/utils'
+import { server, hashPass } from '../utils/utils'
 import { Form, Button } from 'react-bootstrap'
 
 type LoginProp = {
@@ -17,7 +17,6 @@ const Login: React.FC<LoginProp> = (prop: LoginProp) => {
   // checks if jwt token is in http only cookie
   const checkToken = async () => {
     prop.setLoading(true)
-    await sleep(1000)
     await axios({
       method: 'post',
       url: server + '/adminController/checkAdminToken',
