@@ -16,7 +16,8 @@ export type Platform =
   'Official Website' |
   'Other' |
   'Facebook' |
-  'Kijiji'
+  'Kijiji' |
+  'HomeDepot'
 
 export type PaymentMethod =
   'Cash' |

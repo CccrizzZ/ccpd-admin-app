@@ -98,7 +98,7 @@ const EditUserModal: React.FC<EditUserModalProp> = (props: EditUserModalProp) =>
         </InputGroup>
         <InputGroup className="mb-3">
           <InputGroup.Text>Password</InputGroup.Text>
-          <Form.Control type='password' placeholder="************" value={targetUserDetail.password} onChange={onPasswordChange} />
+          <Form.Control type='password' value={targetUserDetail.password} onChange={onPasswordChange} />
         </InputGroup>
         <InputGroup className="mb-3">
           <InputGroup.Text>Role</InputGroup.Text>
@@ -113,7 +113,6 @@ const EditUserModal: React.FC<EditUserModalProp> = (props: EditUserModalProp) =>
             id="custom-switch"
             label={targetUserDetail.userActive ? 'User Active' : 'User Inactive'}
             checked={targetUserDetail.userActive}
-            value={String(targetUserDetail.userActive)}
             onChange={onUserActiveChange}
           />
         </InputGroup>

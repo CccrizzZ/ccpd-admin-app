@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState, version } from 'react'
+import React, { createRef, useContext, useEffect, useRef, useState, version } from 'react'
 import {
   Grid,
   Badge,
@@ -25,6 +25,8 @@ import {
 } from '@tremor/react'
 import { Condition, Platform, QARecord } from '../utils/Types'
 import { AppContext } from '../App'
+import SearchPanel from '../components/SearchPanel'
+import ProblemRecordsPanel, { IProblemRecordsPanel } from '../components/ProblemRecordsPanel'
 import moment from 'moment'
 import {
   FaRotate,
@@ -117,12 +119,26 @@ const chartdata = [
   },
 ]
 
+const initQueryFilter: QueryFilter = {
+  timeRangeFilter: {} as DateRangePickerValue,
+  conditionFilter: '',
+  platformFilter: '',
+  marketplaceFilter: ''
+}
+
+type QueryFilter = {
+  timeRangeFilter: DateRangePickerValue;
+  conditionFilter: string;
+  platformFilter: string;
+  marketplaceFilter: string;
+}
+
 const QARecords: React.FC = () => {
   const { setLoading } = useContext(AppContext)
+  const ProblemPanelRef = useRef<IProblemRecordsPanel>(null)
   const tableRef = useRef<HTMLDivElement>(null)
   const topRef = useRef<HTMLDivElement>(null)
   const [QARecordArr, setQARecordArr] = useState<QARecord[]>([])
-  const [problemRecordsArr, setProblemRecordsArr] = useState<QARecord[]>([])
   const [selectedRecord, setSelectedRecord] = useState<QARecord>(initQARecord)
   const [selectedRecordImagesArr, setSelectedRecordImagesArr] = useState<string[]>([])
   const [displaySearchRecords, setDisplaySearchRecords] = useState<boolean>(true)
@@ -133,20 +149,15 @@ const QARecords: React.FC = () => {
   // paging
   const [currPage, setCurrPage] = useState<number>(0)
   const [itemsPerPage, setItemsPerPage] = useState<number>(20)
-  // sorting & filtering
-  const [timeRangeFilter, setTimeRangeFilter] = useState<DateRangePickerValue>({});
-  const [conditionFilter, setConditionFilter] = useState<string>('')
-  const [platformFilter, setPlatformFilter] = useState<string>('')
-  const [marketplaceFilter, setMarketplaceFilter] = useState<string>('')
-  const [searchSKU, setSearchSKU] = useState<string>('')
-  const [searchRes, setSearchRes] = useState<QARecord>(initQARecord)
+  // filtering
+  const [queryFilter, setQueryFilter] = useState<QueryFilter>(initQueryFilter)
 
   useEffect(() => {
-    // fetchProblemRecordsByPage()
-    fetchQARecordsByPage()
+    // fetchQARecordsByPage()
     console.log('Loading Qa RECORDS...')
   }, [])
 
+  // called on component mount
   const fetchQARecordsByPage = async () => {
     setLoading(true)
     await axios({
@@ -154,32 +165,18 @@ const QARecords: React.FC = () => {
       url: server + '/adminController/getQARecordsByPage',
       responseType: 'text',
       timeout: 3000,
-      data: { page: currPage, itemsPerPage: itemsPerPage },
+      data: {
+        page: currPage,
+        itemsPerPage: itemsPerPage,
+        filter: queryFilter
+      },
       withCredentials: true
     }).then((res: AxiosResponse) => {
       setQARecordArr(JSON.parse(res.data))
     }).catch((err) => {
+      setQARecordArr([])
       setLoading(false)
-      alert('Failed Fetching QA Records: ' + err.response.status)
-    })
-    setLoading(false)
-  }
-
-  const fetchProblemRecords = async () => {
-    setLoading(true)
-    await axios({
-      method: 'get',
-      url: server + '/adminController/getProblematicRecords',
-      responseType: 'text',
-      timeout: 3000,
-      data: '',
-      withCredentials: true
-    }).then((res: AxiosResponse) => {
-      console.log(res)
-      setProblemRecordsArr(JSON.parse(res.data))
-    }).catch((err) => {
-      setLoading(false)
-      alert('Failed Fetching Problematic Records: ' + err.response.status)
+      alert('Failed Fetching QA Records: ' + err.response)
     })
     setLoading(false)
   }
@@ -188,7 +185,7 @@ const QARecords: React.FC = () => {
     setShowMarkConfirmPopup(false)
     setLoading(true)
     await axios({
-      method: 'post',
+      method: 'patch',
       url: server + '/adminController/setProblematicBySku/' + sku,
       responseType: 'text',
       timeout: 3000,
@@ -201,6 +198,9 @@ const QARecords: React.FC = () => {
       alert('Failed Fetching QA Records: ' + err.response.status)
     })
     setLoading(false)
+    fetchQARecordsByPage()
+    ProblemPanelRef.current?.fetchProblemRecords()
+    setSelectedRecord(initQARecord)
   }
 
   const fetchImageUrlArr = async () => {
@@ -222,8 +222,10 @@ const QARecords: React.FC = () => {
     setLoading(false)
   }
 
+  // for next and prev page button
   const fetchPage = async (direction: number) => {
     scrollToTable()
+    // direction for page turning
     let newPage = 0
     if (direction > 0) {
       newPage = currPage + 1
@@ -240,12 +242,7 @@ const QARecords: React.FC = () => {
       data: {
         page: newPage,
         itemsPerPage: itemsPerPage,
-        timeRange: {
-          start: '',
-          end: ''
-        },
-        marketplace: '',
-        condition: ''
+        filter: queryFilter
       },
       withCredentials: true
     }).then((res: AxiosResponse) => {
@@ -271,11 +268,13 @@ const QARecords: React.FC = () => {
   // control panel cursor jump to record
   const nextRecord = () => {
     const next = QARecordArr[QARecordArr.indexOf(selectedRecord) + 1]
+    setSelectedRecordImagesArr([])
     if (next !== undefined) setSelectedRecord(next)
   }
 
   const prevRecord = () => {
     const prev = QARecordArr[QARecordArr.indexOf(selectedRecord) - 1]
+    setSelectedRecordImagesArr([])
     if (prev !== undefined) setSelectedRecord(prev)
   }
 
@@ -285,10 +284,6 @@ const QARecords: React.FC = () => {
 
     }
     const onConditionChange = (event: React.ChangeEvent<HTMLSelectElement>) => setSelectedRecord({ ...selectedRecord, itemCondition: event.target.value as Condition })
-    const onSkuChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      // console.log(typeof (event.target.value))
-      // if (typeof Number(event.target.value) === 'number') setSelectedRecord({ ...selectedRecord, sku: Number(event.target.value) })
-    }
     const onOwnerChange = (event: React.ChangeEvent<HTMLInputElement>) => setSelectedRecord({ ...selectedRecord, ownerName: event.target.value })
     const onShelfLocationChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       if (event.target.value.length < 5) setSelectedRecord({ ...selectedRecord, shelfLocation: event.target.value })
@@ -307,12 +302,13 @@ const QARecords: React.FC = () => {
       setShowImagePopup(false)
     }
 
-    const renderLargePhoto = () => {
+    const renderImageModal = () => {
       return (
         <Modal
           show={showImagePopup}
           onHide={clearImagePopup}
           backdrop="static"
+          size='xl'
           keyboard={false}
         >
           <Modal.Header closeButton>
@@ -325,7 +321,7 @@ const QARecords: React.FC = () => {
             <Button color='slate' onClick={clearImagePopup}>
               Close
             </Button>
-            <Button color='emerald'>
+            <Button color='emerald' onClick={() => openLink(imagePopupUrl)}>
               Download
             </Button>
           </Modal.Footer>
@@ -341,39 +337,45 @@ const QARecords: React.FC = () => {
       )
     }
 
+    const renderConfirmModal = () => {
+      return (
+        <Modal
+          show={showMarkConfirmPopup}
+          onHide={() => setShowMarkConfirmPopup(false)}
+          backdrop="static"
+          keyboard={false}
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>Record {selectedRecord.sku}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            Mark this record
+            {
+              selectedRecord.problem ?
+                ' resolved' : ' problematic'
+            }?
+          </Modal.Body>
+          <Modal.Footer>
+            <Button color='slate' onClick={() => setShowMarkConfirmPopup(false)}>
+              Close
+            </Button>
+            {
+              selectedRecord.problem ?
+                <Button color='lime' onClick={() => setRecordProblematic(String(selectedRecord.sku), false)}>Confirm</Button> :
+                <Button color='red' onClick={() => setRecordProblematic(String(selectedRecord.sku), true)}>Confirm</Button>
+            }
+          </Modal.Footer>
+        </Modal>
+      )
+    }
+
     return (
       <div className='h-full'>
         <div className='flex'>
-          {renderLargePhoto()}
-          <Modal
-            show={showMarkConfirmPopup}
-            onHide={() => setShowMarkConfirmPopup(false)}
-            backdrop="static"
-            keyboard={false}
-          >
-            <Modal.Header closeButton>
-              <Modal.Title>Record {selectedRecord.sku}</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              Mark this record
-              {
-                selectedRecord.problem ?
-                  ' resolved' : ' problematic'
-              }?
-            </Modal.Body>
-            <Modal.Footer>
-              <Button color='slate' onClick={() => setShowMarkConfirmPopup(false)}>
-                Close
-              </Button>
-              {
-                selectedRecord.problem ?
-                  <Button color='lime' onClick={() => setRecordProblematic(String(selectedRecord.sku), false)}>Confirm</Button> :
-                  <Button color='red' onClick={() => setRecordProblematic(String(selectedRecord.sku), true)}>Confirm</Button>
-              }
-            </Modal.Footer>
-          </Modal>
-          <div className='w-1/2 p-3'>
-            <h2 className={selectedRecord.problem ? 'text-red-500 mb-0' : 'mb-0'}>{selectedRecord.sku}</h2>
+          {renderImageModal()}
+          {renderConfirmModal()}
+          <div className='w-1/2 p-3 pt-0'>
+            <h2 className={selectedRecord.problem ? 'text-red-500 mb-3 mt-0' : 'mb-0'}>{selectedRecord.sku}</h2>
             <InputGroup size="sm" className="mb-3">
               <InputGroup.Text>Owner</InputGroup.Text>
               <Form.Control value={selectedRecord.ownerName} onChange={onOwnerChange} />
@@ -422,7 +424,7 @@ const QARecords: React.FC = () => {
               </Button>
             </div>
             <hr />
-            <Card className='overflow-y-scroll h-3/4'>
+            <Card className='overflow-y-scroll h-5/6 inline-grid'>
               {selectedRecordImagesArr.length < 1 ? <Subtitle>Photos Uploaded By Q&A Personal Will Show Up Here</Subtitle> : renderThumbnails()}
             </Card>
           </div>
@@ -445,7 +447,7 @@ const QARecords: React.FC = () => {
             className='text-white'
             color={record.problem ? 'rose' : 'slate'}
             tooltip={record.problem ? 'This Record Have Problem' : ''}
-            onClick={() => { setSelectedRecord(record); scrollToTop(); }}
+            onClick={() => { setSelectedRecord(record); scrollToTop(); setSelectedRecordImagesArr([]) }}
           >
             {record.sku}
           </Button>
@@ -475,7 +477,8 @@ const QARecords: React.FC = () => {
           <Text>{record.amount}</Text>
         </TableCell>
         <TableCell>
-          <Text>{(moment(record.time, "ddd MMM DD kk:mm:ss YYYY").format('LLL'))}</Text>
+          {/* <Text>{(moment(record.time, "ddd MMM DD kk:mm:ss YYYY").format('LLL'))}</Text> */}
+          <Text>{(moment(record.time).format('LLL'))}</Text>
         </TableCell>
       </TableRow>
     ))
@@ -496,117 +499,6 @@ const QARecords: React.FC = () => {
           yAxisWidth={32}
           showAnimation={true}
         />
-      </>
-    )
-  }
-
-  const renderSearchPanel = () => {
-    const searchRecordBySKU = async () => {
-      if (searchSKU.length < 2) return alert('Please Enter Target SKU')
-      if (searchSKU === String(searchRes.sku)) return
-      setLoading(true)
-      // send searchSKU with axios
-      await axios({
-        method: 'post',
-        url: server + '/adminController/getQARecordBySku/' + searchSKU,
-        responseType: 'text',
-        data: '',
-        timeout: 3000,
-        withCredentials: true
-      }).then((res: AxiosResponse) => {
-        setSearchRes(JSON.parse(res.data))
-      }).catch((err) => {
-        setLoading(false)
-        alert('Failed Searching QA Records: ' + err.response.status)
-      })
-      setLoading(false)
-    }
-
-    const resetSearch = () => {
-      setSearchSKU('')
-      setSearchRes(initQARecord)
-    }
-
-    const onSearchSKUChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      if (event.target.value.length < 8) setSearchSKU(event.target.value)
-    }
-
-    const handleEnterKeySearch = (event: React.KeyboardEvent) => {
-      if (event.key === 'Enter') searchRecordBySKU()
-    }
-
-    return (
-      <>
-        <Title>🔍 Search Record</Title>
-        <InputGroup size="sm" className="mb-3">
-          <InputGroup.Text>SKU</InputGroup.Text>
-          <Form.Control value={searchSKU} onChange={onSearchSKUChange} onKeyDown={handleEnterKeySearch} />
-        </InputGroup>
-        <Card className='h-52 overflow-y-scroll p-3 pt-0'>
-          {searchRes.sku !== 0 ? <List>
-            <ListItem>
-              <span>SKU</span>
-              <span>{searchRes.sku}</span>
-            </ListItem>
-            <ListItem>
-              <span>Owner</span>
-              <span>{searchRes.ownerName}</span>
-            </ListItem>
-            <ListItem>
-              <span>Shelf Location</span>
-              <Badge color='slate'>{searchRes.shelfLocation}</Badge>
-            </ListItem>
-            <ListItem>
-              <span>Item Condition</span>
-              <Badge color={getConditionVariant(searchRes.itemCondition)}>{searchRes.itemCondition}</Badge>
-            </ListItem>
-            <ListItem>
-              <span>Amount</span>
-              <span>{searchRes.amount}</span>
-            </ListItem>
-            <ListItem>
-              <span>Platform</span>
-              <Badge color={getPlatformBadgeColor(searchRes.platform)}>{searchRes.platform}</Badge>
-            </ListItem>
-            <ListItem>
-              <span>Time Created</span>
-              <span>{searchRes.time}</span>
-            </ListItem>
-            <ListItem>
-              <Button onClick={() => setSelectedRecord(searchRes)} color='slate'>Select</Button>
-            </ListItem>
-          </List> : <Subtitle className='text-center'>Search Result Will Be Shown Here</Subtitle>}
-        </Card>
-        <Button className='absolute bottom-3' color='emerald' size='xs' onClick={searchRecordBySKU}>Search</Button>
-        <Button className='absolute bottom-3 right-6' color='rose' size='xs' onClick={resetSearch}>Reset Search</Button>
-      </>
-    )
-  }
-
-  const renderProblemRecordsPanel = () => {
-    const renderProblemRecordsList = () => {
-      return problemRecordsArr.map((record) =>
-        <ListItem>
-          <span>{record.sku}</span>
-          <span><Button>👈Pull</Button></span>
-        </ListItem>
-      )
-    }
-
-    return (
-      <>
-        <Title>❓Problematic Records</Title>
-        <Button
-          color='emerald'
-          className='right-16 absolute p-2 top-6'
-          onClick={fetchProblemRecords}
-          tooltip='Refresh Problematic Records'
-        ><FaRotate /></Button>
-        <Card className='h-72 overflow-y-scroll p-3 pt-0'>
-          {problemRecordsArr.length > 0 ?
-            <List>{renderProblemRecordsList()}</List> :
-            <Subtitle className='text-center'>Records With Problems Will Be Shown Here</Subtitle>}
-        </Card>
       </>
     )
   }
@@ -642,17 +534,17 @@ const QARecords: React.FC = () => {
   }
 
   const renderFilter = () => {
-    const onPlatformFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => setPlatformFilter(event.target.value)
-    const onConditionFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => setConditionFilter(event.target.value)
-    const onMarketplaceFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => setMarketplaceFilter(event.target.value)
-    const onTimeRangeFilterChange = (value: DateRangePickerValue) => setTimeRangeFilter(value)
+    const onPlatformFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => setQueryFilter({ ...queryFilter, platformFilter: event.target.value })
+    const onConditionFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => setQueryFilter({ ...queryFilter, conditionFilter: event.target.value })
+    const onMarketplaceFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => setQueryFilter({ ...queryFilter, marketplaceFilter: event.target.value })
+    const onTimeRangeFilterChange = (value: DateRangePickerValue) => setQueryFilter({ ...queryFilter, timeRangeFilter: value })
     const renderDatePicker = () => {
       return (
         <DateRangePicker
           className="h-full"
           enableSelect={true}
           onValueChange={onTimeRangeFilterChange}
-          value={timeRangeFilter}
+          value={queryFilter.timeRangeFilter}
         >
           <DateRangePickerItem
             key="Today"
@@ -680,10 +572,8 @@ const QARecords: React.FC = () => {
     }
 
     const resetFilters = () => {
-      setPlatformFilter('')
-      setConditionFilter('')
-      setMarketplaceFilter('')
-      setTimeRangeFilter({})
+      setQueryFilter(initQueryFilter)
+      setCurrPage(0)
     }
 
     return (
@@ -704,26 +594,26 @@ const QARecords: React.FC = () => {
           <div className='absolute right-96 gap-2 flex'>
             <div>
               <label className='text-gray-500'>Condition:</label>
-              <Form.Select value={conditionFilter} onChange={onConditionFilterChange}>
+              <Form.Select value={queryFilter.conditionFilter} onChange={onConditionFilterChange}>
                 {renderItemConditionOptions()}
               </Form.Select>
             </div>
             <div>
               <label className='text-gray-500'>Platform:</label>
-              <Form.Select value={platformFilter} onChange={onPlatformFilterChange}>
+              <Form.Select value={queryFilter.platformFilter} onChange={onPlatformFilterChange}>
                 {renderPlatformOptions()}
               </Form.Select>
             </div>
             <div>
               <label className='text-gray-500'>Marketplace:</label>
-              <Form.Select value={marketplaceFilter} onChange={onMarketplaceFilterChange}>
+              <Form.Select value={queryFilter.marketplaceFilter} onChange={onMarketplaceFilterChange}>
                 {renderMarketPlaceOptions()}
               </Form.Select>
             </div>
             <Button
               className='text-white mt-4'
               color='red'
-              onClick={resetFilters}
+              onClick={() => { resetFilters(); fetchQARecordsByPage() }}
               tooltip='Reset Filters'
             >
               <FaFilterCircleXmark />
@@ -767,7 +657,7 @@ const QARecords: React.FC = () => {
             >
               <FaArrowRightArrowLeft />
             </Button>
-            {displaySearchRecords ? renderSearchPanel() : renderTopOverViewChart()}
+            {displaySearchRecords ? <SearchPanel setSelectedRecord={setSelectedRecord} /> : renderTopOverViewChart()}
           </Card>
           <Card className="h-96 mt-2">
             <Button
@@ -778,7 +668,14 @@ const QARecords: React.FC = () => {
             >
               <FaArrowRightArrowLeft />
             </Button>
-            {displayProblemRecordsPanel ? renderProblemRecordsPanel() : renderBottomOverviewChart()}
+            {
+              displayProblemRecordsPanel ?
+                <ProblemRecordsPanel
+                  ref={ProblemPanelRef}
+                  setSelectedRecord={setSelectedRecord}
+                  setSelectedRecordImagesArr={setSelectedRecordImagesArr}
+                /> : renderBottomOverviewChart()
+            }
           </Card>
         </Col>
       </Grid>
@@ -803,7 +700,7 @@ const QARecords: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {renderInventoryTableBody()}
+            {QARecordArr.length === 0 ? <Subtitle className='ml-auto mr-auto mt-20'>Q&A Datas Will Be Shown Here</Subtitle> : renderInventoryTableBody()}
           </TableBody>
         </Table>
         <div className='flex gap-2'>

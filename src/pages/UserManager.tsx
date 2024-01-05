@@ -243,23 +243,14 @@ const UserManager: React.FC = () => {
     }
   }
 
-  // render user info from displayArr
   const renderTBody = () => {
-    // TODO: user table sorting
-    // userArr.sort((a, b) => {
-    //   if (moment(a.registrationDate).valueOf() > moment(b.registrationDate).valueOf()) {
-    //     return 1
-    //   }
-    //   return -1
-    // })
-
     return userArr.map((user) => (
       <TableRow key={user.name}>
         <TableCell>
           <Text>{user._id}</Text>
         </TableCell>
         <TableCell>
-          <Text>{user.name}</Text>
+          <Badge color='teal'>{user.name}</Badge>
         </TableCell>
         <TableCell>
           <Text>{user.email}</Text>

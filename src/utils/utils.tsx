@@ -72,6 +72,7 @@ export const renderPlatformOptions = () => {
       <option value="Amazon">Amazon</option>
       <option value="eBay">eBay</option>
       <option value="AliExpress">AliExpress</option>
+      <option value="HomeDepot">HomeDepot</option>
       <option value="Official Website">Official Website</option>
       <option value="Other">Other</option>
     </>
