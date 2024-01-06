@@ -20,6 +20,11 @@ import {
   Badge,
   Legend,
   Button,
+  TabGroup,
+  TabList,
+  TabPanels,
+  TabPanel,
+  Tab
 } from '@tremor/react'
 import { RetailRecord, ReturnRecord, Condition } from '../utils/Types'
 import '../style/RetailManager.css'
@@ -28,6 +33,7 @@ import CreateSalesRecordModal from '../components/CreateSalesRecordModal';
 import { AppContext } from '../App';
 import { renderItemPerPageOptions, server } from '../utils/utils';
 import axios from 'axios';
+import CreateReturnRecordModal from '../components/CreateReturnRecord';
 
 const itemValueFormatter = (num: number) => `${new Intl.NumberFormat("us").format(num).toString()} Items`;
 const priceValueFormatter = (num: number) => `$ ${new Intl.NumberFormat("us").format(num).toString()}`;
@@ -39,16 +45,17 @@ const RetailManager: React.FC = () => {
   const [itemsPerPage, setItemsPerPage] = useState<number>(20)
   const [timeRange, setTimeRange] = useState<string>('All Time')
   const [showSalesRecordModal, setShowSalesRecordModal] = useState<boolean>(false)
+  const [showReturnsRecordModal, setShowReturnsRecordModal] = useState<boolean>(false)
 
   const tableHead = [
     'SKU',
     'Time',
+    'Buyer Name',
+    'Admin Name',
     'Marketplace',
     'Quantity',
-    'Amount',
     'Payment Method',
-    'Buyer Name',
-    'Admin Name'
+    'Amount (CAD)',
   ]
 
   useEffect(() => {
@@ -220,28 +227,27 @@ const RetailManager: React.FC = () => {
     return (
       <Card className='h-full'>
         <Title>Retail Conditions Overview</Title>
-        <Legend
-          className="mt-3"
-          categories={["New", "Sealed", "Used Like New", "Used", "As Is", "Damaged"]}
-          colors={["green", "violet", "blue", "sky", "red"]}
-        />
         <DonutChart
           className="mt-6 h-64"
           data={retailConditionData}
           category="items"
           index="condition"
           valueFormatter={itemValueFormatter}
-          colors={["green", "violet", "blue", "sky", "red"]}
+          colors={["green", "violet", "blue", "sky", "rose", "gray"]}
           showAnimation={true}
         />
-
+        <Legend
+          className="mt-6 mb-0"
+          categories={["New", "Sealed", "Used Like New", "Used", "As Is", "Damaged"]}
+          colors={["green", "violet", "blue", "sky", "rose", "gray"]}
+        />
       </Card>
     )
   }
 
   const data = [
     {
-      name: "Viola Amherd",
+      sku: "Viola Amherd",
       Role: "Federal Councillor",
       departement: "The Federal Department of Defence, Civil Protection and Sport (DDPS)",
       status: "active",
@@ -253,36 +259,6 @@ const RetailManager: React.FC = () => {
         "The Federal Department of the Environment, Transport, Energy and Communications (DETEC)",
       status: "active",
     },
-    {
-      name: "Alain Berset",
-      Role: "Federal Councillor",
-      departement: "The Federal Department of Home Affairs (FDHA)",
-      status: "active",
-    },
-    {
-      name: "Ignazio Cassis",
-      Role: "Federal Councillor",
-      departement: "The Federal Department of Foreign Affairs (FDFA)",
-      status: "active",
-    },
-    {
-      name: "Karin Keller-Sutter",
-      Role: "Federal Councillor",
-      departement: "The Federal Department of Finance (FDF)",
-      status: "active",
-    },
-    {
-      name: "Guy Parmelin",
-      Role: "Federal Councillor",
-      departement: "The Federal Department of Economic Affairs, Education and Research (EAER)",
-      status: "active",
-    },
-    {
-      name: "Elisabeth Baume-Schneider",
-      Role: "Federal Councillor",
-      departement: "The Federal Department of Justice and Police (FDJP)",
-      status: "active",
-    },
   ]
 
   // retail records table
@@ -291,18 +267,8 @@ const RetailManager: React.FC = () => {
   const renderRetailTable = () => {
     return (
       <Card>
+        {/* filter section */}
         <div className='flex'>
-          <div className='left-12 w-48 text-left'>
-            <label className='text-gray-500'>Show Only</label>
-            <Form.Select className='mr-2' value={timeRange} onChange={onTimeRangeChange}>
-              <option value="All Time">All Time</option>
-              <option value="Today">Today</option>
-              <option value="This Week">This Week</option>
-              <option value="This Month">This Month</option>
-              <option value="Last 3 Months">Last 3 Months</option>
-              <option value="Custom Range">Custom Range</option>
-            </Form.Select>
-          </div>
           <div className="right-12 w-32 absolute text-left">
             <label className='text-gray-500'>Items Per Page</label>
             <Form.Select className='mr-2' value={String(itemsPerPage)} onChange={onItemsPerPageChange}>
@@ -310,33 +276,65 @@ const RetailManager: React.FC = () => {
             </Form.Select>
           </div>
         </div>
-        <Table className="mt-5">
-          <TableHead>
-            <TableRow>
-              {tableHead.map((value, index) => {
-                return <TableHeaderCell key={index}>{value}</TableHeaderCell>
-              })}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {data.map((item) => (
-              <TableRow key={item.name}>
-                <TableCell>{item.name}</TableCell>
-                <TableCell>
-                  <Text>{item.Role}</Text>
-                </TableCell>
-                <TableCell>
-                  <Text>{item.departement}</Text>
-                </TableCell>
-                <TableCell>
-                  <Badge color="emerald">
-                    {item.status}
-                  </Badge>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        {/* table */}
+        <TabGroup>
+          <TabList className="mt-8" color='orange'>
+            <Tab title='Sales'>Sales</Tab>
+            <Tab title='Returns'>Returns</Tab>
+          </TabList>
+          <TabPanels>
+            <TabPanel>
+              <div className="mt-10">
+                <Table className="mt-5">
+                  <TableHead>
+                    <TableRow>
+                      {tableHead.map((value, index) => {
+                        return <TableHeaderCell key={index}>{value}</TableHeaderCell>
+                      })}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {retailArr.map((item) => (
+                      <TableRow key={item.sku}>
+                        <TableCell>{item.sku}</TableCell>
+                        <TableCell>
+                          {item.time}
+                        </TableCell>
+                        <TableCell>
+                          <Text>{item.buyerName}</Text>
+                        </TableCell>
+                        <TableCell>
+                          <Text>{item.adminName}</Text>
+                        </TableCell>
+                        <TableCell>
+                          <Badge color="emerald">
+                            {item.status}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </TabPanel>
+            <TabPanel>
+              <div className="mt-10">
+                <Table className="mt-5">
+                  <TableHead>
+                    <TableRow>
+                      {tableHead.map((value, index) => {
+                        return <TableHeaderCell key={index}>{value}</TableHeaderCell>
+                      })}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+
+                  </TableBody>
+                </Table>
+              </div>
+            </TabPanel>
+          </TabPanels>
+        </TabGroup>
       </Card>
     )
   }
@@ -346,11 +344,20 @@ const RetailManager: React.FC = () => {
     setShowSalesRecordModal(false)
   }
 
+  const closeReturnsRecordModal = (refresh: boolean) => {
+    if (refresh) fetchRetailDataByPage()
+    setShowReturnsRecordModal(false)
+  }
+
   return (
     <div>
       <CreateSalesRecordModal
         show={showSalesRecordModal}
         handleClose={closeSalesRecordModal}
+      />
+      <CreateReturnRecordModal
+        show={showReturnsRecordModal}
+        handleClose={closeReturnsRecordModal}
       />
       {/* top 3 charts */}
       <Grid className='gap-2' numItems={4}>
@@ -367,10 +374,10 @@ const RetailManager: React.FC = () => {
       {/* middle 4 cards */}
       <Grid className='gap-2 mt-2 mb-2' numItems={2}>
         <Col className='gap-2 flex' numColSpan={2}>
-          <Card decoration="top" decorationColor="green">
+          <Card decoration="top" decorationColor="emerald">
             <Button className='w-full h-full' color='emerald' onClick={() => setShowSalesRecordModal(true)}>Create Sales Records</Button>
           </Card>
-          <Card decoration="top" decorationColor="green">
+          <Card decoration="top" decorationColor="emerald">
             <Text>Today's Revenue</Text>
             <div className='flex'>
               <Metric>$ 1,024</Metric>
@@ -383,7 +390,7 @@ const RetailManager: React.FC = () => {
             <Text>Avg 13.4$/Item</Text>
           </Card>
           <Card decoration="top" decorationColor="red">
-            <Button className='w-full h-full' color='rose'>Create Return Records</Button>
+            <Button className='w-full h-full' color='rose' onClick={() => setShowReturnsRecordModal(true)}>Create Return Records</Button>
           </Card>
         </Col>
       </Grid>

@@ -54,7 +54,6 @@ const UserManager: React.FC = () => {
   const { userInfo, setLoading } = useContext(AppContext)
   const [userArr, setUserArr] = useState<UserDetail[]>([])
   const [invitationArr, setInvitationArr] = useState<InvitationCode[]>([])
-  // const [sortingMethod, setSortingMethod] = useState<(a: UserDetail, b: UserDetail) => number>()
   const [pieOverviewData, setPieOverviewData] = useState<chartData[]>([])
 
   // user manipulation states
@@ -360,8 +359,7 @@ const UserManager: React.FC = () => {
       {showDeletePopup ? renderDeletePopup() : undefined}
       <EditUserModal show={showEditModal} handleClose={hideAndSetEditPopup} targetUser={() => targetUser} setTargetUser={setTargetUser} refreshUserArr={fetchAllUserInfo} />
       <CreateUserModal show={showCreatePopup} handleClose={hideCreatePopup} />
-      <h2 className='mt-6 ml-6'>User Management Console</h2>
-      <Grid className='mt-6'>
+      <Grid>
         {/* top 2 panel */}
         <Col className='gap-6 flex'>
           {renderInvitationPanel()}

@@ -1,6 +1,6 @@
 import { SHA256, enc } from "crypto-js";
 import moment from "moment";
-import { CreateUser, InstockInventory, PaymentMethod, QARecord, RetailRecord, UserDetail } from "./Types";
+import { CreateUser, InstockInventory, PaymentMethod, QARecord, RetailRecord, ReturnRecord, UserDetail } from "./Types";
 
 // server connection
 export const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
@@ -129,7 +129,7 @@ export const getConditionVariant = (condition: string) => {
     case 'Used':
       return 'yellow'
     case 'Damaged':
-      return 'red'
+      return 'gray'
     case 'As Is':
       return 'red'
     default:
@@ -144,7 +144,6 @@ export const isExpired = (exp: string): boolean => {
 }
 
 export const deSpace = (s: string) => s.replace(/ /g, '')
-
 
 // init value of custom type
 export const initUser: UserDetail = {
@@ -185,6 +184,10 @@ export const initRetailRecord: RetailRecord = {
   paymentMethod: '' as PaymentMethod,
   buyerName: '',
   adminName: '',
+  invoiceNumber: '',
+  returned: false,
+  paid: false,
+  pickedup: false
 }
 
 export const initInstockInventory: InstockInventory = {
@@ -193,4 +196,14 @@ export const initInstockInventory: InstockInventory = {
   recordTime: '',
   quantityInstock: 0,
   tags: {}
+}
+
+export const initReturnRecord: ReturnRecord = {
+  retailRecord: {} as RetailRecord,
+  returnTime: '',
+  returnQuantity: 0,
+  refundAmount: 0,
+  refundMethod: 'Cash',
+  reason: '',
+  adminName: '',
 }

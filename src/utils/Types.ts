@@ -24,7 +24,7 @@ export type PaymentMethod =
   'Card' |
   'Card Online' |
   'E-transfer' |
-  'Online' |
+  'Paypal' |
   'Check' |
   'Store Credit'
 
@@ -39,13 +39,16 @@ export interface RetailRecord {
   adminName: string;
   invoiceNumber?: string;
   adminId?: string;
+  returned?: boolean;
+  paid?: boolean;
+  pickedup?: boolean;
 }
 
 export interface ReturnRecord {
   retailRecord: RetailRecord;
   returnTime: string;
-  returnAmount: string,
-  returnQuantity: string
+  returnQuantity: number
+  refundAmount: number,
   refundMethod: PaymentMethod;
   reason: string;
   adminName: string;

@@ -3,9 +3,7 @@ import { AppContext } from '../App'
 import axios from 'axios'
 import {
   server,
-  initCreateUser,
   deSpace,
-  renderUserRoleOptions,
   initRetailRecord,
   renderMarketPlaceOptions,
   renderPaymentMethodOptions
@@ -16,7 +14,12 @@ import {
   InputGroup,
   Modal
 } from 'react-bootstrap'
-import { Button } from '@tremor/react'
+import {
+  Button,
+  Card,
+  Col,
+  Grid
+} from '@tremor/react'
 
 type CreateSalesRecordModalProps = {
   show: boolean
@@ -86,6 +89,7 @@ const CreateSalesRecordModal: React.FC<CreateSalesRecordModalProps> = (props: Cr
       onHide={() => props.handleClose(false)}
       aria-labelledby="contained-modal-title-vcenter"
       backdrop="static"
+      size='xl'
       keyboard={false}
       centered
     >
@@ -94,31 +98,40 @@ const CreateSalesRecordModal: React.FC<CreateSalesRecordModalProps> = (props: Cr
       </Modal.Header>
       {renderInventoryInfoCard()}
       <Modal.Body>
-        <InputGroup className="mb-3">
-          <InputGroup.Text>SKU</InputGroup.Text>
-          <Form.Control value={newRecord.sku} onChange={onSkuChange} />
-        </InputGroup>
-        <Button className='mb-3' color='emerald' onClick={getInstockBySku}>Search</Button>
-        <InputGroup className="mb-3">
-          <InputGroup.Text>Quantity</InputGroup.Text>
-          <Form.Control value={newRecord.quantity} onChange={onQuantityChange} />
-        </InputGroup>
-        <InputGroup className="mb-3">
-          <InputGroup.Text>Sales Amount (CAD)</InputGroup.Text>
-          <Form.Control value={newRecord.amount} onChange={onAmountChange} />
-        </InputGroup>
-        <InputGroup className="mb-3">
-          <InputGroup.Text>Market Place</InputGroup.Text>
-          <Form.Select value={newRecord.marketplace} onChange={onMarketPlaceChange}>
-            {renderMarketPlaceOptions()}
-          </Form.Select>
-        </InputGroup>
-        <InputGroup className="mb-3">
-          <InputGroup.Text>Payment Method</InputGroup.Text>
-          <Form.Select value={newRecord.paymentMethod} onChange={onMarketPlaceChange}>
-            {renderPaymentMethodOptions()}
-          </Form.Select>
-        </InputGroup>
+        <Grid className='gap-6' numItems={2}>
+          <Col>
+            <InputGroup className="mb-3">
+              <InputGroup.Text>SKU</InputGroup.Text>
+              <Form.Control value={newRecord.sku} onChange={onSkuChange} />
+            </InputGroup>
+            <Button className='mb-3' color='emerald' onClick={getInstockBySku}>Search</Button>
+            <InputGroup className="mb-3">
+              <InputGroup.Text>Quantity</InputGroup.Text>
+              <Form.Control value={newRecord.quantity} onChange={onQuantityChange} />
+            </InputGroup>
+            <InputGroup className="mb-3">
+              <InputGroup.Text>Sales Amount</InputGroup.Text>
+              <Form.Control type='number' step='any' value={newRecord.amount} onChange={onAmountChange} />
+            </InputGroup>
+            <InputGroup className="mb-3">
+              <InputGroup.Text>Market Place</InputGroup.Text>
+              <Form.Select value={newRecord.marketplace} onChange={onMarketPlaceChange}>
+                {renderMarketPlaceOptions()}
+              </Form.Select>
+            </InputGroup>
+            <InputGroup className="mb-3">
+              <InputGroup.Text>Payment Method</InputGroup.Text>
+              <Form.Select value={newRecord.paymentMethod} onChange={onPaymentMethodChange}>
+                {renderPaymentMethodOptions()}
+              </Form.Select>
+            </InputGroup>
+          </Col>
+          <Col>
+            <Card className='h-full'>
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Ducimus ipsa ad beatae minus vero pariatur impedit. Mollitia, maiores repellat neque doloremque reprehenderit eligendi in, sunt error quo suscipit ipsa repudiandae?
+            </Card>
+          </Col>
+        </Grid>
       </Modal.Body>
       <Modal.Footer>
         <div className='text-center'>

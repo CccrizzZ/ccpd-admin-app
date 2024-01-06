@@ -440,48 +440,52 @@ const QARecords: React.FC = () => {
   }
 
   const renderInventoryTableBody = () => {
-    return QARecordArr.map((record) => (
-      <TableRow key={record.sku}>
-        <TableCell>
-          <Button
-            className='text-white'
-            color={record.problem ? 'rose' : 'slate'}
-            tooltip={record.problem ? 'This Record Have Problem' : ''}
-            onClick={() => { setSelectedRecord(record); scrollToTop(); setSelectedRecordImagesArr([]) }}
-          >
-            {record.sku}
-          </Button>
-        </TableCell>
-        <TableCell>
-          <Text>{record.ownerName}</Text>
-        </TableCell>
-        <TableCell>
-          <Badge color='slate'>{record.shelfLocation}</Badge>
-        </TableCell>
-        <TableCell>
-          <Badge color={getConditionVariant(record.itemCondition)}>{record.itemCondition}</Badge>
-        </TableCell>
-        <TableCell>
-          <p>{record.comment}</p>
-        </TableCell>
-        <TableCell>
-          <p><a className='cursor-pointer' onClick={() => openLink(record.link)}>{record.link.slice(0, 100)}</a></p>
-        </TableCell>
-        <TableCell>
-          <Badge color={getPlatformBadgeColor(record.platform)}>{record.platform}</Badge>
-        </TableCell>
-        <TableCell>
-          <Badge color={getPlatformBadgeColor(record.marketplace ?? 'None')}>{record.marketplace}</Badge>
-        </TableCell>
-        <TableCell>
-          <Text>{record.amount}</Text>
-        </TableCell>
-        <TableCell>
-          {/* <Text>{(moment(record.time, "ddd MMM DD kk:mm:ss YYYY").format('LLL'))}</Text> */}
-          <Text>{(moment(record.time).format('LLL'))}</Text>
-        </TableCell>
-      </TableRow>
-    ))
+    return (
+      <TableBody>
+        {QARecordArr.map((record) => (
+          <TableRow key={record.sku}>
+            <TableCell>
+              <Button
+                className='text-white'
+                color={record.problem ? 'rose' : 'slate'}
+                tooltip={record.problem ? 'This Record Have Problem' : ''}
+                onClick={() => { setSelectedRecord(record); scrollToTop(); setSelectedRecordImagesArr([]) }}
+              >
+                {record.sku}
+              </Button>
+            </TableCell>
+            <TableCell>
+              <Text>{record.ownerName}</Text>
+            </TableCell>
+            <TableCell>
+              <Badge color='slate'>{record.shelfLocation}</Badge>
+            </TableCell>
+            <TableCell>
+              <Badge color={getConditionVariant(record.itemCondition)}>{record.itemCondition}</Badge>
+            </TableCell>
+            <TableCell>
+              <p>{record.comment}</p>
+            </TableCell>
+            <TableCell>
+              <p><a className='cursor-pointer' onClick={() => openLink(record.link)}>{record.link.slice(0, 100)}</a></p>
+            </TableCell>
+            <TableCell>
+              <Badge color={getPlatformBadgeColor(record.platform)}>{record.platform}</Badge>
+            </TableCell>
+            <TableCell>
+              <Badge color={getPlatformBadgeColor(record.marketplace ?? 'None')}>{record.marketplace}</Badge>
+            </TableCell>
+            <TableCell>
+              <Text>{record.amount}</Text>
+            </TableCell>
+            <TableCell>
+              {/* <Text>{(moment(record.time, "ddd MMM DD kk:mm:ss YYYY").format('LLL'))}</Text> */}
+              <Text>{(moment(record.time).format('LLL'))}</Text>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    )
   }
 
   const renderTopOverViewChart = () => {
@@ -635,14 +639,13 @@ const QARecords: React.FC = () => {
   }
 
   const onItemsPerPageChange = (event: React.ChangeEvent<HTMLSelectElement>) => setItemsPerPage(Number(event.target.value))
-
   return (
     <div ref={topRef}>
       {/* control panels */}
       <Grid className="gap-2" numItems={3}>
         <Col numColSpan={2}>
           <Card className="h-full">
-            <Title>Inventory Recording</Title>
+            <Title>📥 Inventory Recording</Title>
             <hr />
             {selectedRecord.sku === 0 ? <Subtitle className='text-center mt-64'>Selected QA Records Details Will Be Shown Here!</Subtitle> : renderRecordingPanel()}
           </Card>
@@ -699,9 +702,7 @@ const QARecords: React.FC = () => {
               <TableHeaderCell>Time Created</TableHeaderCell>
             </TableRow>
           </TableHead>
-          <TableBody>
-            {QARecordArr.length === 0 ? <Subtitle className='ml-auto mr-auto mt-20'>Q&A Datas Will Be Shown Here</Subtitle> : renderInventoryTableBody()}
-          </TableBody>
+          {QARecordArr.length === 0 ? <Subtitle className='ml-auto mr-auto mt-20'>Q&A Datas Will Be Shown Here</Subtitle> : renderInventoryTableBody()}
         </Table>
         <div className='flex gap-2'>
           <Button color='blue' onClick={() => fetchPage(-1)}><FaCaretLeft />Previous Page</Button>
