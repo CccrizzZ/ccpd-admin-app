@@ -31,7 +31,7 @@ import '../style/RetailManager.css'
 import { Form } from 'react-bootstrap';
 import CreateSalesRecordModal from '../components/CreateSalesRecordModal';
 import { AppContext } from '../App';
-import { renderItemPerPageOptions, server } from '../utils/utils';
+import { renderItemPerPageOptions, server, getPlatformBadgeColor } from '../utils/utils';
 import axios from 'axios';
 import CreateReturnRecordModal from '../components/CreateReturnRecord';
 
@@ -41,22 +41,12 @@ const priceValueFormatter = (num: number) => `$ ${new Intl.NumberFormat("us").fo
 const RetailManager: React.FC = () => {
   const { setLoading, userInfo } = useContext(AppContext)
   const [retailArr, setRetailArr] = useState<RetailRecord[]>([])
+  const [returnArr, setReturnArr] = useState<ReturnRecord[]>([])
   const [currPage, setCurrPage] = useState<number>(0)
   const [itemsPerPage, setItemsPerPage] = useState<number>(20)
   const [timeRange, setTimeRange] = useState<string>('All Time')
   const [showSalesRecordModal, setShowSalesRecordModal] = useState<boolean>(false)
   const [showReturnsRecordModal, setShowReturnsRecordModal] = useState<boolean>(false)
-
-  const tableHead = [
-    'SKU',
-    'Time',
-    'Buyer Name',
-    'Admin Name',
-    'Marketplace',
-    'Quantity',
-    'Payment Method',
-    'Amount (CAD)',
-  ]
 
   useEffect(() => {
     // fetchRetailDataByPage()
@@ -76,6 +66,10 @@ const RetailManager: React.FC = () => {
       alert('Cannot Fetch Retail Record: ' + err.response.status)
     })
     setLoading(false)
+  }
+
+  const fetchReturnRecordsByPage = async () => {
+
   }
 
   // 6 month, quarterly or weekly
@@ -245,28 +239,53 @@ const RetailManager: React.FC = () => {
     )
   }
 
-  const data = [
+  const data: RetailRecord[] = [
     {
-      sku: "Viola Amherd",
-      Role: "Federal Councillor",
-      departement: "The Federal Department of Defence, Civil Protection and Sport (DDPS)",
-      status: "active",
+      sku: 10220,
+      time: 'Thu Oct 12 18:44:00 2023',
+      amount: 44.5,
+      quantity: 1,
+      marketplace: 'Hibid',
+      paymentMethod: 'Card',
+      buyerName: 'John Doe',
+      adminName: 'Michael',
+      invoiceNumber: '113245',
+      paid: true,
+      pickedup: false
     },
     {
-      name: "Simonetta Sommaruga",
-      Role: "Federal Councillor",
-      departement:
-        "The Federal Department of the Environment, Transport, Energy and Communications (DETEC)",
-      status: "active",
+      sku: 10221,
+      time: 'Thu Oct 12 18:44:00 2023',
+      amount: 160.45,
+      quantity: 4,
+      marketplace: 'eBay',
+      paymentMethod: 'Paypal',
+      buyerName: 'John Doe',
+      adminName: 'Michael',
+      invoiceNumber: '113245',
+      paid: true,
+      pickedup: false
     },
   ]
 
   // retail records table
   const onItemsPerPageChange = (event: React.ChangeEvent<HTMLSelectElement>) => setItemsPerPage(Number(event.target.value))
-  const onTimeRangeChange = (event: React.ChangeEvent<HTMLSelectElement>) => setTimeRange(event.target.value)
-  const renderRetailTable = () => {
+  const renderTable = () => {
+    const returnTableHead = [
+      'Return Time',
+      'SKU',
+      'Invoice No.',
+      'Buyer Name',
+      'Admin Name',
+      'Marketplace',
+      'Reason',
+      'Refund Method',
+      'Return Quantity',
+      'Refund Amount (CAD)',
+    ]
+
     return (
-      <Card>
+      <Card className='max-w-full'>
         {/* filter section */}
         <div className='flex'>
           <div className="right-12 w-32 absolute text-left">
@@ -288,29 +307,29 @@ const RetailManager: React.FC = () => {
                 <Table className="mt-5">
                   <TableHead>
                     <TableRow>
-                      {tableHead.map((value, index) => {
-                        return <TableHeaderCell key={index}>{value}</TableHeaderCell>
-                      })}
+                      <TableHeaderCell className='w-24'>SKU</TableHeaderCell>
+                      <TableHeaderCell className='w-36'>Time</TableHeaderCell>
+                      <TableHeaderCell className='w-36'>Buyer Name</TableHeaderCell>
+                      <TableHeaderCell className='w-36'>Admin Name</TableHeaderCell>
+                      <TableHeaderCell className='w-36'>Marketplace</TableHeaderCell>
+                      <TableHeaderCell className='w-36'>Sales Quantity</TableHeaderCell>
+                      <TableHeaderCell className='w-36'>Sales Amount ($CAD)</TableHeaderCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {retailArr.map((item) => (
+                    {data.map((item) => (
                       <TableRow key={item.sku}>
                         <TableCell>{item.sku}</TableCell>
+                        <TableCell>{item.time}</TableCell>
+                        <TableCell>{item.buyerName}</TableCell>
+                        <TableCell>{item.adminName}</TableCell>
                         <TableCell>
-                          {item.time}
-                        </TableCell>
-                        <TableCell>
-                          <Text>{item.buyerName}</Text>
-                        </TableCell>
-                        <TableCell>
-                          <Text>{item.adminName}</Text>
-                        </TableCell>
-                        <TableCell>
-                          <Badge color="emerald">
-                            {item.status}
+                          <Badge color={getPlatformBadgeColor(item.marketplace)}>
+                            {item.marketplace}
                           </Badge>
                         </TableCell>
+                        <TableCell><Badge>{item.quantity}</Badge></TableCell>
+                        <TableCell><Badge color='emerald'>{item.amount}</Badge></TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -322,13 +341,30 @@ const RetailManager: React.FC = () => {
                 <Table className="mt-5">
                   <TableHead>
                     <TableRow>
-                      {tableHead.map((value, index) => {
+                      {returnTableHead.map((value, index) => {
                         return <TableHeaderCell key={index}>{value}</TableHeaderCell>
                       })}
                     </TableRow>
                   </TableHead>
                   <TableBody>
-
+                    {returnArr.map((item) => (
+                      <TableRow key={item.retailRecord.sku}>
+                        <TableCell>{item.retailRecord.sku}</TableCell>
+                        <TableCell>{item.retailRecord.invoiceNumber}</TableCell>
+                        <TableCell>{item.returnTime}</TableCell>
+                        <TableCell>{item.retailRecord.adminName}</TableCell>
+                        <TableCell>{item.retailRecord.buyerName}</TableCell>
+                        <TableCell>
+                          <Badge color={getPlatformBadgeColor(item.retailRecord.marketplace)}>
+                            {item.retailRecord.marketplace}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{item.reason}</TableCell>
+                        <TableCell>{item.refundMethod}</TableCell>
+                        <TableCell>{item.returnQuantity}</TableCell>
+                        <TableCell>{item.refundAmount}</TableCell>
+                      </TableRow>
+                    ))}
                   </TableBody>
                 </Table>
               </div>
@@ -395,7 +431,7 @@ const RetailManager: React.FC = () => {
         </Col>
       </Grid>
       {/* the table */}
-      {renderRetailTable()}
+      {renderTable()}
     </div>
   )
 }

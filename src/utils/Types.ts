@@ -59,7 +59,8 @@ export interface InstockInventory {
   recordAdmin: string;
   recordTime: string;
   quantityInstock: number;
-  tags: Record<string, string>;  // tag requested by James
+  quantitySold: number;
+  tags?: Record<string, string>;  // tag requested by James
 }
 
 export interface QARecord {
@@ -73,7 +74,7 @@ export interface QARecord {
   amount: number;
   owner?: string;
   ownerName?: string;
-  marketplace?: string;
+  marketplace?: Platform;
   recorded?: boolean;
   problem?: boolean
 }

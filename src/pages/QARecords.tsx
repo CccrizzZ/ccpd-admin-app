@@ -44,7 +44,9 @@ import {
   renderPlatformOptions,
   getConditionVariant,
   renderItemPerPageOptions,
-  renderMarketPlaceOptions
+  renderMarketPlaceOptions,
+  copyLink,
+  openLink
 } from '../utils/utils'
 import {
   ListGroup,
@@ -258,12 +260,6 @@ const QARecords: React.FC = () => {
     setLoading(false)
   }
 
-  const copyLink = (link: string) => navigator.clipboard.writeText(link)
-  const openLink = (link: string) => {
-    // extract http link in string and open it in new tab
-    const url = link.split(" ").find(word => word.startsWith("http"))
-    window.open(url, '_blank', 'noreferrer')
-  }
 
   // control panel cursor jump to record
   const nextRecord = () => {

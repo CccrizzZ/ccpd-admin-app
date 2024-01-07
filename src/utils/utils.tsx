@@ -24,6 +24,8 @@ export const getPlatformBadgeColor = (platform: string) => {
       return 'slate';
     case 'Hibid' || 'hibid':
       return 'cyan';
+    case 'HomeDepot' || 'homedepot' || 'Homedepot':
+      return 'amber'
     case 'Wholesale' || 'wholesale':
       return 'rose';
     case 'Retail' || 'retail':
@@ -31,7 +33,7 @@ export const getPlatformBadgeColor = (platform: string) => {
     case 'Other' || 'other':
       return 'slate';
     default:
-      break;
+      return 'slate';
   }
 }
 
@@ -104,6 +106,17 @@ export const renderItemPerPageOptions = () => {
     </>
   )
 }
+
+export const renderInstockOptions = () => {
+  return (
+    <>
+      <option value="">All</option>
+      <option value="instock">In Stock</option>
+      <option value="outOfStock">Out of Stock</option>
+    </>
+  )
+}
+
 
 export const renderPaymentMethodOptions = () => {
   return (
@@ -179,7 +192,7 @@ export const initRetailRecord: RetailRecord = {
   sku: 0,
   time: '',
   amount: 0,
-  quantity: 0,
+  quantity: 1,
   marketplace: '',
   paymentMethod: '' as PaymentMethod,
   buyerName: '',
@@ -195,15 +208,22 @@ export const initInstockInventory: InstockInventory = {
   recordAdmin: '',
   recordTime: '',
   quantityInstock: 0,
-  tags: {}
+  quantitySold: 0,
 }
 
 export const initReturnRecord: ReturnRecord = {
   retailRecord: {} as RetailRecord,
   returnTime: '',
-  returnQuantity: 0,
+  returnQuantity: 1,
   refundAmount: 0,
   refundMethod: 'Cash',
   reason: '',
   adminName: '',
+}
+
+export const copyLink = (link: string) => navigator.clipboard.writeText(link)
+export const openLink = (link: string) => {
+  // extract http link in string and open it in new tab
+  const url = link.split(" ").find(word => word.startsWith("http"))
+  window.open(url, '_blank', 'noreferrer')
 }

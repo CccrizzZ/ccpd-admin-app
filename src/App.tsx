@@ -97,7 +97,7 @@ const App = () => {
     } else {
       return (
         <div className='wrapper'>
-          <TabContainer defaultActiveKey="Q&A Records" data-bs-theme="dark">
+          <TabContainer defaultActiveKey="Retail & Return" data-bs-theme="dark">
             {/* side navigation */}
             <div className='sideBar' style={{ backgroundColor: bgLight, userSelect: 'none' }}>
               <Nav variant="pills" className="flex-column mt-4 p-3">

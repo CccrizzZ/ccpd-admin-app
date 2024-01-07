@@ -18,14 +18,18 @@ import {
   ListItem,
   List
 } from '@tremor/react'
-import { InstockInventory } from '../utils/Types'
+import { Condition, InstockInventory, Platform } from '../utils/Types'
 import { AppContext } from '../App'
 import axios, { AxiosResponse } from 'axios'
 import {
   getPlatformBadgeColor,
   getConditionVariant,
   initInstockInventory,
-  server
+  server,
+  renderItemConditionOptions,
+  renderMarketPlaceOptions,
+  renderPlatformOptions,
+  renderInstockOptions
 } from '../utils/utils'
 import moment from 'moment'
 import { Form, InputGroup } from 'react-bootstrap'
@@ -79,6 +83,10 @@ const Inventory: React.FC = () => {
   const [searchSku, setSearchSku] = useState<string>('')
   const [searchKeyword, setSearchKeyword] = useState<string>('')
   const [searchRes, setSearchRes] = useState<InstockInventory[]>([])
+  const [searchCondition, setSearchCondition] = useState<Condition>('' as Condition)
+  const [searchPlatform, setSearchPlatform] = useState<Platform>('' as Platform)
+  const [searchMarketplace, setSearchMarketplace] = useState<Platform>('' as Platform)
+  const [searchInstock, setSearchInstock] = useState<string>('')
 
   useEffect(() => {
     // fetchInstockByPage()
@@ -176,16 +184,44 @@ const Inventory: React.FC = () => {
   const renderSearchPanel = () => {
     const onSearchSKUChange = (event: React.ChangeEvent<HTMLInputElement>) => setSearchSku(event.target.value)
     const onKeywordChange = (event: React.ChangeEvent<HTMLInputElement>) => setSearchKeyword(event.target.value)
+    const onConditionChange = (event: React.ChangeEvent<HTMLSelectElement>) => setSearchCondition(event.target.value as Condition)
+    const onPlatformChange = (event: React.ChangeEvent<HTMLSelectElement>) => setSearchPlatform(event.target.value as Platform)
+    const onMarketplaceChange = (event: React.ChangeEvent<HTMLSelectElement>) => setSearchMarketplace(event.target.value as Platform)
+    const onInstockChange = (event: React.ChangeEvent<HTMLSelectElement>) => setSearchInstock(event.target.value)
     return (
       <Card className='h-full'>
         <Title>🧪 Record Filters</Title>
-        <InputGroup size="sm" className="mb-3">
+        <InputGroup size='sm' className='mb-3'>
           <InputGroup.Text>SKU</InputGroup.Text>
-          <Form.Control value={searchKeyword} onChange={onSearchSKUChange} />
+          <Form.Control value={searchSku} onChange={onSearchSKUChange} />
         </InputGroup>
-        <InputGroup size="sm" className="mb-3">
+        <InputGroup size='sm' className='mb-3'>
           <InputGroup.Text>Keyword</InputGroup.Text>
           <Form.Control value={searchKeyword} onChange={onKeywordChange} />
+        </InputGroup>
+        <InputGroup size='sm' className='mb-3'>
+          <InputGroup.Text>Item Condition</InputGroup.Text>
+          <Form.Select value={searchCondition} onChange={onConditionChange}>
+            {renderItemConditionOptions()}
+          </Form.Select>
+        </InputGroup>
+        <InputGroup size='sm' className='mb-3'>
+          <InputGroup.Text>Original Platform</InputGroup.Text>
+          <Form.Select value={searchPlatform} onChange={onPlatformChange}>
+            {renderPlatformOptions()}
+          </Form.Select>
+        </InputGroup>
+        <InputGroup size='sm' className='mb-3'>
+          <InputGroup.Text>Target Marketplace</InputGroup.Text>
+          <Form.Select value={searchMarketplace} onChange={onMarketplaceChange}>
+            {renderMarketPlaceOptions()}
+          </Form.Select>
+        </InputGroup>
+        <InputGroup size='sm' className='mb-3'>
+          <InputGroup.Text>Is Instock</InputGroup.Text>
+          <Form.Select value={searchInstock} onChange={onInstockChange}>
+            {renderInstockOptions()}
+          </Form.Select>
         </InputGroup>
 
         {/* <Card className='h-52 overflow-y-scroll p-3 pt-0'>
