@@ -26,6 +26,7 @@ import {
 import { Condition, Platform, QARecord } from '../utils/Types'
 import { AppContext } from '../App'
 import SearchPanel from '../components/SearchPanel'
+import PaginationButton from '../components/PaginationButton'
 import ProblemRecordsPanel, { IProblemRecordsPanel } from '../components/ProblemRecordsPanel'
 import moment from 'moment'
 import {
@@ -33,7 +34,8 @@ import {
   FaArrowRightArrowLeft,
   FaCaretLeft,
   FaCaretRight,
-  FaFilterCircleXmark
+  FaFilterCircleXmark,
+  FaFilePen
 } from 'react-icons/fa6'
 import axios, { AxiosResponse } from 'axios'
 import {
@@ -151,8 +153,10 @@ const QARecords: React.FC = () => {
   // paging
   const [currPage, setCurrPage] = useState<number>(0)
   const [itemsPerPage, setItemsPerPage] = useState<number>(20)
+  const [itemCount, setItemCount] = useState<number>(0)
   // filtering
   const [queryFilter, setQueryFilter] = useState<QueryFilter>(initQueryFilter)
+  const [changed, setChanged] = useState<boolean>(false)
 
   useEffect(() => {
     // fetchQARecordsByPage()
@@ -160,7 +164,7 @@ const QARecords: React.FC = () => {
   }, [])
 
   // called on component mount
-  const fetchQARecordsByPage = async () => {
+  const fetchQARecordsByPage = async (isInit?: boolean) => {
     setLoading(true)
     await axios({
       method: 'post',
@@ -168,15 +172,19 @@ const QARecords: React.FC = () => {
       responseType: 'text',
       timeout: 3000,
       data: {
-        page: currPage,
+        page: isInit ? 0 : currPage,
         itemsPerPage: itemsPerPage,
-        filter: queryFilter
+        filter: isInit ? initQueryFilter : queryFilter
       },
       withCredentials: true
     }).then((res: AxiosResponse) => {
-      setQARecordArr(JSON.parse(res.data))
+      const data = JSON.parse(res.data)
+      setQARecordArr(data['arr'])
+      setItemCount(data['count'])
+      if (changed) setChanged(false)
     }).catch((err) => {
       setQARecordArr([])
+      setItemCount(0)
       setLoading(false)
       alert('Failed Fetching QA Records: ' + err.response)
     })
@@ -248,18 +256,20 @@ const QARecords: React.FC = () => {
       },
       withCredentials: true
     }).then((res: AxiosResponse) => {
-      const records = JSON.parse(res.data)
-      if (records.length > 0) {
-        setQARecordArr(records)
+      const data = JSON.parse(res.data)
+      if (data['arr'].length > 0) {
+        setQARecordArr(data['arr'])
         setCurrPage(newPage)
+        setChanged(false)
+      } else {
+        alert('No More Pages!')
       }
     }).catch(() => {
       setLoading(false)
-      alert('This is the last page')
+      alert('This is the last page!')
     })
     setLoading(false)
   }
-
 
   // control panel cursor jump to record
   const nextRecord = () => {
@@ -438,9 +448,9 @@ const QARecords: React.FC = () => {
   const renderInventoryTableBody = () => {
     return (
       <TableBody>
-        {QARecordArr.map((record) => (
+        {QARecordArr?.map((record) => (
           <TableRow key={record.sku}>
-            <TableCell>
+            <TableCell className={record.sku === selectedRecord.sku ? 'bg-emerald-500' : ''}>
               <Button
                 className='text-white'
                 color={record.problem ? 'rose' : 'slate'}
@@ -475,7 +485,6 @@ const QARecords: React.FC = () => {
               <Text>{record.amount}</Text>
             </TableCell>
             <TableCell>
-              {/* <Text>{(moment(record.time, "ddd MMM DD kk:mm:ss YYYY").format('LLL'))}</Text> */}
               <Text>{(moment(record.time).format('LLL'))}</Text>
             </TableCell>
           </TableRow>
@@ -534,10 +543,10 @@ const QARecords: React.FC = () => {
   }
 
   const renderFilter = () => {
-    const onPlatformFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => setQueryFilter({ ...queryFilter, platformFilter: event.target.value })
-    const onConditionFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => setQueryFilter({ ...queryFilter, conditionFilter: event.target.value })
-    const onMarketplaceFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => setQueryFilter({ ...queryFilter, marketplaceFilter: event.target.value })
-    const onTimeRangeFilterChange = (value: DateRangePickerValue) => setQueryFilter({ ...queryFilter, timeRangeFilter: value })
+    const onPlatformFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => { setQueryFilter({ ...queryFilter, platformFilter: event.target.value }); setChanged(true) }
+    const onConditionFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => { setQueryFilter({ ...queryFilter, conditionFilter: event.target.value }); setChanged(true) }
+    const onMarketplaceFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => { setQueryFilter({ ...queryFilter, marketplaceFilter: event.target.value }); setChanged(true) }
+    const onTimeRangeFilterChange = (value: DateRangePickerValue) => { setQueryFilter({ ...queryFilter, timeRangeFilter: value }); setChanged(true) }
     const renderDatePicker = () => {
       return (
         <DateRangePicker
@@ -574,14 +583,16 @@ const QARecords: React.FC = () => {
     const resetFilters = () => {
       setQueryFilter(initQueryFilter)
       setCurrPage(0)
+      setChanged(false)
+      fetchQARecordsByPage(true)
     }
 
     return (
       <div className='flex mb-4'>
         <Button
           className='text-white absolute mt-4'
-          color='emerald'
-          onClick={fetchQARecordsByPage}
+          color={changed ? 'amber' : 'emerald'}
+          onClick={() => fetchQARecordsByPage(false)}
           tooltip='Refresh QA Records Table'
         >
           <FaRotate />
@@ -612,8 +623,8 @@ const QARecords: React.FC = () => {
             </div>
             <Button
               className='text-white mt-4'
-              color='red'
-              onClick={() => { resetFilters(); fetchQARecordsByPage() }}
+              color='rose'
+              onClick={() => resetFilters()}
               tooltip='Reset Filters'
             >
               <FaFilterCircleXmark />
@@ -627,11 +638,15 @@ const QARecords: React.FC = () => {
           </Form.Select>
         </div>
         <div className="text-center ml-6">
-          <label className='text-gray-500 mb-1'>Current Page</label>
-          <h4>{currPage + 1}</h4>
+          <label className='text-gray-500 mb-1'>Total Items</label>
+          <h4>{itemCount}</h4>
         </div>
       </div>
     )
+  }
+
+  const renderPlaceHolder = () => {
+    if (!QARecordArr || !QARecordArr.length) return <h4 className='text-red-400 w-max ml-auto mr-auto mt-12 mb-12'>No Q&A Records Found!</h4>
   }
 
   const onItemsPerPageChange = (event: React.ChangeEvent<HTMLSelectElement>) => setItemsPerPage(Number(event.target.value))
@@ -698,12 +713,16 @@ const QARecords: React.FC = () => {
               <TableHeaderCell>Time Created</TableHeaderCell>
             </TableRow>
           </TableHead>
-          {QARecordArr.length === 0 ? <Subtitle className='ml-auto mr-auto mt-20'>Q&A Datas Will Be Shown Here</Subtitle> : renderInventoryTableBody()}
+          {renderInventoryTableBody()}
         </Table>
-        <div className='flex gap-2'>
-          <Button color='blue' onClick={() => fetchPage(-1)}><FaCaretLeft />Previous Page</Button>
-          <Button color='blue' onClick={() => fetchPage(1)}>Next Page <FaCaretRight /></Button>
-        </div>
+        {/* p cannot be a child of table */}
+        {renderPlaceHolder()}
+        <hr />
+        <PaginationButton
+          currentPage={currPage}
+          nextPage={() => fetchPage(1)}
+          prevPage={() => fetchPage(-1)}
+        />
       </Card>
     </div>
   )
