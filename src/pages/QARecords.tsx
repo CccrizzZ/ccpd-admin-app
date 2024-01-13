@@ -37,7 +37,7 @@ import {
   FaFilterCircleXmark,
   FaFilePen
 } from 'react-icons/fa6'
-import axios, { AxiosResponse } from 'axios'
+import axios, { AxiosError, AxiosResponse } from 'axios'
 import {
   initQARecord,
   server,
@@ -159,7 +159,7 @@ const QARecords: React.FC = () => {
   const [changed, setChanged] = useState<boolean>(false)
 
   useEffect(() => {
-    // fetchQARecordsByPage()
+    fetchQARecordsByPage()
     console.log('Loading Qa RECORDS...')
   }, [])
 
@@ -223,11 +223,10 @@ const QARecords: React.FC = () => {
       data: { 'sku': String(selectedRecord.sku) },
       withCredentials: true
     }).then((res) => {
-      console.log(res)
       setSelectedRecordImagesArr(JSON.parse(res.data))
-    }).catch(() => {
+    }).catch((res: AxiosError) => {
       setLoading(false)
-      alert('Failed Fetching Image for: ' + selectedRecord.sku)
+      alert('Failed Fetching Image: ' + res.response?.data)
     })
     setLoading(false)
   }
@@ -314,7 +313,7 @@ const QARecords: React.FC = () => {
           show={showImagePopup}
           onHide={clearImagePopup}
           backdrop="static"
-          size='xl'
+          size='lg'
           keyboard={false}
         >
           <Modal.Header closeButton>
@@ -337,9 +336,9 @@ const QARecords: React.FC = () => {
 
     const renderThumbnails = () => {
       return selectedRecordImagesArr.map((link: string) =>
-        <Button key={link} color='slate' onClick={() => { setShowImagePopup(true); setImagePopupUrl(link) }}>
-          <img src={link} width={200} height={200} />
-        </Button>
+        // <Button className='max-w-24' key={link} color='slate' onClick={() => { setShowImagePopup(true); setImagePopupUrl(link) }}>
+        <img src={link} key={link} width={200} onClick={() => { setShowImagePopup(true); setImagePopupUrl(link) }} />
+        // </Button>
       )
     }
 
@@ -431,7 +430,7 @@ const QARecords: React.FC = () => {
             </div>
             <hr />
             <Card className='overflow-y-scroll h-5/6 inline-grid'>
-              {selectedRecordImagesArr.length < 1 ? <Subtitle>Photos Uploaded By Q&A Personal Will Show Up Here</Subtitle> : renderThumbnails()}
+              {selectedRecordImagesArr.length < 1 ? <Subtitle>Photos Uploaded By Q&A Personal Will Show Up Here</Subtitle> : <div className='grid grid-cols-3 gap-2'>{renderThumbnails()}</div>}
             </Card>
           </div>
         </div>
@@ -445,6 +444,29 @@ const QARecords: React.FC = () => {
     )
   }
 
+  const setSelectedRecordByRecord = async (record: QARecord) => {
+    setSelectedRecord(record)
+    scrollToTop()
+    setSelectedRecordImagesArr([])
+
+    // fetch images
+    setLoading(true)
+    await axios({
+      method: 'post',
+      url: server + '/imageController/getUrlsBySku',
+      responseType: 'text',
+      timeout: 3000,
+      data: { 'sku': String(record.sku) },
+      withCredentials: true
+    }).then((res) => {
+      setSelectedRecordImagesArr(JSON.parse(res.data))
+    }).catch((res: AxiosError) => {
+      setLoading(false)
+      throw res.response?.data
+    })
+    setLoading(false)
+  }
+
   const renderInventoryTableBody = () => {
     return (
       <TableBody>
@@ -455,7 +477,7 @@ const QARecords: React.FC = () => {
                 className='text-white'
                 color={record.problem ? 'rose' : 'slate'}
                 tooltip={record.problem ? 'This Record Have Problem' : ''}
-                onClick={() => { setSelectedRecord(record); scrollToTop(); setSelectedRecordImagesArr([]) }}
+                onClick={() => setSelectedRecordByRecord(record)}
               >
                 {record.sku}
               </Button>
@@ -671,7 +693,7 @@ const QARecords: React.FC = () => {
             >
               <FaArrowRightArrowLeft />
             </Button>
-            {displaySearchRecords ? <SearchPanel setSelectedRecord={setSelectedRecord} /> : renderTopOverViewChart()}
+            {displaySearchRecords ? <SearchPanel setSelectedRecord={setSelectedRecordByRecord} /> : renderTopOverViewChart()}
           </Card>
           <Card className="h-96 mt-2">
             <Button
@@ -686,7 +708,7 @@ const QARecords: React.FC = () => {
               displayProblemRecordsPanel ?
                 <ProblemRecordsPanel
                   ref={ProblemPanelRef}
-                  setSelectedRecord={setSelectedRecord}
+                  setSelectedRecord={setSelectedRecordByRecord}
                   setSelectedRecordImagesArr={setSelectedRecordImagesArr}
                 /> : renderBottomOverviewChart()
             }

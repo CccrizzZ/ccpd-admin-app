@@ -38,7 +38,7 @@ const SearchPanel: React.FC<SearchPanelProp> = (props: SearchPanelProp) => {
       setSearchRes(JSON.parse(res.data))
     }).catch((err) => {
       setLoading(false)
-      alert('Failed Searching QA Records: ' + err.response.status)
+      alert('No Record: ' + err.response.status)
     })
     setLoading(false)
   }

@@ -181,8 +181,17 @@ const Inventory: React.FC = () => {
     )
   }
 
+  const resetFilters = () => {
+    setSearchSku('')
+    setSearchKeyword('')
+    setSearchCondition('' as Condition)
+    setSearchPlatform('' as Platform)
+    setSearchMarketplace('' as Platform)
+    setSearchInstock('')
+  }
+
   const renderSearchPanel = () => {
-    const onSearchSKUChange = (event: React.ChangeEvent<HTMLInputElement>) => setSearchSku(event.target.value)
+    const onSearchSKUChange = (event: React.ChangeEvent<HTMLInputElement>) => { if (event.target.value.length < 8) setSearchSku(event.target.value) }
     const onKeywordChange = (event: React.ChangeEvent<HTMLInputElement>) => setSearchKeyword(event.target.value)
     const onConditionChange = (event: React.ChangeEvent<HTMLSelectElement>) => setSearchCondition(event.target.value as Condition)
     const onPlatformChange = (event: React.ChangeEvent<HTMLSelectElement>) => setSearchPlatform(event.target.value as Platform)
@@ -193,7 +202,7 @@ const Inventory: React.FC = () => {
         <Title>🧪 Record Filters</Title>
         <InputGroup size='sm' className='mb-3'>
           <InputGroup.Text>SKU</InputGroup.Text>
-          <Form.Control value={searchSku} onChange={onSearchSKUChange} />
+          <Form.Control type='number' value={searchSku} onChange={onSearchSKUChange} />
         </InputGroup>
         <InputGroup size='sm' className='mb-3'>
           <InputGroup.Text>Keyword</InputGroup.Text>
@@ -223,11 +232,8 @@ const Inventory: React.FC = () => {
             {renderInstockOptions()}
           </Form.Select>
         </InputGroup>
-
-        {/* <Card className='h-52 overflow-y-scroll p-3 pt-0'>
-
-        </Card> */}
-        <Button className='absolute bottom-3 w-48' color='emerald' size='xs' onClick={searchInstockByKeyword}>Filter</Button>
+        <Button className='absolute bottom-3 w-48' color='orange' size='xs' onClick={resetFilters}>Reset Filters</Button>
+        <Button className='absolute bottom-3 w-48 right-6' color='emerald' size='xs' onClick={searchInstockByKeyword}>Refresh</Button>
       </Card>
     )
   }
