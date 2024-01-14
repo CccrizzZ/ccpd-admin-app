@@ -7,7 +7,7 @@ import {
   Title
 } from '@tremor/react'
 import axios, { AxiosResponse } from 'axios'
-import React, { createRef, forwardRef, useContext, useEffect, useImperativeHandle, useRef, useState } from 'react'
+import { forwardRef, useContext, useEffect, useImperativeHandle, useState } from 'react'
 import { server } from '../utils/utils'
 import { AppContext } from '../App'
 import { QARecord } from '../utils/Types'

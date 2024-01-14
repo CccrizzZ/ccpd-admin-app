@@ -60,7 +60,7 @@ export interface InstockInventory {
   recordTime: string;
   quantityInstock: number;
   quantitySold: number;
-  tags?: Record<string, string>;  // tag requested by James
+  tags?: string[];  // tag requested by James
 }
 
 export interface QARecord {

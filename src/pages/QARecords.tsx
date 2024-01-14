@@ -1,4 +1,4 @@
-import React, { createRef, useContext, useEffect, useRef, useState, version } from 'react'
+import React, { useContext, useEffect, useRef, useState, version } from 'react'
 import {
   Grid,
   Badge,
@@ -16,8 +16,6 @@ import {
   BarChart,
   Subtitle,
   AreaChart,
-  ListItem,
-  List,
   Textarea,
   DateRangePicker,
   DateRangePickerItem,
@@ -32,10 +30,7 @@ import moment from 'moment'
 import {
   FaRotate,
   FaArrowRightArrowLeft,
-  FaCaretLeft,
-  FaCaretRight,
   FaFilterCircleXmark,
-  FaFilePen
 } from 'react-icons/fa6'
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import {
@@ -51,14 +46,12 @@ import {
   openLink
 } from '../utils/utils'
 import {
-  ListGroup,
   Form,
   InputGroup,
-  Tooltip,
-  OverlayTrigger,
   Modal
 } from 'react-bootstrap'
 import '../style/QARecords.css'
+import CustomDatePicker from '../components/DateRangePicker'
 
 const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()}`
 
@@ -336,9 +329,7 @@ const QARecords: React.FC = () => {
 
     const renderThumbnails = () => {
       return selectedRecordImagesArr.map((link: string) =>
-        // <Button className='max-w-24' key={link} color='slate' onClick={() => { setShowImagePopup(true); setImagePopupUrl(link) }}>
         <img src={link} key={link} width={200} onClick={() => { setShowImagePopup(true); setImagePopupUrl(link) }} />
-        // </Button>
       )
     }
 
@@ -472,7 +463,8 @@ const QARecords: React.FC = () => {
       <TableBody>
         {QARecordArr?.map((record) => (
           <TableRow key={record.sku}>
-            <TableCell className={record.sku === selectedRecord.sku ? 'bg-emerald-500' : ''}>
+            <TableCell>
+              <p className={'absolute left-3 text-lg ' + (record.sku === selectedRecord.sku ? 'visible' : 'invisible')}>👉</p>
               <Button
                 className='text-white'
                 color={record.problem ? 'rose' : 'slate'}
@@ -569,39 +561,6 @@ const QARecords: React.FC = () => {
     const onConditionFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => { setQueryFilter({ ...queryFilter, conditionFilter: event.target.value }); setChanged(true) }
     const onMarketplaceFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => { setQueryFilter({ ...queryFilter, marketplaceFilter: event.target.value }); setChanged(true) }
     const onTimeRangeFilterChange = (value: DateRangePickerValue) => { setQueryFilter({ ...queryFilter, timeRangeFilter: value }); setChanged(true) }
-    const renderDatePicker = () => {
-      return (
-        <DateRangePicker
-          className="h-full"
-          enableSelect={true}
-          onValueChange={onTimeRangeFilterChange}
-          value={queryFilter.timeRangeFilter}
-        >
-          <DateRangePickerItem
-            key="Today"
-            value="today"
-            from={new Date()}
-          >
-            Today
-          </DateRangePickerItem>
-          <DateRangePickerItem
-            key="This Week"
-            value="thisWeek"
-            from={moment().startOf('week').toDate()}
-          >
-            This Week
-          </DateRangePickerItem>
-          <DateRangePickerItem
-            key="This Month"
-            value="thisMonth"
-            from={moment().startOf('month').toDate()}
-          >
-            This Month
-          </DateRangePickerItem>
-        </DateRangePicker>
-      )
-    }
-
     const resetFilters = () => {
       setQueryFilter(initQueryFilter)
       setCurrPage(0)
@@ -622,7 +581,10 @@ const QARecords: React.FC = () => {
         <div className='flex gap-6 ml-16' style={{ minWidth: '80%' }}>
           <div className='ml-6 mr-6 absolute'>
             <label className='text-gray-500'>Time Filter:</label>
-            {renderDatePicker()}
+            <CustomDatePicker
+              onValueChange={onTimeRangeFilterChange}
+              value={queryFilter.timeRangeFilter}
+            />
           </div>
           <div className='absolute right-96 gap-2 flex'>
             <div>

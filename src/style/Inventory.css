@@ -1,0 +1,17 @@
+.instock-radio > .form-check-input:checked {
+    background-color: #10b981;
+    border-color: #10b981;
+}
+
+.instock-radio > .form-check-label {
+    color: #10b981;
+}
+
+.outofstock-radio > .form-check-input:checked {
+    background-color: #f43f5e;
+    border-color: #f43f5e;
+}
+
+.outofstock-radio > .form-check-label {
+    color: #f43f5e;
+}

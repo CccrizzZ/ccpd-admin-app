@@ -1,8 +1,6 @@
 import React, { useState, useContext } from 'react'
 import { AppContext } from '../App'
 import {
-  Grid,
-  Col,
   Card,
   Title,
   TextInput

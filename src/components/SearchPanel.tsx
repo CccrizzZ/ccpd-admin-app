@@ -42,6 +42,7 @@ const SearchPanel: React.FC<SearchPanelProp> = (props: SearchPanelProp) => {
     })
     setLoading(false)
   }
+
   const resetSearch = () => {
     setSearchSKU('')
     setSearchRes(initQARecord)

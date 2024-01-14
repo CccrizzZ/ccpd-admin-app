@@ -1,5 +1,4 @@
 import React from 'react'
-import { QARecord } from '../utils/Types'
 import {
   Grid,
   Col,
@@ -7,20 +6,14 @@ import {
   Text,
   Metric,
   Title,
-  BarChart,
-  LineChart,
   AreaChart,
   Subtitle,
-  List,
-  ListItem,
   DonutChart,
   Legend,
   // BadgeDelta
 } from '@tremor/react'
-import { FaMagnifyingGlass } from 'react-icons/fa6'
 import '../style/Dashboard.css'
 import moment from 'moment'
-import SKULookupPanel from '../components/SKULookupPanel'
 
 const Dashboard: React.FC = () => {
   const LineChartData = [
@@ -113,10 +106,6 @@ const Dashboard: React.FC = () => {
       })
     }
     return data
-  }
-
-  const getLineChartData = () => {
-
   }
 
   const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()}`

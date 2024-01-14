@@ -110,9 +110,9 @@ export const renderItemPerPageOptions = () => {
 export const renderInstockOptions = () => {
   return (
     <>
-      <option value="">All</option>
-      <option value="instock">In Stock</option>
-      <option value="outOfStock">Out of Stock</option>
+      <option className='text-blue-500' value=''>All</option>
+      <option className='text-emerald-500' value='in'>In Stock</option>
+      <option className='text-rose-500' value='out'>Out of Stock</option>
     </>
   )
 }

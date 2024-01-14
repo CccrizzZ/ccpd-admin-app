@@ -7,7 +7,7 @@ type PopupToastProp = {
   setMsg: (msg: string) => void
 }
 
-const PopupToast = (prop: PopupToastProp) => {
+const PopupToast: React.FC<PopupToastProp> = (prop: PopupToastProp) => {
   return (
     <div>
       <Toast onClose={prop.onClose} show={prop.show} delay={3000} autohide>
