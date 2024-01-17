@@ -1,3 +1,5 @@
+import { DateRangePickerValue } from "@tremor/react";
+
 export type Condition =
   'New' |
   'Sealed' |
@@ -108,4 +110,11 @@ export type CreateUser = {
 export type Paging = {
   currPage: number,
   itemsPerPage: number
+}
+
+export type QueryFilter = {
+  timeRangeFilter: DateRangePickerValue;
+  conditionFilter: string;
+  platformFilter: string;
+  marketplaceFilter: string;
 }

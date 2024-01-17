@@ -185,7 +185,7 @@ const CreateSalesRecordModal: React.FC<CreateSalesRecordModalProps> = (props: Cr
             <Divider className='mt-0'>Comment</Divider>
             <Text>{targetInventoryRecord.qaRecord.comment}</Text>
             <Divider>Link</Divider>
-            <div className='flex d-grid'>
+            <div className='d-grid gap-2'>
               <Button color='gray' onClick={() => copyLink(targetInventoryRecord.qaRecord.link)}>Copy</Button>
               <Button color='emerald' onClick={() => openLink(targetInventoryRecord.qaRecord.link)}>Open</Button>
             </div>

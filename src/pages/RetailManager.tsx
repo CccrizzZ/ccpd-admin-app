@@ -24,16 +24,19 @@ import {
   TabList,
   TabPanels,
   TabPanel,
-  Tab
+  Tab,
+  DateRangePickerValue
 } from '@tremor/react'
-import { RetailRecord, ReturnRecord, Condition } from '../utils/Types'
+import { RetailRecord, ReturnRecord, Condition, QueryFilter } from '../utils/Types'
 import '../style/RetailManager.css'
 import { Form } from 'react-bootstrap';
 import CreateSalesRecordModal from '../components/CreateSalesRecordModal';
 import { AppContext } from '../App';
-import { renderItemPerPageOptions, server, getPlatformBadgeColor } from '../utils/utils';
+import { renderItemPerPageOptions, server, getPlatformBadgeColor, initQueryFilter } from '../utils/utils';
 import axios from 'axios';
 import CreateReturnRecordModal from '../components/CreateReturnRecord';
+import TableFilter from '../components/tableFilter';
+import { FaRotate } from 'react-icons/fa6';
 
 const itemValueFormatter = (num: number) => `${new Intl.NumberFormat("us").format(num).toString()} Items`;
 const priceValueFormatter = (num: number) => `$ ${new Intl.NumberFormat("us").format(num).toString()}`;
@@ -48,6 +51,10 @@ const RetailManager: React.FC = () => {
   const [showSalesRecordModal, setShowSalesRecordModal] = useState<boolean>(false)
   const [showReturnsRecordModal, setShowReturnsRecordModal] = useState<boolean>(false)
 
+  // filters
+  const [queryFilter, setQueryFilter] = useState<QueryFilter>(initQueryFilter)
+  const [changed, setChanged] = useState<boolean>(false)
+
   useEffect(() => {
     // fetchRetailDataByPage()
   }, [])
@@ -58,7 +65,10 @@ const RetailManager: React.FC = () => {
       method: 'post',
       url: server + '/adminController/getSalesRecordsByPage',
       responseType: 'text',
-      data: { 'currPage': currPage, 'itemsPerPage': itemsPerPage },
+      data: {
+        currPage: currPage,
+        itemsPerPage: itemsPerPage
+      },
       withCredentials: true
     }).then((res) => {
       setRetailArr(JSON.parse(res.data))
@@ -284,10 +294,36 @@ const RetailManager: React.FC = () => {
       'Refund Amount (CAD)',
     ]
 
-    return (
-      <Card className='max-w-full'>
-        {/* filter section */}
+    const renderFilter = () => {
+      const onPlatformFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => { setQueryFilter({ ...queryFilter, platformFilter: event.target.value }); setChanged(true) }
+      const onConditionFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => { setQueryFilter({ ...queryFilter, conditionFilter: event.target.value }); setChanged(true) }
+      const onMarketplaceFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => { setQueryFilter({ ...queryFilter, marketplaceFilter: event.target.value }); setChanged(true) }
+      const onTimeRangeFilterChange = (value: DateRangePickerValue) => { setQueryFilter({ ...queryFilter, timeRangeFilter: value }); setChanged(true) }
+      const resetFilters = () => {
+        setQueryFilter(initQueryFilter)
+        setCurrPage(0)
+        setChanged(false)
+        fetchRetailDataByPage()
+      }
+      return (
         <div className='flex'>
+          <Button
+            className='text-white absolute mt-4'
+            color={changed ? 'amber' : 'emerald'}
+            onClick={() => fetchRetailDataByPage()}
+            tooltip='Refresh QA Records Table'
+          >
+            <FaRotate />
+          </Button>
+          <TableFilter
+            queryFilter={queryFilter}
+            setQueryFilter={setQueryFilter}
+            onTimeRangeFilterChange={onTimeRangeFilterChange}
+            onConditionFilterChange={onConditionFilterChange}
+            onPlatformFilterChange={onPlatformFilterChange}
+            onMarketplaceFilterChange={onMarketplaceFilterChange}
+            resetFilters={resetFilters}
+          />
           <div className="right-12 w-32 absolute text-left">
             <label className='text-gray-500'>Items Per Page</label>
             <Form.Select className='mr-2' value={String(itemsPerPage)} onChange={onItemsPerPageChange}>
@@ -295,8 +331,18 @@ const RetailManager: React.FC = () => {
             </Form.Select>
           </div>
         </div>
+
+      )
+    }
+
+    const renderRetailTable = () => { }
+
+    return (
+      <Card className='max-w-full'>
+        {/* filter section */}
+        {renderFilter()}
         {/* table */}
-        <TabGroup>
+        <TabGroup className='mt-24'>
           <TabList className="mt-8" color='orange'>
             <Tab title='Sales'>Sales</Tab>
             <Tab title='Returns'>Returns</Tab>
@@ -337,6 +383,7 @@ const RetailManager: React.FC = () => {
               </div>
             </TabPanel>
             <TabPanel>
+              {/* return */}
               <div className="mt-10">
                 <Table className="mt-5">
                   <TableHead>

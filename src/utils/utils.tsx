@@ -1,6 +1,7 @@
 import { SHA256, enc } from "crypto-js";
 import moment from "moment";
-import { CreateUser, InstockInventory, PaymentMethod, QARecord, RetailRecord, ReturnRecord, UserDetail } from "./Types";
+import { CreateUser, InstockInventory, PaymentMethod, QARecord, QueryFilter, RetailRecord, ReturnRecord, UserDetail } from "./Types";
+import { DateRangePickerValue } from "@tremor/react";
 
 // server connection
 export const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
@@ -226,4 +227,11 @@ export const openLink = (link: string) => {
   // extract http link in string and open it in new tab
   const url = link.split(" ").find(word => word.startsWith("http"))
   window.open(url, '_blank', 'noreferrer')
+}
+
+export const initQueryFilter: QueryFilter = {
+  timeRangeFilter: {} as DateRangePickerValue,
+  conditionFilter: '',
+  platformFilter: '',
+  marketplaceFilter: ''
 }

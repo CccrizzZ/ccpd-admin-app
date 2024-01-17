@@ -21,7 +21,7 @@ import {
   DateRangePickerItem,
   DateRangePickerValue
 } from '@tremor/react'
-import { Condition, Platform, QARecord } from '../utils/Types'
+import { Condition, Platform, QARecord, QueryFilter } from '../utils/Types'
 import { AppContext } from '../App'
 import SearchPanel from '../components/SearchPanel'
 import PaginationButton from '../components/PaginationButton'
@@ -30,7 +30,6 @@ import moment from 'moment'
 import {
   FaRotate,
   FaArrowRightArrowLeft,
-  FaFilterCircleXmark,
 } from 'react-icons/fa6'
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import {
@@ -43,7 +42,8 @@ import {
   renderItemPerPageOptions,
   renderMarketPlaceOptions,
   copyLink,
-  openLink
+  openLink,
+  initQueryFilter
 } from '../utils/utils'
 import {
   Form,
@@ -52,6 +52,7 @@ import {
 } from 'react-bootstrap'
 import '../style/QARecords.css'
 import CustomDatePicker from '../components/DateRangePicker'
+import TableFilter from '../components/tableFilter'
 
 const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()}`
 
@@ -115,20 +116,6 @@ const chartdata = [
     "QARecorded": 1726,
   },
 ]
-
-const initQueryFilter: QueryFilter = {
-  timeRangeFilter: {} as DateRangePickerValue,
-  conditionFilter: '',
-  platformFilter: '',
-  marketplaceFilter: ''
-}
-
-type QueryFilter = {
-  timeRangeFilter: DateRangePickerValue;
-  conditionFilter: string;
-  platformFilter: string;
-  marketplaceFilter: string;
-}
 
 const QARecords: React.FC = () => {
   const { setLoading } = useContext(AppContext)
@@ -578,43 +565,15 @@ const QARecords: React.FC = () => {
         >
           <FaRotate />
         </Button>
-        <div className='flex gap-6 ml-16' style={{ minWidth: '80%' }}>
-          <div className='ml-6 mr-6 absolute'>
-            <label className='text-gray-500'>Time Filter:</label>
-            <CustomDatePicker
-              onValueChange={onTimeRangeFilterChange}
-              value={queryFilter.timeRangeFilter}
-            />
-          </div>
-          <div className='absolute right-96 gap-2 flex'>
-            <div>
-              <label className='text-gray-500'>Condition:</label>
-              <Form.Select value={queryFilter.conditionFilter} onChange={onConditionFilterChange}>
-                {renderItemConditionOptions()}
-              </Form.Select>
-            </div>
-            <div>
-              <label className='text-gray-500'>Platform:</label>
-              <Form.Select value={queryFilter.platformFilter} onChange={onPlatformFilterChange}>
-                {renderPlatformOptions()}
-              </Form.Select>
-            </div>
-            <div>
-              <label className='text-gray-500'>Marketplace:</label>
-              <Form.Select value={queryFilter.marketplaceFilter} onChange={onMarketplaceFilterChange}>
-                {renderMarketPlaceOptions()}
-              </Form.Select>
-            </div>
-            <Button
-              className='text-white mt-4'
-              color='rose'
-              onClick={() => resetFilters()}
-              tooltip='Reset Filters'
-            >
-              <FaFilterCircleXmark />
-            </Button>
-          </div>
-        </div>
+        <TableFilter
+          queryFilter={queryFilter}
+          setQueryFilter={setQueryFilter}
+          onTimeRangeFilterChange={onTimeRangeFilterChange}
+          onConditionFilterChange={onConditionFilterChange}
+          onPlatformFilterChange={onPlatformFilterChange}
+          onMarketplaceFilterChange={onMarketplaceFilterChange}
+          resetFilters={resetFilters}
+        />
         <div>
           <label className='text-gray-500 mb-1'>Items Per Page</label>
           <Form.Select className='mr-2' value={String(itemsPerPage)} onChange={onItemsPerPageChange}>
