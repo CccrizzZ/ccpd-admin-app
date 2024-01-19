@@ -118,7 +118,6 @@ export const renderInstockOptions = () => {
   )
 }
 
-
 export const renderPaymentMethodOptions = () => {
   return (
     <>

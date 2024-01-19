@@ -16,6 +16,7 @@ import {
   Title,
   Text,
   DateRangePickerValue,
+  AreaChart,
 } from '@tremor/react'
 import { Condition, InstockInventory, Platform } from '../utils/Types'
 import { AppContext } from '../App'
@@ -36,35 +37,35 @@ import { Form, InputGroup } from 'react-bootstrap'
 import PaginationButton from '../components/PaginationButton'
 import "../style/Inventory.css"
 import CustomDatePicker from '../components/DateRangePicker'
-const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()}`
 
 // mock data
-const barChartData = [
+const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()}`
+const chartdata = [
   {
-    name: "New",
-    "Number of Items": 546,
+    date: 'Jan 22',
+    'Recorded Inventory': 0,
   },
   {
-    name: "Sealed",
-    "Number of Items": 120,
+    date: 'Feb 22',
+    'Recorded Inventory': 2,
   },
   {
-    name: "Used Like New",
-    "Number of Items": 25,
+    date: 'Mar 22',
+    'Recorded Inventory': 194,
   },
   {
-    name: "Used",
-    "Number of Items": 13,
+    date: 'Apr 22',
+    'Recorded Inventory': 218,
   },
   {
-    name: "Damaged",
-    "Number of Items": 8,
+    date: 'May 22',
+    'Recorded Inventory': 182,
   },
   {
-    name: "As Is",
-    "Number of Items": 2,
-  }
-]
+    date: 'Jun 22',
+    'Recorded Inventory': 176,
+  },
+];
 
 const initQueryFilter: QueryFilter = {
   timeRangeFilter: {} as DateRangePickerValue,
@@ -285,16 +286,15 @@ const Inventory: React.FC = () => {
     return (
       <Card>
         <Title>Overview</Title>
-        <Subtitle>Last 7 Days (Dec 7 - Dec 14)</Subtitle>
-        <BarChart
-          className="h-64"
-          data={barChartData}
-          index="name"
-          categories={["Number of Items"]}
-          colors={["rose"]}
+        <Subtitle>Last 6 Weeks (Dec 7 - Dec 14)</Subtitle>
+        <AreaChart
+          className="h-72 mt-4"
+          data={chartdata}
+          index="date"
+          yAxisWidth={65}
+          categories={['Recorded Inventory']}
+          colors={["sky"]}
           valueFormatter={valueFormatter}
-          yAxisWidth={32}
-          showAnimation={true}
         />
       </Card>
     )
@@ -302,36 +302,39 @@ const Inventory: React.FC = () => {
 
   const renderInventoryTableBody = () => {
     return instockArr.map((instock) => (
-      <TableRow key={instock.qaRecord.sku}>
+      <TableRow key={instock.sku}>
         <TableCell>
-          <Text>{instock.qaRecord.sku}</Text>
+          <Text>{instock.sku}</Text>
         </TableCell>
         <TableCell>
-          <Text>{instock.qaRecord.shelfLocation}</Text>
+          <Text>{instock.lead}</Text>
         </TableCell>
         <TableCell>
-          <Badge color='slate'>{instock.qaRecord.ownerName}</Badge>
+          <Text>{instock.description}</Text>
         </TableCell>
         <TableCell>
-          <Badge color='slate'>{instock.recordAdmin}</Badge>
+          <Text>{instock.shelfLocation}</Text>
         </TableCell>
         <TableCell>
-          <Badge color={getConditionVariant(instock.qaRecord.itemCondition)}>{instock.qaRecord.itemCondition}</Badge>
+          <Badge color={getConditionVariant(instock.condition)}>{instock.condition}</Badge>
         </TableCell>
         <TableCell>
-          <p>{instock.qaRecord.comment}</p>
+          <p>{instock.comment}</p>
         </TableCell>
         <TableCell>
-          <p>{instock.qaRecord.link.slice(0, 100)}</p>
-        </TableCell>
-        <TableCell>
-          <Badge color={getPlatformBadgeColor(instock.qaRecord.platform)}>{instock.qaRecord.platform}</Badge>
-        </TableCell>
-        <TableCell>
-          <Badge color={getPlatformBadgeColor(instock.qaRecord.marketplace ?? 'None')}>{instock.qaRecord.marketplace}</Badge>
+          <p>{instock.url.slice(0, 100)}</p>
         </TableCell>
         <TableCell>
           <Text>{instock.quantityInstock}</Text>
+        </TableCell>
+        <TableCell>
+          <Text>{instock.quantitySold}</Text>
+        </TableCell>
+        <TableCell>
+          <Badge color='slate'>{instock.qaName}</Badge>
+        </TableCell>
+        <TableCell>
+          <Badge color='slate'>{instock.adminName}</Badge>
         </TableCell>
         <TableCell>
           <Text>{(moment(instock.recordTime, "ddd MMM DD kk:mm:ss YYYY").format('LLL'))}</Text>
@@ -352,16 +355,17 @@ const Inventory: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow className='th-row'>
-              <TableHeaderCell className='w-36'>SKU</TableHeaderCell>
-              <TableHeaderCell className='w-36'>Owner</TableHeaderCell>
-              <TableHeaderCell className='w-36'>Shelf Location</TableHeaderCell>
-              <TableHeaderCell className='w-36'>Condition</TableHeaderCell>
+              <TableHeaderCell className='w-28'>SKU</TableHeaderCell>
+              <TableHeaderCell className='w-36'>Lead</TableHeaderCell>
               <TableHeaderCell>Desc</TableHeaderCell>
-              <TableHeaderCell>Link</TableHeaderCell>
-              <TableHeaderCell className='w-46'>Platform</TableHeaderCell>
-              <TableHeaderCell className='w-36'>Marketplace</TableHeaderCell>
-              <TableHeaderCell className='w-32'>Instock</TableHeaderCell>
-              <TableHeaderCell className='w-36'>Sold</TableHeaderCell>
+              <TableHeaderCell className='w-32'>Shelf Location</TableHeaderCell>
+              <TableHeaderCell className='w-28'>Condition</TableHeaderCell>
+              <TableHeaderCell>QAComment</TableHeaderCell>
+              <TableHeaderCell>URL</TableHeaderCell>
+              <TableHeaderCell className='w-28'>Instock</TableHeaderCell>
+              <TableHeaderCell className='w-28'>Sold</TableHeaderCell>
+              <TableHeaderCell className='w-36'>QAPersonal</TableHeaderCell>
+              <TableHeaderCell className='w-36'>Admin</TableHeaderCell>
               <TableHeaderCell>Time Recorded</TableHeaderCell>
             </TableRow>
           </TableHead>

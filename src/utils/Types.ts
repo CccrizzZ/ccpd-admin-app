@@ -57,11 +57,20 @@ export interface ReturnRecord {
 }
 
 export interface InstockInventory {
-  qaRecord: QARecord;
-  recordAdmin: string;
-  recordTime: string;
+  sku: number;
+  mrsp: number;
+  shelfLocation: string;
+  condition: Condition;
+  comment: string;
+  lead: string;         // chat gpt generated
+  description: string;  // chat gpt generated
+  url: string;
   quantityInstock: number;
   quantitySold: number;
+  adminName: string;
+  qaName: string;
+  recordTime: string;
+  qaRecordId?: string;
   tags?: string[];  // tag requested by James
 }
 

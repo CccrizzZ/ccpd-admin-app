@@ -51,8 +51,7 @@ import {
   Modal
 } from 'react-bootstrap'
 import '../style/QARecords.css'
-import CustomDatePicker from '../components/DateRangePicker'
-import TableFilter from '../components/tableFilter'
+import TableFilter from '../components/TableFilter'
 
 const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()}`
 

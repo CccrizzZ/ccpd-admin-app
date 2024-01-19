@@ -35,11 +35,117 @@ import { AppContext } from '../App';
 import { renderItemPerPageOptions, server, getPlatformBadgeColor, initQueryFilter } from '../utils/utils';
 import axios from 'axios';
 import CreateReturnRecordModal from '../components/CreateReturnRecord';
-import TableFilter from '../components/tableFilter';
+import TableFilter from '../components/TableFilter';
 import { FaRotate } from 'react-icons/fa6';
 
 const itemValueFormatter = (num: number) => `${new Intl.NumberFormat("us").format(num).toString()} Items`;
 const priceValueFormatter = (num: number) => `$ ${new Intl.NumberFormat("us").format(num).toString()}`;
+
+// 6 month, quarterly or weekly
+const retailReturnData = [
+  {
+    day: 'Dec 8',
+    "Retail": 1004,
+    "Return": 120,
+  },
+  {
+    day: 'Dec 9',
+    "Retail": 1504,
+    "Return": 30,
+  },
+  {
+    day: 'Dec 10',
+    "Retail": 1304,
+    "Return": 100,
+  },
+  {
+    day: 'Dec 11',
+    "Retail": 804,
+    "Return": 10,
+  },
+  {
+    day: 'Dec 12',
+    "Retail": 1104,
+    "Return": 100,
+  },
+  {
+    day: 'Dec 13',
+    "Retail": 1204,
+    "Return": 170,
+  },
+  {
+    day: 'Dec 14',
+    "Retail": 2504,
+    "Return": 230,
+  },
+  {
+    day: 'Dec 15',
+    "Retail": 1404,
+    "Return": 150,
+  },
+  {
+    day: 'Dec 16',
+    "Retail": 2004,
+    "Return": 20,
+  },
+  {
+    day: 'Dec 17',
+    "Retail": 1004,
+    "Return": 40,
+  },
+  {
+    day: 'Dec 18',
+    "Retail": 156,
+    "Return": 14,
+  }
+]
+
+// overviewing conditions of retail goods
+const retailConditionData = [
+  {
+    condition: "New",
+    items: 55,
+  },
+  {
+    condition: "Sealed",
+    items: 2,
+  },
+  {
+    condition: "Used Like New",
+    items: 16,
+  },
+  {
+    condition: "Used",
+    items: 5,
+  },
+  {
+    condition: "As Is",
+    items: 2,
+  },
+  {
+    condition: "Damaged",
+    items: 0,
+  },
+]
+
+const retailPriceRangeData = [
+  {
+    name: "<$50",
+    'Amount': 74,
+  },
+  {
+    name: "$50-100",
+    'Amount': 12,
+  },
+  {
+    name: "$100-200",
+    'Amount': 4,
+  },
+  {
+    name: ">$200",
+    'Amount': 2,
+  },
+]
 
 const RetailManager: React.FC = () => {
   const { setLoading, userInfo } = useContext(AppContext)
@@ -57,6 +163,7 @@ const RetailManager: React.FC = () => {
 
   useEffect(() => {
     // fetchRetailDataByPage()
+    // fetchReturnRecordsByPage()
   }, [])
 
   const fetchRetailDataByPage = async () => {
@@ -79,114 +186,23 @@ const RetailManager: React.FC = () => {
   }
 
   const fetchReturnRecordsByPage = async () => {
-
+    setLoading(true)
+    await axios({
+      method: 'post',
+      url: server + '/adminController/getReturnRecordsByPage',
+      responseType: 'text',
+      data: {
+        currPage: currPage,
+        itemsPerPage: itemsPerPage
+      },
+      withCredentials: true
+    }).then((res) => {
+      setReturnArr(JSON.parse(res.data))
+    }).catch((err) => {
+      alert('Cannot Fetch Return Record: ' + err.response.status)
+    })
+    setLoading(false)
   }
-
-  // 6 month, quarterly or weekly
-  const retailReturnData = [
-    {
-      day: 'Dec 8',
-      "Retail": 1004,
-      "Return": 120,
-    },
-    {
-      day: 'Dec 9',
-      "Retail": 1504,
-      "Return": 30,
-    },
-    {
-      day: 'Dec 10',
-      "Retail": 1304,
-      "Return": 100,
-    },
-    {
-      day: 'Dec 11',
-      "Retail": 804,
-      "Return": 10,
-    },
-    {
-      day: 'Dec 12',
-      "Retail": 1104,
-      "Return": 100,
-    },
-    {
-      day: 'Dec 13',
-      "Retail": 1204,
-      "Return": 170,
-    },
-    {
-      day: 'Dec 14',
-      "Retail": 2504,
-      "Return": 230,
-    },
-    {
-      day: 'Dec 15',
-      "Retail": 1404,
-      "Return": 150,
-    },
-    {
-      day: 'Dec 16',
-      "Retail": 2004,
-      "Return": 20,
-    },
-    {
-      day: 'Dec 17',
-      "Retail": 1004,
-      "Return": 40,
-    },
-    {
-      day: 'Dec 18',
-      "Retail": 156,
-      "Return": 14,
-    }
-  ]
-
-  // overviewing conditions of retail goods
-  const retailConditionData = [
-    {
-      condition: "New",
-      items: 55,
-    },
-    {
-      condition: "Sealed",
-      items: 2,
-    },
-    {
-      condition: "Used Like New",
-      items: 16,
-    },
-    {
-      condition: "Used",
-      items: 5,
-    },
-    {
-      condition: "As Is",
-      items: 2,
-    },
-    {
-      condition: "Damaged",
-      items: 0,
-    },
-  ]
-
-  const retailPriceRangeData = [
-    {
-      name: "<$50",
-      'Amount': 74,
-    },
-    {
-      name: "$50-100",
-      'Amount': 12,
-    },
-    {
-      name: "$100-200",
-      'Amount': 4,
-    },
-    {
-      name: ">$200",
-      'Amount': 2,
-    },
-  ]
 
   // return vs retail amount
   const renderGraph1 = () => {
@@ -279,7 +295,6 @@ const RetailManager: React.FC = () => {
   ]
 
   // retail records table
-  const onItemsPerPageChange = (event: React.ChangeEvent<HTMLSelectElement>) => setItemsPerPage(Number(event.target.value))
   const renderTable = () => {
     const returnTableHead = [
       'Return Time',
@@ -295,6 +310,7 @@ const RetailManager: React.FC = () => {
     ]
 
     const renderFilter = () => {
+      const onItemsPerPageChange = (event: React.ChangeEvent<HTMLSelectElement>) => setItemsPerPage(Number(event.target.value))
       const onPlatformFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => { setQueryFilter({ ...queryFilter, platformFilter: event.target.value }); setChanged(true) }
       const onConditionFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => { setQueryFilter({ ...queryFilter, conditionFilter: event.target.value }); setChanged(true) }
       const onMarketplaceFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => { setQueryFilter({ ...queryFilter, marketplaceFilter: event.target.value }); setChanged(true) }
@@ -331,12 +347,8 @@ const RetailManager: React.FC = () => {
             </Form.Select>
           </div>
         </div>
-
       )
     }
-
-    const renderRetailTable = () => { }
-
     return (
       <Card className='max-w-full'>
         {/* filter section */}
