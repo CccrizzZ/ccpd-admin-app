@@ -19,7 +19,9 @@ import {
   Textarea,
   DateRangePicker,
   DateRangePickerItem,
-  DateRangePickerValue
+  DateRangePickerValue,
+  List,
+  ListItem
 } from '@tremor/react'
 import { Condition, Platform, QARecord, QueryFilter } from '../utils/Types'
 import { AppContext } from '../App'
@@ -117,7 +119,7 @@ const chartdata = [
 ]
 
 const QARecords: React.FC = () => {
-  const { setLoading } = useContext(AppContext)
+  const { setLoading, userInfo } = useContext(AppContext)
   const ProblemPanelRef = useRef<IProblemRecordsPanel>(null)
   const tableRef = useRef<HTMLDivElement>(null)
   const topRef = useRef<HTMLDivElement>(null)
@@ -129,6 +131,7 @@ const QARecords: React.FC = () => {
   const [showMarkConfirmPopup, setShowMarkConfirmPopup] = useState<boolean>(false)
   const [showImagePopup, setShowImagePopup] = useState<boolean>(false)
   const [imagePopupUrl, setImagePopupUrl] = useState<string>('')
+  const [flipQACard, setFlipQACard] = useState<boolean>(false)
   // paging
   const [currPage, setCurrPage] = useState<number>(0)
   const [itemsPerPage, setItemsPerPage] = useState<number>(20)
@@ -143,7 +146,7 @@ const QARecords: React.FC = () => {
   }, [])
 
   // called on component mount
-  const fetchQARecordsByPage = async (isInit?: boolean) => {
+  const fetchQARecordsByPage = async (isInit?: boolean, newItemsPerPage?: number) => {
     setLoading(true)
     await axios({
       method: 'post',
@@ -152,7 +155,7 @@ const QARecords: React.FC = () => {
       timeout: 3000,
       data: {
         page: isInit ? 0 : currPage,
-        itemsPerPage: itemsPerPage,
+        itemsPerPage: newItemsPerPage ?? itemsPerPage,
         filter: isInit ? initQueryFilter : queryFilter
       },
       withCredentials: true
@@ -170,6 +173,7 @@ const QARecords: React.FC = () => {
     setLoading(false)
   }
 
+  // put record in problematic list
   const setRecordProblematic = async (sku: string, isProblematic: boolean) => {
     setShowMarkConfirmPopup(false)
     setLoading(true)
@@ -192,6 +196,7 @@ const QARecords: React.FC = () => {
     setSelectedRecord(initQARecord)
   }
 
+  // get image url from Azure Blob Storage
   const fetchImageUrlArr = async () => {
     setLoading(true)
     await axios({
@@ -262,6 +267,7 @@ const QARecords: React.FC = () => {
     if (prev !== undefined) setSelectedRecord(prev)
   }
 
+  // take QA record scrape and generate info, then push data into instock inventory db
   const renderRecordingPanel = () => {
     const record = async () => {
       // call admin create in stock inventory
@@ -272,7 +278,7 @@ const QARecords: React.FC = () => {
     const onShelfLocationChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       if (event.target.value.length < 5) setSelectedRecord({ ...selectedRecord, shelfLocation: event.target.value })
     }
-    const onPlatformChange = (event: React.ChangeEvent<HTMLSelectElement>) => setSelectedRecord({ ...selectedRecord, platform: event.target.value as Platform })
+    const onMarketplaceChange = (event: React.ChangeEvent<HTMLSelectElement>) => setSelectedRecord({ ...selectedRecord, marketplace: event.target.value as Platform })
     const onAmountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       if (event.target.value.length < 3) setSelectedRecord({ ...selectedRecord, amount: Number(event.target.value) })
     }
@@ -286,6 +292,7 @@ const QARecords: React.FC = () => {
       setShowImagePopup(false)
     }
 
+    // full size image popup
     const renderImageModal = () => {
       return (
         <Modal
@@ -313,12 +320,14 @@ const QARecords: React.FC = () => {
       )
     }
 
+    // populate thumbnails gallery with url in url array
     const renderThumbnails = () => {
       return selectedRecordImagesArr.map((link: string) =>
         <img src={link} key={link} width={200} onClick={() => { setShowImagePopup(true); setImagePopupUrl(link) }} />
       )
     }
 
+    // confirm model to set record problematic
     const renderConfirmModal = () => {
       return (
         <Modal
@@ -331,11 +340,7 @@ const QARecords: React.FC = () => {
             <Modal.Title>Record {selectedRecord.sku}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            Mark this record
-            {
-              selectedRecord.problem ?
-                ' resolved' : ' problematic'
-            }?
+            Set this record {selectedRecord.problem ? ' resolved' : ' problematic'}?
           </Modal.Body>
           <Modal.Footer>
             <Button color='slate' onClick={() => setShowMarkConfirmPopup(false)}>
@@ -351,47 +356,102 @@ const QARecords: React.FC = () => {
       )
     }
 
+    // selected QA record information card
+    const renderQARecordCard = () => {
+      // form to submit
+      const renderA = () => (
+        <div className='min-h-[520px]'>
+          <InputGroup size="sm" className="mb-3">
+            <InputGroup.Text>Admin</InputGroup.Text>
+            <Form.Control style={{ color: 'orange' }} value={userInfo.name} disabled />
+          </InputGroup>
+          <InputGroup size="sm" className="mb-3">
+            <InputGroup.Text>Q&A Personal</InputGroup.Text>
+            <Form.Control value={selectedRecord.ownerName} onChange={onOwnerChange} />
+          </InputGroup>
+          <InputGroup size="sm" className="mb-3">
+            <InputGroup.Text>Shelf Location</InputGroup.Text>
+            <Form.Control value={selectedRecord.shelfLocation} onChange={onShelfLocationChange} />
+          </InputGroup>
+          <InputGroup size="sm" className="mb-3">
+            <InputGroup.Text>Item Condition</InputGroup.Text>
+            <Form.Select value={selectedRecord.itemCondition} onChange={onConditionChange}>
+              {renderItemConditionOptions()}
+            </Form.Select>
+          </InputGroup>
+          <InputGroup size="sm" className="mb-3">
+            <InputGroup.Text>Target Marketplace</InputGroup.Text>
+            <Form.Select value={selectedRecord.marketplace} onChange={onMarketplaceChange}>
+              {renderMarketPlaceOptions()}
+            </Form.Select>
+          </InputGroup>
+          <InputGroup size="sm" className="mb-3">
+            <InputGroup.Text>Amount</InputGroup.Text>
+            <Form.Control value={selectedRecord.amount} onChange={onAmountChange} />
+          </InputGroup>
+          <Button className='absolute bottom-3 left-3' color='emerald' onClick={record}>👌 Submit Into Inventory</Button>
+
+        </div>
+      )
+
+      // comment and link section plus
+      // web scraper and chat gpt results
+      const renderB = () => (
+        <div className='min-h-[520px]'>
+          <InputGroup size="sm" className="mb-3">
+            <InputGroup.Text>Comment</InputGroup.Text>
+            <Form.Control
+              className='resize-none h-32'
+              as={Textarea}
+              value={selectedRecord.comment}
+              onChange={onCommentChange}
+            />
+          </InputGroup>
+          <InputGroup size="sm" className="mb-3">
+            <InputGroup.Text>Link</InputGroup.Text>
+            <Form.Control
+              disabled
+              className='resize-none h-32'
+              as={Textarea}
+              value={selectedRecord.link}
+              onChange={onLinkChange}
+            />
+            <Button size='xs' color='slate' onClick={() => copyLink(selectedRecord.link)}>Copy</Button>
+            <Button size='xs' color='gray' onClick={() => openLink(selectedRecord.link)}>Open</Button>
+          </InputGroup>
+          <hr />
+
+
+
+        </div>
+      )
+
+      return (
+        <Card className='h-fit'>
+          {flipQACard ? renderB() : renderA()}
+        </Card>
+      )
+    }
+
     return (
       <div className='h-full'>
         <div className='flex'>
           {renderImageModal()}
           {renderConfirmModal()}
           <div className='w-1/2 p-3 pt-0'>
-            <h2 className={selectedRecord.problem ? 'text-red-500 mb-3 mt-0' : 'mb-0'}>{selectedRecord.sku}</h2>
-            <InputGroup size="sm" className="mb-3">
-              <InputGroup.Text>Owner</InputGroup.Text>
-              <Form.Control value={selectedRecord.ownerName} onChange={onOwnerChange} />
-            </InputGroup>
-            <InputGroup size="sm" className="mb-3">
-              <InputGroup.Text>Shelf Location</InputGroup.Text>
-              <Form.Control value={selectedRecord.shelfLocation} onChange={onShelfLocationChange} />
-            </InputGroup>
-            <InputGroup size="sm" className="mb-3">
-              <InputGroup.Text>Item Condition</InputGroup.Text>
-              <Form.Select value={selectedRecord.itemCondition} onChange={onConditionChange}>
-                {renderItemConditionOptions()}
-              </Form.Select>
-            </InputGroup>
-            <InputGroup size="sm" className="mb-3">
-              <InputGroup.Text>Platform</InputGroup.Text>
-              <Form.Select value={selectedRecord.platform} onChange={onPlatformChange}>
-                {renderPlatformOptions()}
-              </Form.Select>
-            </InputGroup>
-            <InputGroup size="sm" className="mb-3">
-              <InputGroup.Text>Amount</InputGroup.Text>
-              <Form.Control value={selectedRecord.amount} onChange={onAmountChange} />
-            </InputGroup>
-            <InputGroup size="sm" className="mb-3">
-              <InputGroup.Text>Comment</InputGroup.Text>
-              <Form.Control className='resize-none h-32' as={Textarea} style={{ resize: 'none' }} value={selectedRecord.comment} onChange={onCommentChange} />
-            </InputGroup>
-            <InputGroup size="sm" className="mb-3">
-              <InputGroup.Text>Link</InputGroup.Text>
-              <Form.Control className='resize-none h-32' as={Textarea} value={selectedRecord.link} onChange={onLinkChange} />
-              <Button size='xs' color='slate' onClick={() => copyLink(selectedRecord.link)}>Copy</Button>
-              <Button size='xs' color='gray' onClick={() => openLink(selectedRecord.link)}>Open</Button>
-            </InputGroup>
+            <div className='flex'>
+              <h2 className={selectedRecord.problem ? 'text-red-500 mb-3 mt-0' : 'mb-3'}>{selectedRecord.sku}</h2>
+              <Button
+                color='rose'
+                className='absolute right-2/3 mt-2'
+                onClick={() => setFlipQACard(!flipQACard)}
+                tooltip='Flip Card'
+              >
+                <FaArrowRightArrowLeft />
+                Flip to Back
+              </Button>
+            </div>
+            {renderQARecordCard()}
           </div>
           <div className='w-1/2'>
             <div className='flex'>
@@ -406,7 +466,7 @@ const QARecords: React.FC = () => {
               </Button>
             </div>
             <hr />
-            <Card className='overflow-y-scroll h-5/6 inline-grid'>
+            <Card className='overflow-y-scroll min-h-96 inline-grid'>
               {selectedRecordImagesArr.length < 1 ? <Subtitle>Photos Uploaded By Q&A Personal Will Show Up Here</Subtitle> : <div className='grid grid-cols-3 gap-2'>{renderThumbnails()}</div>}
             </Card>
           </div>
@@ -414,7 +474,6 @@ const QARecords: React.FC = () => {
         <div className='absolute bottom-3 w-full'>
           <Button color='indigo' onClick={prevRecord}>Prev</Button>
           <Button className='ml-12' color={selectedRecord.problem ? 'lime' : 'rose'} onClick={() => setShowMarkConfirmPopup(true)}>{selectedRecord.problem ? 'Mark Resolved' : 'Mark Problem'}</Button>
-          <Button className='absolute right-48' color='emerald' onClick={record}>Submit & Next</Button>
           <Button className='absolute right-12' color='indigo' onClick={nextRecord}>Next</Button>
         </div>
       </div>
@@ -591,7 +650,11 @@ const QARecords: React.FC = () => {
     if (!QARecordArr || !QARecordArr.length) return <h4 className='text-red-400 w-max ml-auto mr-auto mt-12 mb-12'>No Q&A Records Found!</h4>
   }
 
-  const onItemsPerPageChange = (event: React.ChangeEvent<HTMLSelectElement>) => setItemsPerPage(Number(event.target.value))
+  const onItemsPerPageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setCurrPage(0)
+    setItemsPerPage(Number(event.target.value))
+    fetchQARecordsByPage(true, Number(event.target.value))
+  }
   return (
     <div ref={topRef}>
       {/* control panels */}

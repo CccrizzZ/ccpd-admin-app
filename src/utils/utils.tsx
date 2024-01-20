@@ -1,6 +1,6 @@
 import { SHA256, enc } from "crypto-js";
 import moment from "moment";
-import { CreateUser, InstockInventory, PaymentMethod, QARecord, QueryFilter, RetailRecord, ReturnRecord, UserDetail } from "./Types";
+import { Condition, CreateUser, InstockInventory, PaymentMethod, QARecord, QueryFilter, RetailRecord, ReturnRecord, UserDetail } from "./Types";
 import { DateRangePickerValue } from "@tremor/react";
 
 // server connection
@@ -10,6 +10,9 @@ export const server = import.meta.env.VITE_APP_SERVER
 // color
 export const bgDark = '#212332'
 export const bgLight = '#2A2D3E'
+
+// regex for http and https link in a string
+export const urlRegex = '/(http|https):\/\/(\S*)/'
 
 // hashing
 export const hashPass = (userPass: string) => SHA256(userPass).toString(enc.Base64)
@@ -204,11 +207,19 @@ export const initRetailRecord: RetailRecord = {
 }
 
 export const initInstockInventory: InstockInventory = {
-  qaRecord: initQARecord,
-  recordAdmin: '',
-  recordTime: '',
+  sku: 0,
+  mrsp: 0,
+  shelfLocation: '',
+  condition: '' as Condition,
+  comment: '',
+  lead: '',
+  description: '',
+  url: '',
   quantityInstock: 0,
   quantitySold: 0,
+  adminName: '',
+  qaName: '',
+  recordTime: '',
 }
 
 export const initReturnRecord: ReturnRecord = {
