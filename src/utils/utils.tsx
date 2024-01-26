@@ -14,7 +14,7 @@ export const bgLight = '#2A2D3E'
 // regex for http and https link in a string
 export const urlRegex = '/(http|https):\/\/(\S*)/'
 
-// hashing
+// hashing password to send to server
 export const hashPass = (userPass: string) => SHA256(userPass).toString(enc.Base64)
 
 // return tremor color pallete string
@@ -234,9 +234,17 @@ export const initReturnRecord: ReturnRecord = {
 
 export const copyLink = (link: string) => navigator.clipboard.writeText(link)
 export const openLink = (link: string) => {
+  // if no link in string return
+  if (link.length <= 7 || !link.includes('http')) return
   // extract http link in string and open it in new tab
-  const url = link.split(" ").find(word => word.startsWith("http"))
-  window.open(url, '_blank', 'noreferrer')
+  // regex method
+  let matches = link.match(/\bhttps?:\/\/\S+/gi)
+  // open link in new tab or slice it out
+  if (!matches) {
+    window.open(link.substring(link.indexOf("http"), link.length), '_blank', 'noreferrer');
+  } else {
+    window.open(matches?.toString(), '_blank', 'noreferrer')
+  }
 }
 
 export const initQueryFilter: QueryFilter = {

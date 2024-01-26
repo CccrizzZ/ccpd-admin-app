@@ -22,8 +22,6 @@ import {
 import {
   FaRotate,
   FaSort,
-  FaSortUp,
-  FaSortDown,
   FaUserPlus,
   FaRegTrashCan,
   FaPenToSquare
@@ -58,6 +56,7 @@ const UserManager: React.FC = () => {
 
   // user manipulation states
   const [editMode, setEditMode] = useState<boolean>(false)
+  const [showActiveOnly, setshowActiveOnly] = useState<boolean>(false)
   const [targetUser, setTargetUser] = useState<UserDetail>(initUser)
   const [showDeletePopup, setShowDeletePopup] = useState<boolean>(false)
   const [showCreatePopup, setShowCreatePopup] = useState<boolean>(false)
@@ -249,16 +248,16 @@ const UserManager: React.FC = () => {
           <Text>{user._id}</Text>
         </TableCell>
         <TableCell>
-          <Badge color='teal'>{user.name}</Badge>
+          <Badge color={user.userActive ? 'teal' : 'red'}>{user.name}</Badge>
         </TableCell>
         <TableCell>
           <Text>{user.email}</Text>
         </TableCell>
         <TableCell>
-          <Text><Button color='gray' variant='light' size='xs'>Change</Button></Text>
+          <Text>Redacted</Text>
         </TableCell>
         <TableCell>
-          <Text>{user.role}</Text>
+          <Badge>{user.role}</Badge>
         </TableCell>
         <TableCell>
           <Text>{(moment(user.registrationDate, "MMM DD YYYY").format('MMM DD YYYY'))}</Text>
@@ -353,7 +352,6 @@ const UserManager: React.FC = () => {
     )
   }
 
-  const toggleEditMode = () => setEditMode(!editMode)
   return (
     <div>
       {showDeletePopup ? renderDeletePopup() : undefined}
@@ -370,9 +368,13 @@ const UserManager: React.FC = () => {
           <div className='flex'>
             <Button color='emerald' onClick={fetchAllUserInfo}><FaRotate className='m-0 text-white' /></Button>
             {editMode ? <Button color='blue' className='ml-2' onClick={() => setShowCreatePopup(true)}><FaUserPlus /></Button> : undefined}
+            <div className="absolute right-48">
+              <label className="text-sm text-gray-500 mr-4">Show Active Users Only</label>
+              <Switch checked={showActiveOnly} onChange={() => setshowActiveOnly(!showActiveOnly)} />
+            </div>
             <div className="absolute right-12 flex">
               <label className="text-sm text-gray-500 mr-4">Edit Mode</label>
-              <Switch checked={editMode} onChange={toggleEditMode} />
+              <Switch checked={editMode} onChange={() => setEditMode(!editMode)} />
             </div>
           </div>
           <hr />
@@ -380,10 +382,10 @@ const UserManager: React.FC = () => {
             <TableHead >
               <TableRow className='th-row'>
                 <TableHeaderCell>ID</TableHeaderCell>
-                <TableHeaderCell>Name</TableHeaderCell>
+                <TableHeaderCell className='w-48'>Name</TableHeaderCell>
                 <TableHeaderCell>Email</TableHeaderCell>
-                <TableHeaderCell>Password</TableHeaderCell>
-                <TableHeaderCell>
+                <TableHeaderCell className='w-28'>Password</TableHeaderCell>
+                <TableHeaderCell className='w-36'>
                   Role
                   <FaSort className='inline' />
                 </TableHeaderCell>
@@ -391,8 +393,8 @@ const UserManager: React.FC = () => {
                   Registration Date
                   <FaSort className='inline' />
                 </TableHeaderCell>
-                <TableHeaderCell>User Active</TableHeaderCell>
-                {editMode ? <TableHeaderCell>Actions</TableHeaderCell> : undefined}
+                <TableHeaderCell className='w-36'>User Active</TableHeaderCell>
+                {editMode ? <TableHeaderCell className='w-28'>Actions</TableHeaderCell> : undefined}
               </TableRow>
             </TableHead>
             <TableBody>

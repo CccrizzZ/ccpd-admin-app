@@ -7,6 +7,9 @@ type CustomDatePickerProps = {
   value: DateRangePickerValue
 }
 
+// TODO: adjust the time format to EST
+// currently using Zulu time
+
 const CustomDatePicker: React.FC<CustomDatePickerProps> = (props: CustomDatePickerProps) => {
   return (
     <DateRangePicker

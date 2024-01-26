@@ -58,12 +58,12 @@ export interface ReturnRecord {
 
 export interface InstockInventory {
   sku: number;
-  mrsp: number;
   shelfLocation: string;
   condition: Condition;
   comment: string;
-  lead: string;         // chat gpt generated
-  description: string;  // chat gpt generated
+  mrsp: number;         // scraped
+  lead: string;         // chat gpt generated from scraped data
+  description: string;  // chat gpt generated from scraped data
   url: string;
   quantityInstock: number;
   quantitySold: number;

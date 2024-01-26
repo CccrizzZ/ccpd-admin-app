@@ -420,9 +420,6 @@ const QARecords: React.FC = () => {
             <Button size='xs' color='gray' onClick={() => openLink(selectedRecord.link)}>Open</Button>
           </InputGroup>
           <hr />
-
-
-
         </div>
       )
 
@@ -529,10 +526,10 @@ const QARecords: React.FC = () => {
               <Badge color={getConditionVariant(record.itemCondition)}>{record.itemCondition}</Badge>
             </TableCell>
             <TableCell>
-              <p>{record.comment}</p>
+              <p className='text-white-500'>{record.comment}</p>
             </TableCell>
             <TableCell>
-              <p><a className='cursor-pointer' onClick={() => openLink(record.link)}>{record.link.slice(0, 100)}</a></p>
+              <p><a className='cursor-pointer' onClick={() => openLink(record.link)}>{record.link.slice(0, 50)}</a></p>
             </TableCell>
             <TableCell>
               <Badge color={getPlatformBadgeColor(record.platform)}>{record.platform}</Badge>
@@ -618,7 +615,7 @@ const QARecords: React.FC = () => {
         <Button
           className='text-white absolute mt-4'
           color={changed ? 'amber' : 'emerald'}
-          onClick={() => fetchQARecordsByPage(false)}
+          onClick={() => { fetchQARecordsByPage(false); setCurrPage(0) }}
           tooltip='Refresh QA Records Table'
         >
           <FaRotate />

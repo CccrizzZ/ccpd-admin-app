@@ -116,11 +116,9 @@ const CreateReturnRecordModal: React.FC<CreateSalesRecordModalProps> = (props: C
   }
 
   const renderRetailRecordDetails = () => {
-    if (!targetRetailRecord.time || !instockInventory.qaRecord.time) return <Subtitle>Search Result Will Be Shown Here 👉</Subtitle>
-
+    if (!targetRetailRecord.time || !instockInventory.recordTime) return <Subtitle>Search Result Will Be Shown Here 👉</Subtitle>
 
     // todo: invoice have multiple sku
-
     return (
       <Grid className='gap-3' numItems={1}>
         <Col>
@@ -166,11 +164,11 @@ const CreateReturnRecordModal: React.FC<CreateSalesRecordModalProps> = (props: C
         <Col>
           <div className='border-solid border-2 border-slate-500 rounded p-2'>
             <Divider className='mt-0'>Comment</Divider>
-            <Text>{instockInventory.qaRecord.comment}</Text>
+            <Text>{instockInventory.comment}</Text>
             <Divider>Link</Divider>
             <div className='flex d-grid'>
-              <Button color='gray' onClick={() => copyLink(instockInventory.qaRecord.link)}>Copy</Button>
-              <Button color='emerald' onClick={() => openLink(instockInventory.qaRecord.link)}>Open</Button>
+              <Button color='gray' onClick={() => copyLink(instockInventory.url)}>Copy</Button>
+              <Button color='emerald' onClick={() => openLink(instockInventory.url)}>Open</Button>
             </div>
           </div>
         </Col>

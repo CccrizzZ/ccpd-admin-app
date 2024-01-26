@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react'
 import { AppContext } from '../App'
 import axios from 'axios'
-import { server, initCreateUser, deSpace, renderUserRoleOptions } from '../utils/utils'
+import { server, initCreateUser, deSpace, renderUserRoleOptions, hashPass } from '../utils/utils'
 import { CreateUser } from '../utils/Types'
 import {
   Form,
@@ -21,28 +21,30 @@ const CreateUserModal: React.FC<CreateUserModalProps> = (props: CreateUserModalP
 
   // create a custom user
   const createUser = async () => {
-    // remove space in password and email
-    setNewUser({
-      ...newUser,
-      name: newUser.name.trim(),
-      password: deSpace(newUser.password),
-      email: deSpace(newUser.email)
-    })
-
     // null check for all values of newUser
     const fieldsEmpty = Object.values(newUser).some((val) => { return (deSpace(val).length < 1) })
     if (fieldsEmpty) return alert('Please Complete The Form')
 
-    // post the request to server
+    // post to server
     setLoading(true)
     await axios({
       method: 'post',
       url: server + '/adminController/createUser',
       responseType: 'text',
-      data: newUser,
+      // remove space in password and email
+      // hash password
+      data: {
+        ...newUser,
+        name: newUser.name.trim(),
+        password: hashPass(newUser.password),
+        email: deSpace(newUser.email.trim())
+      },
       withCredentials: true
-    }).then(() => {
-      alert('User Created!')
+    }).then((res) => {
+      if (res.status === 201) {
+        alert('User Created!')
+        setNewUser(initCreateUser)
+      }
     }).catch((err) => {
       alert('Create User Failed: ' + err.response.status)
     })

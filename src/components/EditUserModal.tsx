@@ -63,8 +63,9 @@ const EditUserModal: React.FC<EditUserModalProp> = (props: EditUserModalProp) =>
       data: userInfoToSend,
       withCredentials: true
     }).then((res) => {
-      console.log(res.status)
-      alert('updated ' + targetUserDetail.name)
+      if (res.status === 200) {
+        alert('updated ' + targetUserDetail.name)
+      }
     }).catch((err) => {
       alert('Failed Deleting User: ' + err.response.status)
     })
