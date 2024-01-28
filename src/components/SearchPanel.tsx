@@ -62,6 +62,7 @@ const SearchPanel: React.FC<SearchPanelProp> = (props: SearchPanelProp) => {
       <InputGroup size="sm" className="mb-3">
         <InputGroup.Text>SKU</InputGroup.Text>
         <Form.Control value={searchSKU} onChange={onSearchSKUChange} onKeyDown={handleEnterKeySearch} />
+        <Button color='emerald' onClick={searchRecordBySKU}>Search</Button>
       </InputGroup>
       <Card className='h-52 overflow-y-scroll p-3 pt-0'>
         {searchRes.sku !== 0 ? <List>
@@ -98,8 +99,7 @@ const SearchPanel: React.FC<SearchPanelProp> = (props: SearchPanelProp) => {
           </ListItem>
         </List> : <Subtitle className='text-center'>Search Result Will Be Shown Here</Subtitle>}
       </Card>
-      <Button className='absolute bottom-3' color='emerald' size='xs' onClick={searchRecordBySKU}>Search</Button>
-      <Button className='absolute bottom-3 right-6' color='rose' size='xs' onClick={resetSearch}>Reset Search</Button>
+      <Button className='absolute bottom-3' color='rose' size='xs' onClick={resetSearch}>Reset Search</Button>
     </>
   )
 }

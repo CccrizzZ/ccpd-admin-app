@@ -238,14 +238,17 @@ export const openLink = (link: string) => {
   if (link.length <= 7 || !link.includes('http')) return
   // extract http link in string and open it in new tab
   // regex method
-  let matches = link.match(/\bhttps?:\/\/\S+/gi)
+  let matches = extractHttpsFromStr(link)
   // open link in new tab or slice it out
   if (!matches) {
-    window.open(link.substring(link.indexOf("http"), link.length), '_blank', 'noreferrer');
+    window.open(link.substring(link.indexOf("http"), link.length), '_blank', 'noreferrer')
   } else {
     window.open(matches?.toString(), '_blank', 'noreferrer')
   }
 }
+
+// extract https link in string
+export const extractHttpsFromStr = (str: string) => String(str.match(/\bhttps?:\/\/\S+/gi))
 
 export const initQueryFilter: QueryFilter = {
   timeRangeFilter: {} as DateRangePickerValue,

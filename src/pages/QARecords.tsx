@@ -32,6 +32,8 @@ import moment from 'moment'
 import {
   FaRotate,
   FaArrowRightArrowLeft,
+  FaArrowLeft,
+  FaArrowRight,
 } from 'react-icons/fa6'
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import {
@@ -45,7 +47,8 @@ import {
   renderMarketPlaceOptions,
   copyLink,
   openLink,
-  initQueryFilter
+  initQueryFilter,
+  extractHttpsFromStr
 } from '../utils/utils'
 import {
   Form,
@@ -120,25 +123,29 @@ const chartdata = [
 
 const QARecords: React.FC = () => {
   const { setLoading, userInfo } = useContext(AppContext)
+  // reference to components
   const ProblemPanelRef = useRef<IProblemRecordsPanel>(null)
   const tableRef = useRef<HTMLDivElement>(null)
   const topRef = useRef<HTMLDivElement>(null)
+  // recording panel
   const [QARecordArr, setQARecordArr] = useState<QARecord[]>([])
   const [selectedRecord, setSelectedRecord] = useState<QARecord>(initQARecord)
+  const [originalSelectedRecord, setOriginalSelectedRecord] = useState<QARecord>(initQARecord)
   const [selectedRecordImagesArr, setSelectedRecordImagesArr] = useState<string[]>([])
+  const [imagePopupUrl, setImagePopupUrl] = useState<string>('')
+  // flags
   const [displaySearchRecords, setDisplaySearchRecords] = useState<boolean>(true)
   const [displayProblemRecordsPanel, setDisplayProblemRecordsPanel] = useState<boolean>(true)
   const [showMarkConfirmPopup, setShowMarkConfirmPopup] = useState<boolean>(false)
   const [showImagePopup, setShowImagePopup] = useState<boolean>(false)
-  const [imagePopupUrl, setImagePopupUrl] = useState<string>('')
   const [flipQACard, setFlipQACard] = useState<boolean>(false)
+  const [changed, setChanged] = useState<boolean>(false)
   // paging
   const [currPage, setCurrPage] = useState<number>(0)
   const [itemsPerPage, setItemsPerPage] = useState<number>(20)
   const [itemCount, setItemCount] = useState<number>(0)
   // filtering
   const [queryFilter, setQueryFilter] = useState<QueryFilter>(initQueryFilter)
-  const [changed, setChanged] = useState<boolean>(false)
 
   useEffect(() => {
     fetchQARecordsByPage()
@@ -294,19 +301,39 @@ const QARecords: React.FC = () => {
 
     // full size image popup
     const renderImageModal = () => {
+      const gotoImage = (pos: number) => {
+        if (pos > 0) {
+          const next = selectedRecordImagesArr[selectedRecordImagesArr.indexOf(imagePopupUrl) + 1]
+          if (!next) return
+          setImagePopupUrl(next)
+        } else {
+          const prev = selectedRecordImagesArr[selectedRecordImagesArr.indexOf(imagePopupUrl) - 1]
+          if (!prev) return
+          setImagePopupUrl(prev)
+        }
+      }
+
       return (
         <Modal
           show={showImagePopup}
           onHide={clearImagePopup}
-          backdrop="static"
           size='lg'
           keyboard={false}
         >
           <Modal.Header closeButton>
-            <Modal.Title>{selectedRecord.sku}</Modal.Title>
+            <Modal.Title className='mb-12'>{selectedRecord.sku}</Modal.Title>
+            <p className='absolute text-rose-500 top-12 left-3'>{imagePopupUrl.replace(/^.*[\\/]/, '')}</p>
           </Modal.Header>
           <Modal.Body>
-            <img src={imagePopupUrl} />
+            <div className='flex min-h-96'>
+              <Button className='absolute h-48 left-6 top-1/2 opacity-30 rounded-full' color='gray' onClick={() => gotoImage(-1)}>
+                <FaArrowLeft />
+              </Button>
+              <img className='m-auto mr-6 ml-6' src={imagePopupUrl} />
+              <Button className='absolute h-48 right-6 top-1/2 opacity-30 rounded-full' color='gray' onClick={() => gotoImage(1)}>
+                <FaArrowRight />
+              </Button>
+            </div>
           </Modal.Body>
           <Modal.Footer>
             <Button color='slate' onClick={clearImagePopup}>
@@ -323,7 +350,7 @@ const QARecords: React.FC = () => {
     // populate thumbnails gallery with url in url array
     const renderThumbnails = () => {
       return selectedRecordImagesArr.map((link: string) =>
-        <img src={link} key={link} width={200} onClick={() => { setShowImagePopup(true); setImagePopupUrl(link) }} />
+        <img src={link} key={link} width={200} className='max-h-[300px]' onClick={() => { setShowImagePopup(true); setImagePopupUrl(link) }} />
       )
     }
 
@@ -389,15 +416,6 @@ const QARecords: React.FC = () => {
             <InputGroup.Text>Amount</InputGroup.Text>
             <Form.Control value={selectedRecord.amount} onChange={onAmountChange} />
           </InputGroup>
-          <Button className='absolute bottom-3 left-3' color='emerald' onClick={record}>👌 Submit Into Inventory</Button>
-
-        </div>
-      )
-
-      // comment and link section plus
-      // web scraper and chat gpt results
-      const renderB = () => (
-        <div className='min-h-[520px]'>
           <InputGroup size="sm" className="mb-3">
             <InputGroup.Text>Comment</InputGroup.Text>
             <Form.Control
@@ -407,24 +425,31 @@ const QARecords: React.FC = () => {
               onChange={onCommentChange}
             />
           </InputGroup>
-          <InputGroup size="sm" className="mb-3">
+          <InputGroup size="sm" className="mb-12">
             <InputGroup.Text>Link</InputGroup.Text>
             <Form.Control
-              disabled
               className='resize-none h-32'
               as={Textarea}
               value={selectedRecord.link}
               onChange={onLinkChange}
             />
-            <Button size='xs' color='slate' onClick={() => copyLink(selectedRecord.link)}>Copy</Button>
+            {/* <Button size='xs' color='slate' onClick={() => copyLink(selectedRecord.link)}>Copy</Button> */}
+            <Button size='xs' color='slate' onClick={() => setSelectedRecord({ ...selectedRecord, link: extractHttpsFromStr(selectedRecord.link) })}>Extract</Button>
             <Button size='xs' color='gray' onClick={() => openLink(selectedRecord.link)}>Open</Button>
           </InputGroup>
+          <Button className='absolute bottom-3 left-3' color='emerald' onClick={record}>👌 Submit Into Inventory</Button>
+        </div>
+      )
+
+      // web scraper and chat gpt results
+      const renderB = () => (
+        <div className='min-h-[620px]'>
           <hr />
         </div>
       )
 
       return (
-        <Card className='h-fit'>
+        <Card className='h-fit mb-12' style={{ backgroundColor: '#333' }}>
           {flipQACard ? renderB() : renderA()}
         </Card>
       )
@@ -450,7 +475,7 @@ const QARecords: React.FC = () => {
             </div>
             {renderQARecordCard()}
           </div>
-          <div className='w-1/2'>
+          <div className='w-1/2 mb-10'>
             <div className='flex'>
               <h2>📷 Photos</h2>
               <Button
@@ -463,7 +488,7 @@ const QARecords: React.FC = () => {
               </Button>
             </div>
             <hr />
-            <Card className='overflow-y-scroll min-h-96 inline-grid'>
+            <Card className='overflow-y-scroll inline-grid max-h-[620px]' style={{ backgroundColor: '#333' }}>
               {selectedRecordImagesArr.length < 1 ? <Subtitle>Photos Uploaded By Q&A Personal Will Show Up Here</Subtitle> : <div className='grid grid-cols-3 gap-2'>{renderThumbnails()}</div>}
             </Card>
           </div>
@@ -479,6 +504,7 @@ const QARecords: React.FC = () => {
 
   const setSelectedRecordByRecord = async (record: QARecord) => {
     setSelectedRecord(record)
+    setOriginalSelectedRecord(record)
     scrollToTop()
     setSelectedRecordImagesArr([])
 
@@ -653,18 +679,19 @@ const QARecords: React.FC = () => {
     fetchQARecordsByPage(true, Number(event.target.value))
   }
   return (
-    <div ref={topRef}>
+    <div ref={topRef} >
       {/* control panels */}
       <Grid className="gap-2" numItems={3}>
         <Col numColSpan={2}>
           <Card className="h-full">
             <Title>📥 Inventory Recording</Title>
+            {selectedRecord.sku ? <Button className='absolute right-8 top-6' color='emerald' onClick={() => setSelectedRecord(originalSelectedRecord)}>Refresh Inventory</Button> : undefined}
             <hr />
             {selectedRecord.sku === 0 ? <Subtitle className='text-center mt-64'>Selected QA Records Details Will Be Shown Here!</Subtitle> : renderRecordingPanel()}
           </Card>
         </Col>
         <Col numColSpan={1}>
-          <Card className="h-96">
+          <Card className="h-96 bg-stone-900">
             <Button
               color='rose'
               className='right-6 absolute p-2'

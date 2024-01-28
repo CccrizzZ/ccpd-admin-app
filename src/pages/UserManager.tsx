@@ -243,7 +243,7 @@ const UserManager: React.FC = () => {
 
   const renderTBody = () => {
     return userArr.map((user) => (
-      <TableRow key={user.name}>
+      <TableRow key={user._id}>
         <TableCell>
           <Text>{user._id}</Text>
         </TableCell>
