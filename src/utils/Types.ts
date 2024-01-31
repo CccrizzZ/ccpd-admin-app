@@ -49,8 +49,8 @@ export interface RetailRecord {
 export interface ReturnRecord {
   retailRecord: RetailRecord;
   returnTime: string;
-  returnQuantity: number
-  refundAmount: number,
+  returnQuantity: number;
+  refundAmount: number;
   refundMethod: PaymentMethod;
   reason: string;
   adminName: string;
@@ -76,7 +76,7 @@ export interface InstockInventory {
 
 export interface QARecord {
   sku: number;
-  time: string,
+  time: string;
   itemCondition: Condition;
   comment: string;
   link: string;
@@ -87,7 +87,7 @@ export interface QARecord {
   ownerName?: string;
   marketplace?: Platform;
   recorded?: boolean;
-  problem?: boolean
+  problem?: boolean;
 }
 
 // for user info context in App.tsx
@@ -106,7 +106,7 @@ export type InvitationCode = {
 export type UserDetail = CreateUser & {
   _id: string,
   registrationDate: string,
-  userActive: boolean
+  userActive: boolean,
 }
 
 export type CreateUser = {
@@ -118,7 +118,7 @@ export type CreateUser = {
 
 export type Paging = {
   currPage: number,
-  itemsPerPage: number
+  itemsPerPage: number,
 }
 
 export type QueryFilter = {

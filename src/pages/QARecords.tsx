@@ -280,6 +280,15 @@ const QARecords: React.FC = () => {
       // call admin create in stock inventory
 
     }
+
+    const pullScrapeData = async () => {
+
+    }
+
+    const pullChatGPTData = async () => {
+
+    }
+
     const onConditionChange = (event: React.ChangeEvent<HTMLSelectElement>) => setSelectedRecord({ ...selectedRecord, itemCondition: event.target.value as Condition })
     const onOwnerChange = (event: React.ChangeEvent<HTMLInputElement>) => setSelectedRecord({ ...selectedRecord, ownerName: event.target.value })
     const onShelfLocationChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -449,7 +458,7 @@ const QARecords: React.FC = () => {
       )
 
       return (
-        <Card className='h-fit mb-12' style={{ backgroundColor: '#333' }}>
+        <Card className='h-fit mb-12' style={{ backgroundColor: '#223' }}>
           {flipQACard ? renderB() : renderA()}
         </Card>
       )
@@ -488,7 +497,7 @@ const QARecords: React.FC = () => {
               </Button>
             </div>
             <hr />
-            <Card className='overflow-y-scroll inline-grid max-h-[620px]' style={{ backgroundColor: '#333' }}>
+            <Card className='overflow-y-scroll inline-grid max-h-[620px]' style={{ backgroundColor: '#223' }}>
               {selectedRecordImagesArr.length < 1 ? <Subtitle>Photos Uploaded By Q&A Personal Will Show Up Here</Subtitle> : <div className='grid grid-cols-3 gap-2'>{renderThumbnails()}</div>}
             </Card>
           </div>
@@ -628,7 +637,7 @@ const QARecords: React.FC = () => {
     const onPlatformFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => { setQueryFilter({ ...queryFilter, platformFilter: event.target.value }); setChanged(true) }
     const onConditionFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => { setQueryFilter({ ...queryFilter, conditionFilter: event.target.value }); setChanged(true) }
     const onMarketplaceFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => { setQueryFilter({ ...queryFilter, marketplaceFilter: event.target.value }); setChanged(true) }
-    const onTimeRangeFilterChange = (value: DateRangePickerValue) => { setQueryFilter({ ...queryFilter, timeRangeFilter: value }); setChanged(true) }
+    const onTimeRangeFilterChange = (value: DateRangePickerValue) => { setQueryFilter({ ...queryFilter, timeRangeFilter: value }); setChanged(true); console.log(value) }
     const resetFilters = () => {
       setQueryFilter(initQueryFilter)
       setCurrPage(0)

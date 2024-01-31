@@ -1,11 +1,23 @@
 import { SHA256, enc } from "crypto-js";
-import moment from "moment";
+import moment from "moment-timezone";
 import { Condition, CreateUser, InstockInventory, PaymentMethod, QARecord, QueryFilter, RetailRecord, ReturnRecord, UserDetail } from "./Types";
 import { DateRangePickerValue } from "@tremor/react";
 
 // server connection
 export const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 export const server = import.meta.env.VITE_APP_SERVER
+
+// time zones
+export const est = 'America/Toronto'
+// get iso format dates
+export const getStartOfToday = () => moment.tz(moment(), est).startOf('day').toDate()
+export const getEndOfToday = () => moment.tz(moment(), est).endOf('day').toDate()
+export const getStartOfYesterday = () => moment.tz(moment(), est).subtract(1, 'day').startOf('day').toDate()
+export const getEndOfYesterday = () => moment.tz(moment(), est).subtract(1, 'day').endOf('day').toDate()
+export const getStartOfThisWeek = () => moment.tz(moment(), est).startOf('week').toDate()
+export const getEndOfThisWeek = () => moment.tz(moment(), est).endOf('week').toDate()
+export const getStartOfThisMonth = () => moment.tz(moment(), est).startOf('month').toDate()
+export const getEndOfThisMonth = () => moment.tz(moment(), est).endOf('month').toDate()
 
 // color
 export const bgDark = '#212332'

@@ -1,14 +1,20 @@
 import { DateRangePicker, DateRangePickerItem, DateRangePickerValue } from "@tremor/react"
-import moment from "moment"
+import {
+  getStartOfToday,
+  getEndOfToday,
+  getStartOfYesterday,
+  getEndOfYesterday,
+  getStartOfThisWeek,
+  getEndOfThisWeek,
+  getStartOfThisMonth,
+  getEndOfThisMonth
+} from '../utils/utils'
 import React from "react"
 
 type CustomDatePickerProps = {
   onValueChange: (value: DateRangePickerValue) => void
   value: DateRangePickerValue
 }
-
-// TODO: adjust the time format to EST
-// currently using Zulu time
 
 const CustomDatePicker: React.FC<CustomDatePickerProps> = (props: CustomDatePickerProps) => {
   return (
@@ -21,29 +27,32 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = (props: CustomDatePick
       <DateRangePickerItem
         key="Today"
         value="today"
-        from={new Date()}
+        from={getStartOfToday()}
+        to={getEndOfToday()}
       >
         Today
       </DateRangePickerItem>
       <DateRangePickerItem
         key="Yesterday"
         value="yesterday"
-        from={moment().subtract(1, 'day').toDate()}
-        to={moment().subtract(1, 'day').toDate()}
+        from={getStartOfYesterday()}
+        to={getEndOfYesterday()}
       >
         Yesterday
       </DateRangePickerItem>
       <DateRangePickerItem
         key="This Week"
         value="thisWeek"
-        from={moment().startOf('week').toDate()}
+        from={getStartOfThisWeek()}
+        to={getEndOfThisWeek()}
       >
         This Week
       </DateRangePickerItem>
       <DateRangePickerItem
         key="This Month"
         value="thisMonth"
-        from={moment().startOf('month').toDate()}
+        from={getStartOfThisMonth()}
+        to={getEndOfThisMonth()}
       >
         This Month
       </DateRangePickerItem>
