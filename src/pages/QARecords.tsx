@@ -23,7 +23,7 @@ import {
   List,
   ListItem
 } from '@tremor/react'
-import { Condition, Platform, QARecord, QueryFilter } from '../utils/Types'
+import { Condition, Platform, QARecord, QAQueryFilter } from '../utils/Types'
 import { AppContext } from '../App'
 import SearchPanel from '../components/SearchPanel'
 import PaginationButton from '../components/PaginationButton'
@@ -47,7 +47,7 @@ import {
   renderMarketPlaceOptions,
   copyLink,
   openLink,
-  initQueryFilter,
+  initQAQueryFilter,
   extractHttpsFromStr
 } from '../utils/utils'
 import {
@@ -57,6 +57,7 @@ import {
 } from 'react-bootstrap'
 import '../style/QARecords.css'
 import TableFilter from '../components/TableFilter'
+import PageItemStatsBox from '../components/PageItemStatsBox'
 
 const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()}`
 
@@ -145,7 +146,7 @@ const QARecords: React.FC = () => {
   const [itemsPerPage, setItemsPerPage] = useState<number>(20)
   const [itemCount, setItemCount] = useState<number>(0)
   // filtering
-  const [queryFilter, setQueryFilter] = useState<QueryFilter>(initQueryFilter)
+  const [queryFilter, setQueryFilter] = useState<QAQueryFilter>(initQAQueryFilter)
 
   useEffect(() => {
     fetchQARecordsByPage()
@@ -163,7 +164,7 @@ const QARecords: React.FC = () => {
       data: {
         page: isInit ? 0 : currPage,
         itemsPerPage: newItemsPerPage ?? itemsPerPage,
-        filter: isInit ? initQueryFilter : queryFilter
+        filter: isInit ? initQAQueryFilter : queryFilter
       },
       withCredentials: true
     }).then((res: AxiosResponse) => {
@@ -281,10 +282,12 @@ const QARecords: React.FC = () => {
 
     }
 
+    // pull msrp, title and first image from scrapper
     const pullScrapeData = async () => {
 
     }
 
+    // send the pulled data to chat gpt to generate lead and description
     const pullChatGPTData = async () => {
 
     }
@@ -294,7 +297,9 @@ const QARecords: React.FC = () => {
     const onShelfLocationChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       if (event.target.value.length < 5) setSelectedRecord({ ...selectedRecord, shelfLocation: event.target.value })
     }
-    const onMarketplaceChange = (event: React.ChangeEvent<HTMLSelectElement>) => setSelectedRecord({ ...selectedRecord, marketplace: event.target.value as Platform })
+    const onMarketplaceChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+      setSelectedRecord({ ...selectedRecord, marketplace: event.target.value as Platform })
+    }
     const onAmountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       if (event.target.value.length < 3) setSelectedRecord({ ...selectedRecord, amount: Number(event.target.value) })
     }
@@ -302,6 +307,7 @@ const QARecords: React.FC = () => {
       if (event.target.value.length < 100) setSelectedRecord({ ...selectedRecord, comment: event.target.value })
     }
     const onLinkChange = (event: React.ChangeEvent<HTMLInputElement>) => setSelectedRecord({ ...selectedRecord, comment: event.target.value })
+    const onPlatformChange = (event: React.ChangeEvent<HTMLSelectElement>) => setSelectedRecord({ ...selectedRecord, platform: event.target.value as Platform })
 
     const clearImagePopup = () => {
       setImagePopupUrl('')
@@ -396,7 +402,7 @@ const QARecords: React.FC = () => {
     const renderQARecordCard = () => {
       // form to submit
       const renderA = () => (
-        <div className='min-h-[520px]'>
+        <div className='min-h-[500px]'>
           <InputGroup size="sm" className="mb-3">
             <InputGroup.Text>Admin</InputGroup.Text>
             <Form.Control style={{ color: 'orange' }} value={userInfo.name} disabled />
@@ -409,14 +415,20 @@ const QARecords: React.FC = () => {
             <InputGroup.Text>Shelf Location</InputGroup.Text>
             <Form.Control value={selectedRecord.shelfLocation} onChange={onShelfLocationChange} />
           </InputGroup>
-          <InputGroup size="sm" className="mb-3">
+          <InputGroup size="sm" className="mb-3" >
             <InputGroup.Text>Item Condition</InputGroup.Text>
             <Form.Select value={selectedRecord.itemCondition} onChange={onConditionChange}>
               {renderItemConditionOptions()}
             </Form.Select>
           </InputGroup>
           <InputGroup size="sm" className="mb-3">
-            <InputGroup.Text>Target Marketplace</InputGroup.Text>
+            <InputGroup.Text>Original Platform</InputGroup.Text>
+            <Form.Select value={selectedRecord.platform} onChange={onPlatformChange}>
+              {renderPlatformOptions()}
+            </Form.Select>
+          </InputGroup>
+          <InputGroup size="sm" className="mb-3">
+            <InputGroup.Text style={{ color: getPlatformBadgeColor(selectedRecord.marketplace) }}>Target Marketplace</InputGroup.Text>
             <Form.Select value={selectedRecord.marketplace} onChange={onMarketplaceChange}>
               {renderMarketPlaceOptions()}
             </Form.Select>
@@ -446,13 +458,12 @@ const QARecords: React.FC = () => {
             <Button size='xs' color='slate' onClick={() => setSelectedRecord({ ...selectedRecord, link: extractHttpsFromStr(selectedRecord.link) })}>Extract</Button>
             <Button size='xs' color='gray' onClick={() => openLink(selectedRecord.link)}>Open</Button>
           </InputGroup>
-          <Button className='absolute bottom-3 left-3' color='emerald' onClick={record}>👌 Submit Into Inventory</Button>
         </div>
       )
 
       // web scraper and chat gpt results
       const renderB = () => (
-        <div className='min-h-[620px]'>
+        <div className='min-h-[500px]'>
           <hr />
         </div>
       )
@@ -505,6 +516,7 @@ const QARecords: React.FC = () => {
         <div className='absolute bottom-3 w-full'>
           <Button color='indigo' onClick={prevRecord}>Prev</Button>
           <Button className='ml-12' color={selectedRecord.problem ? 'lime' : 'rose'} onClick={() => setShowMarkConfirmPopup(true)}>{selectedRecord.problem ? 'Mark Resolved' : 'Mark Problem'}</Button>
+          <Button className='absolute mr-auto ml-96' color='emerald' onClick={record}>👌 Submit Into Inventory</Button>
           <Button className='absolute right-12' color='indigo' onClick={nextRecord}>Next</Button>
         </div>
       </div>
@@ -639,7 +651,7 @@ const QARecords: React.FC = () => {
     const onMarketplaceFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => { setQueryFilter({ ...queryFilter, marketplaceFilter: event.target.value }); setChanged(true) }
     const onTimeRangeFilterChange = (value: DateRangePickerValue) => { setQueryFilter({ ...queryFilter, timeRangeFilter: value }); setChanged(true); console.log(value) }
     const resetFilters = () => {
-      setQueryFilter(initQueryFilter)
+      setQueryFilter(initQAQueryFilter)
       setCurrPage(0)
       setChanged(false)
       fetchQARecordsByPage(true)
@@ -664,16 +676,11 @@ const QARecords: React.FC = () => {
           onMarketplaceFilterChange={onMarketplaceFilterChange}
           resetFilters={resetFilters}
         />
-        <div>
-          <label className='text-gray-500 mb-1'>Items Per Page</label>
-          <Form.Select className='mr-2' value={String(itemsPerPage)} onChange={onItemsPerPageChange}>
-            {renderItemPerPageOptions()}
-          </Form.Select>
-        </div>
-        <div className="text-center ml-6">
-          <label className='text-gray-500 mb-1'>Total Items</label>
-          <h4>{itemCount}</h4>
-        </div>
+        <PageItemStatsBox
+          totalItems={itemCount}
+          itemsPerPage={itemsPerPage}
+          onItemsPerPageChange={onItemsPerPageChange}
+        />
       </div>
     )
   }
@@ -694,7 +701,7 @@ const QARecords: React.FC = () => {
         <Col numColSpan={2}>
           <Card className="h-full">
             <Title>📥 Inventory Recording</Title>
-            {selectedRecord.sku ? <Button className='absolute right-8 top-6' color='emerald' onClick={() => setSelectedRecord(originalSelectedRecord)}>Refresh Inventory</Button> : undefined}
+            {selectedRecord.sku ? <Button className='absolute right-8 top-6' color='emerald' onClick={() => setSelectedRecord(originalSelectedRecord)}>Reset Inventory</Button> : undefined}
             <hr />
             {selectedRecord.sku === 0 ? <Subtitle className='text-center mt-64'>Selected QA Records Details Will Be Shown Here!</Subtitle> : renderRecordingPanel()}
           </Card>

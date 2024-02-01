@@ -27,12 +27,12 @@ import {
   Tab,
   DateRangePickerValue
 } from '@tremor/react'
-import { RetailRecord, ReturnRecord, Condition, QueryFilter } from '../utils/Types'
+import { RetailRecord, ReturnRecord, Condition, QAQueryFilter } from '../utils/Types'
 import '../style/RetailManager.css'
 import { Form } from 'react-bootstrap';
 import CreateSalesRecordModal from '../components/CreateSalesRecordModal';
 import { AppContext } from '../App';
-import { renderItemPerPageOptions, server, getPlatformBadgeColor, initQueryFilter } from '../utils/utils';
+import { renderItemPerPageOptions, server, getPlatformBadgeColor, initQAQueryFilter } from '../utils/utils';
 import axios from 'axios';
 import CreateReturnRecordModal from '../components/CreateReturnRecord';
 import TableFilter from '../components/TableFilter';
@@ -158,7 +158,7 @@ const RetailManager: React.FC = () => {
   const [showReturnsRecordModal, setShowReturnsRecordModal] = useState<boolean>(false)
 
   // filters
-  const [queryFilter, setQueryFilter] = useState<QueryFilter>(initQueryFilter)
+  const [queryFilter, setQueryFilter] = useState<QAQueryFilter>(initQAQueryFilter)
   const [changed, setChanged] = useState<boolean>(false)
 
   useEffect(() => {
@@ -316,7 +316,7 @@ const RetailManager: React.FC = () => {
       const onMarketplaceFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => { setQueryFilter({ ...queryFilter, marketplaceFilter: event.target.value }); setChanged(true) }
       const onTimeRangeFilterChange = (value: DateRangePickerValue) => { setQueryFilter({ ...queryFilter, timeRangeFilter: value }); setChanged(true) }
       const resetFilters = () => {
-        setQueryFilter(initQueryFilter)
+        setQueryFilter(initQAQueryFilter)
         setCurrPage(0)
         setChanged(false)
         fetchRetailDataByPage()
@@ -331,21 +331,6 @@ const RetailManager: React.FC = () => {
           >
             <FaRotate />
           </Button>
-          <TableFilter
-            queryFilter={queryFilter}
-            setQueryFilter={setQueryFilter}
-            onTimeRangeFilterChange={onTimeRangeFilterChange}
-            onConditionFilterChange={onConditionFilterChange}
-            onPlatformFilterChange={onPlatformFilterChange}
-            onMarketplaceFilterChange={onMarketplaceFilterChange}
-            resetFilters={resetFilters}
-          />
-          <div className="right-12 w-32 absolute text-left">
-            <label className='text-gray-500'>Items Per Page</label>
-            <Form.Select className='mr-2' value={String(itemsPerPage)} onChange={onItemsPerPageChange}>
-              {renderItemPerPageOptions()}
-            </Form.Select>
-          </div>
         </div>
       )
     }

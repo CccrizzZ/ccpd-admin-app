@@ -18,7 +18,7 @@ import {
   DateRangePickerValue,
   AreaChart,
 } from '@tremor/react'
-import { Condition, InstockInventory, Platform } from '../utils/Types'
+import { Condition, InstockInventory, Platform, InstockQueryFilter } from '../utils/Types'
 import { AppContext } from '../App'
 import axios, { AxiosResponse } from 'axios'
 import {
@@ -30,13 +30,15 @@ import {
   renderMarketPlaceOptions,
   renderPlatformOptions,
   renderInstockOptions,
-  renderItemPerPageOptions
+  renderItemPerPageOptions,
+  initInstockQueryFilter
 } from '../utils/utils'
 import moment from 'moment'
 import { Form, InputGroup } from 'react-bootstrap'
 import PaginationButton from '../components/PaginationButton'
 import "../style/Inventory.css"
 import CustomDatePicker from '../components/DateRangePicker'
+import PageItemStatsBox from '../components/PageItemStatsBox'
 
 // mock data
 const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()}`
@@ -67,21 +69,6 @@ const chartdata = [
   },
 ];
 
-const initQueryFilter: QueryFilter = {
-  timeRangeFilter: {} as DateRangePickerValue,
-  conditionFilter: '' as Condition,
-  platformFilter: '' as Platform,
-  marketplaceFilter: '' as Platform,
-  instockFilter: 'in'
-}
-
-type QueryFilter = {
-  timeRangeFilter: DateRangePickerValue;
-  conditionFilter: Condition;
-  platformFilter: Platform;
-  marketplaceFilter: Platform;
-  instockFilter: string
-}
 
 const Inventory: React.FC = () => {
   const { setLoading } = useContext(AppContext)
@@ -90,12 +77,13 @@ const Inventory: React.FC = () => {
   // paging
   const [currPage, setCurrPage] = useState<number>(0)
   const [itemsPerPage, setItemsPerPage] = useState<number>(20)
+  const [itemCount, setItemCount] = useState<number>(0)
   // search keyword
   const [searchSku, setSearchSku] = useState<string>('')
   const [searchKeyword, setSearchKeyword] = useState<string>('')
   const [shelfLocationKeyword, setshelfLocationKeyword] = useState<string>('')
   // query filters
-  const [queryFilter, setQueryFilter] = useState<QueryFilter>(initQueryFilter)
+  const [queryFilter, setQueryFilter] = useState<InstockQueryFilter>(initInstockQueryFilter)
   // flag
   const [changed, setChanged] = useState<boolean>(false)
 
@@ -106,14 +94,20 @@ const Inventory: React.FC = () => {
   const fetchInstockByPage = async () => {
     setLoading(true)
     await axios({
-      method: 'post',
-      url: server + '/adminController/getQARecordsByPage',
+      method: 'get',
+      url: server + '/inventoryController/getInstockByPage',
       responseType: 'text',
       timeout: 3000,
-      data: { page: currPage, itemsPerPage: itemsPerPage },
+      data: {
+        page: currPage,
+        itemsPerPage: itemsPerPage,
+        filter: queryFilter
+      },
       withCredentials: true
     }).then((res: AxiosResponse) => {
-
+      const data = JSON.parse(res.data)
+      setInstockArr(data['arr'])
+      setItemCount(data['count'])
     }).catch((err) => {
       setLoading(false)
       alert('Failed Fetching QA Records: ' + err.response.status)
@@ -160,20 +154,14 @@ const Inventory: React.FC = () => {
     setLoading(false)
   }
 
-  const exportToCSV = async () => {
 
-  }
-
-  const searchInstockByKeyword = async () => {
-
-  }
 
   const resetFilters = () => {
     setSearchSku('')
     setSearchKeyword('')
     setshelfLocationKeyword('')
     setItemsPerPage(20)
-    setQueryFilter(initQueryFilter)
+    setQueryFilter(initInstockQueryFilter)
     setChanged(false)
   }
 
@@ -212,10 +200,7 @@ const Inventory: React.FC = () => {
       if (event.target.value.length + 1 < 6) setshelfLocationKeyword((event.target.value).toUpperCase())
       setChanged(true)
     }
-    const onItemsPerPageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-      setItemsPerPage(Number(event.target.value))
-      setChanged(true)
-    }
+
     const getInstockColor = (instock: string) => instock === 'in' ? '#10b981' : instock === 'out' ? '#f43f5e' : '#3b82f6'
     return (
       <Card className='h-full'>
@@ -252,7 +237,6 @@ const Inventory: React.FC = () => {
                 {renderMarketPlaceOptions()}
               </Form.Select>
             </InputGroup>
-
           </Col>
           <Col>
             <InputGroup size='sm' className='mb-2'>
@@ -267,17 +251,11 @@ const Inventory: React.FC = () => {
                 {renderInstockOptions()}
               </Form.Select>
             </InputGroup>
-            <InputGroup size='sm' className='mb-3'>
-              <InputGroup.Text>Items Per Page</InputGroup.Text>
-              <Form.Select value={itemsPerPage} onChange={onItemsPerPageChange}>
-                {renderItemPerPageOptions()}
-              </Form.Select>
-            </InputGroup>
           </Col>
         </Grid>
         <Button className='absolute bottom-3 w-48' color='rose' size='xs' onClick={resetFilters}>Reset Filters</Button>
         <Button className='absolute bottom-3 w-64 right-64' color='indigo' size='xs' onClick={resetFilters}>Export Current Selection to CSV</Button>
-        <Button className='absolute bottom-3 w-48 right-6' color={changed ? 'amber' : 'emerald'} size='xs' onClick={searchInstockByKeyword}>Refresh</Button>
+        <Button className='absolute bottom-3 w-48 right-6' color={changed ? 'amber' : 'emerald'} size='xs' onClick={fetchInstockByPage}>Refresh</Button>
       </Card>
     )
   }
@@ -350,8 +328,17 @@ const Inventory: React.FC = () => {
   }
 
   const renderInstockTable = () => {
+    const onItemsPerPageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+      setItemsPerPage(Number(event.target.value))
+      setChanged(true)
+    }
     return (
       <Card ref={tableRef}>
+        <PageItemStatsBox
+          totalItems={itemCount}
+          itemsPerPage={itemsPerPage}
+          onItemsPerPageChange={onItemsPerPageChange}
+        />
         <Table>
           <TableHead>
             <TableRow className='th-row'>

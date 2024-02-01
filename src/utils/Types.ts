@@ -121,9 +121,13 @@ export type Paging = {
   itemsPerPage: number,
 }
 
-export type QueryFilter = {
+export type QAQueryFilter = {
   timeRangeFilter: DateRangePickerValue;
   conditionFilter: string;
   platformFilter: string;
   marketplaceFilter: string;
 }
+
+export type InstockQueryFilter = {
+  instockFilter: string
+} & QAQueryFilter

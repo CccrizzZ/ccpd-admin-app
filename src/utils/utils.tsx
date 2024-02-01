@@ -1,6 +1,18 @@
 import { SHA256, enc } from "crypto-js";
 import moment from "moment-timezone";
-import { Condition, CreateUser, InstockInventory, PaymentMethod, QARecord, QueryFilter, RetailRecord, ReturnRecord, UserDetail } from "./Types";
+import {
+  Condition,
+  CreateUser,
+  InstockInventory,
+  PaymentMethod,
+  QARecord,
+  QAQueryFilter,
+  RetailRecord,
+  ReturnRecord,
+  UserDetail,
+  InstockQueryFilter,
+  Platform
+} from "./Types";
 import { DateRangePickerValue } from "@tremor/react";
 
 // server connection
@@ -30,7 +42,8 @@ export const urlRegex = '/(http|https):\/\/(\S*)/'
 export const hashPass = (userPass: string) => SHA256(userPass).toString(enc.Base64)
 
 // return tremor color pallete string
-export const getPlatformBadgeColor = (platform: string) => {
+export const getPlatformBadgeColor = (platform: string | undefined) => {
+  if (platform === undefined || platform === '') return 'slate'
   switch (platform) {
     case 'Amazon' || 'amazon':
       return 'orange'
@@ -262,9 +275,17 @@ export const openLink = (link: string) => {
 // extract https link in string
 export const extractHttpsFromStr = (str: string) => String(str.match(/\bhttps?:\/\/\S+/gi))
 
-export const initQueryFilter: QueryFilter = {
+export const initQAQueryFilter: QAQueryFilter = {
   timeRangeFilter: {} as DateRangePickerValue,
   conditionFilter: '',
   platformFilter: '',
   marketplaceFilter: ''
+}
+
+export const initInstockQueryFilter: InstockQueryFilter = {
+  timeRangeFilter: {} as DateRangePickerValue,
+  conditionFilter: '' as Condition,
+  platformFilter: '' as Platform,
+  marketplaceFilter: '' as Platform,
+  instockFilter: 'in'
 }
