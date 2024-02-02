@@ -61,7 +61,7 @@ export interface InstockInventory {
   shelfLocation: string;
   condition: Condition;
   comment: string;
-  mrsp: number;         // scraped
+  msrp: number;         // scraped
   lead: string;         // chat gpt generated from scraped data
   description: string;  // chat gpt generated from scraped data
   url: string;
@@ -131,3 +131,9 @@ export type QAQueryFilter = {
 export type InstockQueryFilter = {
   instockFilter: string
 } & QAQueryFilter
+
+export type ScrapedData = {
+  title: string,
+  msrp: number,
+  imageUrl: string,
+}

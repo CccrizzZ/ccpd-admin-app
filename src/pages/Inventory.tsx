@@ -154,8 +154,6 @@ const Inventory: React.FC = () => {
     setLoading(false)
   }
 
-
-
   const resetFilters = () => {
     setSearchSku('')
     setSearchKeyword('')

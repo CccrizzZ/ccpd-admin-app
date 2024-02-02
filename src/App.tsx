@@ -69,6 +69,7 @@ const App = () => {
       'Retail & Return',
       'User Management',
       // 'Procurement'
+      // 'Pallet Manager'
     ]
     const icons = [
       <FaHouseChimney />,

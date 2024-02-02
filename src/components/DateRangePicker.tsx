@@ -30,7 +30,7 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = (props: CustomDatePick
         from={getStartOfToday()}
         to={getEndOfToday()}
       >
-        Today
+        Today: {new Date().toDateString()}
       </DateRangePickerItem>
       <DateRangePickerItem
         key="Yesterday"
@@ -38,7 +38,7 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = (props: CustomDatePick
         from={getStartOfYesterday()}
         to={getEndOfYesterday()}
       >
-        Yesterday
+        Yesterday: {new Date().toDateString()}
       </DateRangePickerItem>
       <DateRangePickerItem
         key="This Week"

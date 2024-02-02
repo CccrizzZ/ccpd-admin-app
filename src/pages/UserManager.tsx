@@ -54,10 +54,12 @@ const UserManager: React.FC = () => {
   const [invitationArr, setInvitationArr] = useState<InvitationCode[]>([])
   const [pieOverviewData, setPieOverviewData] = useState<chartData[]>([])
 
-  // user manipulation states
-  const [editMode, setEditMode] = useState<boolean>(false)
-  const [showActiveOnly, setshowActiveOnly] = useState<boolean>(false)
+  // user manipulation target
   const [targetUser, setTargetUser] = useState<UserDetail>(initUser)
+
+  // flag
+  const [editMode, setEditMode] = useState<boolean>(false)
+  const [showActiveOnly, setshowActiveOnly] = useState<boolean>(true)
   const [showDeletePopup, setShowDeletePopup] = useState<boolean>(false)
   const [showCreatePopup, setShowCreatePopup] = useState<boolean>(false)
   const [showEditModal, setShowEditModal] = useState<boolean>(false)
@@ -242,34 +244,37 @@ const UserManager: React.FC = () => {
   }
 
   const renderTBody = () => {
-    return userArr.map((user) => (
-      <TableRow key={user._id}>
-        <TableCell>
-          <Text>{user._id}</Text>
-        </TableCell>
-        <TableCell>
-          <Badge color={user.userActive ? 'teal' : 'red'}>{user.name}</Badge>
-        </TableCell>
-        <TableCell>
-          <Text>{user.email}</Text>
-        </TableCell>
-        <TableCell>
-          <Text>Redacted</Text>
-        </TableCell>
-        <TableCell>
-          <Badge>{user.role}</Badge>
-        </TableCell>
-        <TableCell>
-          <Text>{(moment(user.registrationDate, "MMM DD YYYY").format('MMM DD YYYY'))}</Text>
-        </TableCell>
-        <TableCell>
-          {user.userActive ? <Badge className='m-0' size="xs" color="emerald">Active</Badge> : <Badge size="xs" color="red" className='m-0'>Inactive</Badge>}
-        </TableCell>
-        {/* hide edit option for current user */}
-        {editMode && user._id !== userInfo.id ? <TableCell><Button className='mr-1' size="xs" color='amber' onClick={() => showAndSetEditPopup(user)}><FaPenToSquare /></Button>
-          <Button size="xs" color='red' onClick={() => showAndSetDelPopup(user)}><FaRegTrashCan /></Button></TableCell> : undefined}
-      </TableRow>
-    ))
+    return userArr.map((user) => {
+      if (showActiveOnly && !user.userActive) return
+      return (
+        <TableRow key={user._id}>
+          <TableCell>
+            <Text>{user._id}</Text>
+          </TableCell>
+          <TableCell>
+            <Badge color={user.userActive ? 'teal' : 'red'}>{user.name}</Badge>
+          </TableCell>
+          <TableCell>
+            <Text>{user.email}</Text>
+          </TableCell>
+          <TableCell>
+            <Text>Redacted</Text>
+          </TableCell>
+          <TableCell>
+            <Badge>{user.role}</Badge>
+          </TableCell>
+          <TableCell>
+            <Text>{(moment(user.registrationDate, "MMM DD YYYY").format('MMM DD YYYY'))}</Text>
+          </TableCell>
+          <TableCell>
+            {user.userActive ? <Badge className='m-0' size="xs" color="emerald">Active</Badge> : <Badge size="xs" color="red" className='m-0'>Inactive</Badge>}
+          </TableCell>
+          {/* hide edit option for current user */}
+          {editMode && user._id !== userInfo.id ? <TableCell><Button className='mr-1' size="xs" color='amber' onClick={() => showAndSetEditPopup(user)}><FaPenToSquare /></Button>
+            <Button size="xs" color='red' onClick={() => showAndSetDelPopup(user)}><FaRegTrashCan /></Button></TableCell> : undefined}
+        </TableRow>
+      )
+    })
   }
 
   const renderInvitationPanel = () => {
@@ -368,7 +373,7 @@ const UserManager: React.FC = () => {
           <div className='flex'>
             <Button color='emerald' onClick={fetchAllUserInfo}><FaRotate className='m-0 text-white' /></Button>
             {editMode ? <Button color='blue' className='ml-2' onClick={() => setShowCreatePopup(true)}><FaUserPlus /></Button> : undefined}
-            <div className="absolute right-48">
+            <div className="absolute right-48 flex">
               <label className="text-sm text-gray-500 mr-4">Show Active Users Only</label>
               <Switch checked={showActiveOnly} onChange={() => setshowActiveOnly(!showActiveOnly)} />
             </div>

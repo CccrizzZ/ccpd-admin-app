@@ -54,11 +54,15 @@ export const getPlatformBadgeColor = (platform: string | undefined) => {
     case 'Hibid' || 'hibid':
       return 'cyan';
     case 'HomeDepot' || 'homedepot' || 'Homedepot':
-      return 'amber'
+      return 'orange'
     case 'Wholesale' || 'wholesale':
       return 'rose';
     case 'Retail' || 'retail':
       return 'sky';
+    case 'Facebook' || 'facebook':
+      return 'blue';
+    case 'Kijiji' || 'kijiji':
+      return 'indigo';
     case 'Other' || 'other':
       return 'slate';
     default:
@@ -233,7 +237,7 @@ export const initRetailRecord: RetailRecord = {
 
 export const initInstockInventory: InstockInventory = {
   sku: 0,
-  mrsp: 0,
+  msrp: 0,
   shelfLocation: '',
   condition: '' as Condition,
   comment: '',

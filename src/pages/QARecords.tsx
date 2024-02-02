@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState, version } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import {
   Grid,
   Badge,
@@ -17,13 +17,15 @@ import {
   Subtitle,
   AreaChart,
   Textarea,
-  DateRangePicker,
-  DateRangePickerItem,
   DateRangePickerValue,
-  List,
-  ListItem
 } from '@tremor/react'
-import { Condition, Platform, QARecord, QAQueryFilter } from '../utils/Types'
+import {
+  Condition,
+  Platform,
+  QARecord,
+  QAQueryFilter,
+  ScrapedData
+} from '../utils/Types'
 import { AppContext } from '../App'
 import SearchPanel from '../components/SearchPanel'
 import PaginationButton from '../components/PaginationButton'
@@ -60,6 +62,7 @@ import TableFilter from '../components/TableFilter'
 import PageItemStatsBox from '../components/PageItemStatsBox'
 
 const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()}`
+const initScrapeData: ScrapedData = { title: '', msrp: 0, imageUrl: '' }
 
 // mock data
 const barChartData = [
@@ -147,6 +150,12 @@ const QARecords: React.FC = () => {
   const [itemCount, setItemCount] = useState<number>(0)
   // filtering
   const [queryFilter, setQueryFilter] = useState<QAQueryFilter>(initQAQueryFilter)
+  // scraping and chat gpt
+  const [scrapeData, setScrapeData] = useState<ScrapedData>({
+    title: '',
+    msrp: 0,
+    imageUrl: ''
+  })
 
   useEffect(() => {
     fetchQARecordsByPage()
@@ -266,29 +275,19 @@ const QARecords: React.FC = () => {
   const nextRecord = () => {
     const next = QARecordArr[QARecordArr.indexOf(selectedRecord) + 1]
     setSelectedRecordImagesArr([])
-    if (next !== undefined) setSelectedRecord(next)
+    if (next !== undefined) setSelectedRecord(next); setOriginalSelectedRecord(next); setScrapeData(initScrapeData)
   }
 
   const prevRecord = () => {
     const prev = QARecordArr[QARecordArr.indexOf(selectedRecord) - 1]
     setSelectedRecordImagesArr([])
-    if (prev !== undefined) setSelectedRecord(prev)
+    if (prev !== undefined) setSelectedRecord(prev); setOriginalSelectedRecord(prev); setScrapeData(initScrapeData)
   }
 
   // take QA record scrape and generate info, then push data into instock inventory db
   const renderRecordingPanel = () => {
     const record = async () => {
       // call admin create in stock inventory
-
-    }
-
-    // pull msrp, title and first image from scrapper
-    const pullScrapeData = async () => {
-
-    }
-
-    // send the pulled data to chat gpt to generate lead and description
-    const pullChatGPTData = async () => {
 
     }
 
@@ -400,7 +399,7 @@ const QARecords: React.FC = () => {
 
     // selected QA record information card
     const renderQARecordCard = () => {
-      // form to submit
+      // A side contains QA info
       const renderA = () => (
         <div className='min-h-[500px]'>
           <InputGroup size="sm" className="mb-3">
@@ -428,7 +427,7 @@ const QARecords: React.FC = () => {
             </Form.Select>
           </InputGroup>
           <InputGroup size="sm" className="mb-3">
-            <InputGroup.Text style={{ color: getPlatformBadgeColor(selectedRecord.marketplace) }}>Target Marketplace</InputGroup.Text>
+            <InputGroup.Text>Target Marketplace</InputGroup.Text>
             <Form.Select value={selectedRecord.marketplace} onChange={onMarketplaceChange}>
               {renderMarketPlaceOptions()}
             </Form.Select>
@@ -461,9 +460,56 @@ const QARecords: React.FC = () => {
         </div>
       )
 
-      // web scraper and chat gpt results
+      const scrapeRequest = async () => {
+        setLoading(true)
+        await axios({
+          method: 'post',
+          url: server + '/inventoryController/scrapeInfoBySkuAmazon',
+          responseType: 'text',
+          timeout: 12000,   // scraping takes longer time
+          data: { 'sku': String(selectedRecord.sku) },
+          withCredentials: true
+        }).then((res: AxiosResponse) => {
+          setScrapeData(JSON.parse(res.data))
+        }).catch((res: AxiosError) => {
+          alert('Failed Scraping: ' + res.response?.data)
+        })
+        setLoading(false)
+      }
+
+      // scraped data: msrp, title, first image
+      // chatgpt data: lead, description
+      // B side contains web scraper and chat gpt results
       const renderB = () => (
         <div className='min-h-[500px]'>
+          <div className='flex m-2'>
+            <Badge color={getPlatformBadgeColor(selectedRecord.platform)}>{selectedRecord.platform}</Badge>
+          </div>
+
+          <InputGroup size="sm" className="mb-3">
+            <InputGroup.Text>Title</InputGroup.Text>
+            <Form.Control
+              className='resize-none h-32'
+              as={Textarea}
+              value={scrapeData.title}
+            />
+          </InputGroup>
+          <Grid numItems={4}>
+            <Col numColSpan={3}>
+              <InputGroup size="sm" className="mb-3">
+                <InputGroup.Text>MSRP</InputGroup.Text>
+                <Form.Control value={scrapeData.msrp} />
+                {/* <InputGroup.Text>{getCurrency(selectedRecord.link)}</InputGroup.Text> */}
+              </InputGroup>
+            </Col>
+            <Col numColSpan={1}>
+              <Button className='ml-2' color='emerald' onClick={scrapeRequest}>Scrape</Button>
+            </Col>
+          </Grid>
+          <div>
+            <p>First Stock Image:</p>
+            {scrapeData.imageUrl ? <img src={scrapeData.imageUrl} /> : undefined}
+          </div>
           <hr />
         </div>
       )
@@ -508,7 +554,7 @@ const QARecords: React.FC = () => {
               </Button>
             </div>
             <hr />
-            <Card className='overflow-y-scroll inline-grid max-h-[620px]' style={{ backgroundColor: '#223' }}>
+            <Card className='overflow-y-scroll inline-grid min-h-[520px]' style={{ backgroundColor: '#223' }}>
               {selectedRecordImagesArr.length < 1 ? <Subtitle>Photos Uploaded By Q&A Personal Will Show Up Here</Subtitle> : <div className='grid grid-cols-3 gap-2'>{renderThumbnails()}</div>}
             </Card>
           </div>
