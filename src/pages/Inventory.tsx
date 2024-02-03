@@ -17,6 +17,7 @@ import {
   Text,
   DateRangePickerValue,
   AreaChart,
+  Switch,
 } from '@tremor/react'
 import { Condition, InstockInventory, Platform, InstockQueryFilter } from '../utils/Types'
 import { AppContext } from '../App'
@@ -31,7 +32,9 @@ import {
   renderPlatformOptions,
   renderInstockOptions,
   renderItemPerPageOptions,
-  initInstockQueryFilter
+  initInstockQueryFilter,
+  openLink,
+  extractHttpsFromStr
 } from '../utils/utils'
 import moment from 'moment'
 import { Form, InputGroup } from 'react-bootstrap'
@@ -86,15 +89,16 @@ const Inventory: React.FC = () => {
   const [queryFilter, setQueryFilter] = useState<InstockQueryFilter>(initInstockQueryFilter)
   // flag
   const [changed, setChanged] = useState<boolean>(false)
+  const [editMode, setEditMode] = useState<boolean>(false)
 
   useEffect(() => {
-    // fetchInstockByPage()
+    fetchInstockByPage()
   }, [])
 
   const fetchInstockByPage = async () => {
     setLoading(true)
     await axios({
-      method: 'get',
+      method: 'post',
       url: server + '/inventoryController/getInstockByPage',
       responseType: 'text',
       timeout: 3000,
@@ -113,6 +117,7 @@ const Inventory: React.FC = () => {
       alert('Failed Fetching QA Records: ' + err.response.status)
     })
     setLoading(false)
+    setCurrPage(0)
   }
 
   // for next and prev page button
@@ -129,7 +134,7 @@ const Inventory: React.FC = () => {
     setLoading(true)
     await axios({
       method: 'post',
-      url: server + '/adminController/getQARecordsByPage',
+      url: server + '/inventoryController/getInstockByPage',
       responseType: 'text',
       timeout: 3000,
       data: {
@@ -140,7 +145,7 @@ const Inventory: React.FC = () => {
       withCredentials: true
     }).then((res: AxiosResponse) => {
       const data = JSON.parse(res.data)
-      if (data['arr'].length > 0) {
+      if (data['arr'] && data['arr'].length > 0) {
         setInstockArr(data['arr'])
         setChanged(false)
         setCurrPage(newPage)
@@ -277,10 +282,17 @@ const Inventory: React.FC = () => {
   }
 
   const renderInventoryTableBody = () => {
+    if (!instockArr || instockArr.length < 1) return
     return instockArr.map((instock) => (
       <TableRow key={instock.sku}>
         <TableCell>
-          <Text>{instock.sku}</Text>
+          <Button size='xs' color='violet'>{instock.sku}</Button>
+        </TableCell>
+        <TableCell>
+          <Badge color='slate'>{instock.shelfLocation}</Badge>
+        </TableCell>
+        <TableCell>
+          <Badge color={getConditionVariant(instock.condition)}>{instock.condition}</Badge>
         </TableCell>
         <TableCell>
           <Text>{instock.lead}</Text>
@@ -289,16 +301,10 @@ const Inventory: React.FC = () => {
           <Text>{instock.description}</Text>
         </TableCell>
         <TableCell>
-          <Text>{instock.shelfLocation}</Text>
+          <Text>{instock.comment}</Text>
         </TableCell>
         <TableCell>
-          <Badge color={getConditionVariant(instock.condition)}>{instock.condition}</Badge>
-        </TableCell>
-        <TableCell>
-          <p>{instock.comment}</p>
-        </TableCell>
-        <TableCell>
-          <p>{instock.url.slice(0, 100)}</p>
+          <Text><a className='cursor-pointer' onClick={() => openLink(instock.url)}>{String(instock.url).slice(0, 50)}</a></Text>
         </TableCell>
         <TableCell>
           <Text>{instock.quantityInstock}</Text>
@@ -307,14 +313,15 @@ const Inventory: React.FC = () => {
           <Text>{instock.quantitySold}</Text>
         </TableCell>
         <TableCell>
-          <Badge color='slate'>{instock.qaName}</Badge>
+          <div className='grid gap-1'>
+            <Badge color='slate'>{instock.qaName}</Badge>
+            <Badge color='orange'>{instock.adminName}</Badge>
+          </div>
         </TableCell>
         <TableCell>
-          <Badge color='slate'>{instock.adminName}</Badge>
+          <Text>{moment(instock.recordTime).format('LLL')}</Text>
         </TableCell>
-        <TableCell>
-          <Text>{(moment(instock.recordTime, "ddd MMM DD kk:mm:ss YYYY").format('LLL'))}</Text>
-        </TableCell>
+
       </TableRow>
     ))
   }
@@ -332,33 +339,50 @@ const Inventory: React.FC = () => {
     }
     return (
       <Card ref={tableRef}>
-        <PageItemStatsBox
-          totalItems={itemCount}
-          itemsPerPage={itemsPerPage}
-          onItemsPerPageChange={onItemsPerPageChange}
-        />
+        <div className="flex top-12">
+          <PageItemStatsBox
+            totalItems={itemCount}
+            itemsPerPage={itemsPerPage}
+            onItemsPerPageChange={onItemsPerPageChange}
+          />
+        </div>
+
+        <div className="absolute right-16 flex top-12">
+          <label className="text-sm text-gray-500 mr-4">Edit Mode</label>
+          <Switch checked={editMode} onChange={() => setEditMode(!editMode)} />
+        </div>
+
+        <div className='flex w-full'>
+          <PaginationButton
+            currentPage={currPage}
+            nextPage={() => fetchPage(1)}
+            prevPage={() => fetchPage(-1)}
+          />
+        </div>
+        <hr />
         <Table>
           <TableHead>
             <TableRow className='th-row'>
               <TableHeaderCell className='w-28'>SKU</TableHeaderCell>
+              <TableHeaderCell className='w-32'>Shelf Location</TableHeaderCell>
+              <TableHeaderCell className='w-36'>Condition</TableHeaderCell>
               <TableHeaderCell className='w-36'>Lead</TableHeaderCell>
               <TableHeaderCell>Desc</TableHeaderCell>
-              <TableHeaderCell className='w-32'>Shelf Location</TableHeaderCell>
-              <TableHeaderCell className='w-28'>Condition</TableHeaderCell>
               <TableHeaderCell>QAComment</TableHeaderCell>
-              <TableHeaderCell>URL</TableHeaderCell>
+              <TableHeaderCell className='w-28'>URL</TableHeaderCell>
               <TableHeaderCell className='w-28'>Instock</TableHeaderCell>
               <TableHeaderCell className='w-28'>Sold</TableHeaderCell>
-              <TableHeaderCell className='w-36'>QAPersonal</TableHeaderCell>
-              <TableHeaderCell className='w-36'>Admin</TableHeaderCell>
-              <TableHeaderCell>Time Recorded</TableHeaderCell>
+              <TableHeaderCell className='w-36'>
+                <div>QAPersonal &<br /><p className='text-orange-500'>Admin</p></div>
+              </TableHeaderCell>
+              <TableHeaderCell className='w-36'>Time</TableHeaderCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {instockArr.length > 0 ? renderInventoryTableBody() : undefined}
+            {!instockArr || instockArr.length > 0 ? renderInventoryTableBody() : undefined}
           </TableBody>
         </Table>
-        {instockArr.length < 1 ? <h4 className='text-red-400 w-max ml-auto mr-auto mt-12 mb-12'>No Inventory Found!</h4> : undefined}
+        {!instockArr || instockArr.length < 1 ? <h4 className='text-red-400 w-max ml-auto mr-auto mt-12 mb-12'>No Inventory Found!</h4> : undefined}
         <PaginationButton
           currentPage={currPage}
           nextPage={() => fetchPage(1)}

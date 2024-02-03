@@ -116,11 +116,6 @@ export type CreateUser = {
   role: string,
 }
 
-export type Paging = {
-  currPage: number,
-  itemsPerPage: number,
-}
-
 export type QAQueryFilter = {
   timeRangeFilter: DateRangePickerValue;
   conditionFilter: string;

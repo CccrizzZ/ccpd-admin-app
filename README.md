@@ -10,7 +10,7 @@ Administration control console, full control over ccpd backend.
 ## Relation Graph
 ![workflow](https://github.com/CccrizzZ/ccpd-admin-app/blob/main/workflow.png)
 
-## Components
+## Pages
 
 ### Dashboard
 ```
@@ -22,18 +22,40 @@ Administration control console, full control over ccpd backend.
 
 ### Q&A Records
 ```
-- Q&A inventory overview charts and sortable table.
-- Edit and Delete Q&A records from table.
+- Q&A inventory overview charts.
+- Q&A Records Table.
+    - Sorting and filtering function.
+    - Pagination.
 - Q&A records to instock inventory records conversion panel.
-- Check later ledger panel for check-it-later records.
+    - Scraping function panel.
+    - Chat GPT text generation panel.
+    - Adding tags function in submit panel.
+- Problematic records panel:
+    - Admin can set a record to problematic so the record shows up in this panel.
+    - Check later ledger panel for problem records.
 ```
 
 ### Inventory
 ```
+- Q&A Records component adds records to here, retail manager takes records from here.
 - Inventory overview charts.
-- Inventory sortable table.
-- Edit and delete instock inventory records.
-- Instock vs sold graphic representation for each item.
+- Inventory table.
+    - Instock vs sold statistics for each item in table row.
+    - Filtering & Keyword search panel.
+    - Popup modal for inventory photo albums and instock stats graph.
+    - Edit and delete instock inventory records (edit mode).
+    - Pagination.
+- Inventory CSV export (filtered).
+```
+
+### Retail & Return
+```
+- Retail & Return records table (separate).
+    - Sorting and filtering.
+    - Retail & Return records status graph (for filtered result).
+- Form for creating new retail & return records.
+- Modal for editing and deleting retail & return records.
+- Financial statement CSV export
 ```
 
 ### User Management
@@ -42,12 +64,4 @@ Administration control console, full control over ccpd backend.
 - Invitation code manager panel.
 - Create custom user.
 - Update and delete existing users.
-```
-
-### Retail & Return
-```
-- Retail and return overview charts.
-- Retail sortable & editable table.
-- Create retail or return records. 
-- Edit and delete refund records.
 ```

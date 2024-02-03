@@ -64,7 +64,7 @@ export const getPlatformBadgeColor = (platform: string | undefined) => {
     case 'Kijiji' || 'kijiji':
       return 'indigo';
     case 'Other' || 'other':
-      return 'slate';
+      return 'gray';
     default:
       return 'slate';
   }
@@ -276,8 +276,17 @@ export const openLink = (link: string) => {
   }
 }
 
-// extract https link in string
-export const extractHttpsFromStr = (str: string) => String(str.match(/\bhttps?:\/\/\S+/gi))
+// extract https link from string
+export const extractHttpsFromStr = (str: string) => {
+  const res = String(str.match(/\bhttps?:\/\/\S+/gi))
+  if (res !== 'null') {
+    return res
+  } else {
+    console.log(str.slice(str.indexOf('https')))
+    return str.slice(str.indexOf('https'))
+  }
+}
+
 
 export const initQAQueryFilter: QAQueryFilter = {
   timeRangeFilter: {} as DateRangePickerValue,

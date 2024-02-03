@@ -335,7 +335,7 @@ const QARecords: React.FC = () => {
           keyboard={false}
         >
           <Modal.Header closeButton>
-            <Modal.Title className='mb-12'>{selectedRecord.sku}</Modal.Title>
+            <Modal.Title className='text-white'>{selectedRecord.sku}</Modal.Title>
             <p className='absolute text-rose-500 top-12 left-3'>{imagePopupUrl.replace(/^.*[\\/]/, '')}</p>
           </Modal.Header>
           <Modal.Body>
@@ -404,7 +404,7 @@ const QARecords: React.FC = () => {
         <div className='min-h-[500px]'>
           <InputGroup size="sm" className="mb-3">
             <InputGroup.Text>Admin</InputGroup.Text>
-            <Form.Control style={{ color: 'orange' }} value={userInfo.name} disabled />
+            <Form.Control style={{ color: 'orange' }} value={userInfo.name} readOnly disabled />
           </InputGroup>
           <InputGroup size="sm" className="mb-3">
             <InputGroup.Text>Q&A Personal</InputGroup.Text>
@@ -453,7 +453,6 @@ const QARecords: React.FC = () => {
               value={selectedRecord.link}
               onChange={onLinkChange}
             />
-            {/* <Button size='xs' color='slate' onClick={() => copyLink(selectedRecord.link)}>Copy</Button> */}
             <Button size='xs' color='slate' onClick={() => setSelectedRecord({ ...selectedRecord, link: extractHttpsFromStr(selectedRecord.link) })}>Extract</Button>
             <Button size='xs' color='gray' onClick={() => openLink(selectedRecord.link)}>Open</Button>
           </InputGroup>
@@ -477,6 +476,8 @@ const QARecords: React.FC = () => {
         setLoading(false)
       }
 
+      const onMsrpChange = (event: React.ChangeEvent<HTMLInputElement>) => setScrapeData({ ...scrapeData, msrp: Number(event.target.value) })
+      const onTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => setScrapeData({ ...scrapeData, title: event.target.value })
       // scraped data: msrp, title, first image
       // chatgpt data: lead, description
       // B side contains web scraper and chat gpt results
@@ -485,21 +486,20 @@ const QARecords: React.FC = () => {
           <div className='flex m-2'>
             <Badge color={getPlatformBadgeColor(selectedRecord.platform)}>{selectedRecord.platform}</Badge>
           </div>
-
           <InputGroup size="sm" className="mb-3">
             <InputGroup.Text>Title</InputGroup.Text>
             <Form.Control
               className='resize-none h-32'
               as={Textarea}
               value={scrapeData.title}
+              onChange={onTitleChange}
             />
           </InputGroup>
           <Grid numItems={4}>
             <Col numColSpan={3}>
               <InputGroup size="sm" className="mb-3">
                 <InputGroup.Text>MSRP</InputGroup.Text>
-                <Form.Control value={scrapeData.msrp} />
-                {/* <InputGroup.Text>{getCurrency(selectedRecord.link)}</InputGroup.Text> */}
+                <Form.Control value={scrapeData.msrp} onChange={onMsrpChange} />
               </InputGroup>
             </Col>
             <Col numColSpan={1}>
@@ -528,7 +528,9 @@ const QARecords: React.FC = () => {
           {renderConfirmModal()}
           <div className='w-1/2 p-3 pt-0'>
             <div className='flex'>
-              <h2 className={selectedRecord.problem ? 'text-red-500 mb-3 mt-0' : 'mb-3'}>{selectedRecord.sku}</h2>
+              <h2 className={`mb-3 ${selectedRecord.problem ? 'text-red-500' : selectedRecord.recorded ? 'text-emerald-500' : ''}`} >
+                {`${selectedRecord.recorded ? '✅' : ''}${selectedRecord.sku}`}
+              </h2>
               <Button
                 color='rose'
                 className='absolute right-2/3 mt-2'
@@ -601,9 +603,9 @@ const QARecords: React.FC = () => {
             <TableCell>
               <p className={'absolute left-3 text-lg ' + (record.sku === selectedRecord.sku ? 'visible' : 'invisible')}>👉</p>
               <Button
-                className='text-white'
-                color={record.problem ? 'rose' : 'slate'}
-                tooltip={record.problem ? 'This Record Have Problem' : ''}
+                className={'text-white'}
+                color={record.problem ? 'rose' : record.recorded ? 'emerald' : 'slate'}
+                tooltip={record.problem ? 'This Record Have Problem' : record.recorded ? 'Already Recorded' : 'Not Recorded'}
                 onClick={() => setSelectedRecordByRecord(record)}
               >
                 {record.sku}
@@ -634,7 +636,7 @@ const QARecords: React.FC = () => {
               <Text>{record.amount}</Text>
             </TableCell>
             <TableCell>
-              <Text>{(moment(record.time).format('LLL'))}</Text>
+              <Text>{moment(record.time).format('LLL')}</Text>
             </TableCell>
           </TableRow>
         ))}
