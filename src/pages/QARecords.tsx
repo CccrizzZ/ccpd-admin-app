@@ -16,7 +16,6 @@ import {
   BarChart,
   Subtitle,
   AreaChart,
-  Textarea,
   DateRangePickerValue,
 } from '@tremor/react'
 import {
@@ -169,7 +168,7 @@ const QARecords: React.FC = () => {
       method: 'post',
       url: server + '/adminController/getQARecordsByPage',
       responseType: 'text',
-      timeout: 3000,
+      timeout: 8000,
       data: {
         page: isInit ? 0 : currPage,
         itemsPerPage: newItemsPerPage ?? itemsPerPage,
@@ -198,7 +197,7 @@ const QARecords: React.FC = () => {
       method: 'patch',
       url: server + '/adminController/setProblematicBySku/' + sku,
       responseType: 'text',
-      timeout: 3000,
+      timeout: 8000,
       data: { 'isProblem': isProblematic },
       withCredentials: true
     }).then(() => {
@@ -220,7 +219,7 @@ const QARecords: React.FC = () => {
       method: 'post',
       url: server + '/imageController/getUrlsBySku',
       responseType: 'text',
-      timeout: 3000,
+      timeout: 8000,
       data: { 'sku': String(selectedRecord.sku) },
       withCredentials: true
     }).then((res) => {
@@ -248,7 +247,7 @@ const QARecords: React.FC = () => {
       method: 'post',
       url: server + '/adminController/getQARecordsByPage',
       responseType: 'text',
-      timeout: 3000,
+      timeout: 8000,
       data: {
         page: newPage,
         itemsPerPage: itemsPerPage,
@@ -335,7 +334,7 @@ const QARecords: React.FC = () => {
           keyboard={false}
         >
           <Modal.Header closeButton>
-            <Modal.Title className='text-white'>{selectedRecord.sku}</Modal.Title>
+            <Modal.Title className='text-white font-bold'>{selectedRecord.sku}</Modal.Title>
             <p className='absolute text-rose-500 top-12 left-3'>{imagePopupUrl.replace(/^.*[\\/]/, '')}</p>
           </Modal.Header>
           <Modal.Body>
@@ -440,7 +439,7 @@ const QARecords: React.FC = () => {
             <InputGroup.Text>Comment</InputGroup.Text>
             <Form.Control
               className='resize-none h-32'
-              as={Textarea}
+              as="textarea"
               value={selectedRecord.comment}
               onChange={onCommentChange}
             />
@@ -449,7 +448,7 @@ const QARecords: React.FC = () => {
             <InputGroup.Text>Link</InputGroup.Text>
             <Form.Control
               className='resize-none h-32'
-              as={Textarea}
+              as="textarea"
               value={selectedRecord.link}
               onChange={onLinkChange}
             />
@@ -490,7 +489,7 @@ const QARecords: React.FC = () => {
             <InputGroup.Text>Title</InputGroup.Text>
             <Form.Control
               className='resize-none h-32'
-              as={Textarea}
+              as="textarea"
               value={scrapeData.title}
               onChange={onTitleChange}
             />
@@ -528,7 +527,7 @@ const QARecords: React.FC = () => {
           {renderConfirmModal()}
           <div className='w-1/2 p-3 pt-0'>
             <div className='flex'>
-              <h2 className={`mb-3 ${selectedRecord.problem ? 'text-red-500' : selectedRecord.recorded ? 'text-emerald-500' : ''}`} >
+              <h2 className={`mb-3 font-bold ${selectedRecord.problem ? 'text-red-500' : selectedRecord.recorded ? 'text-emerald-500' : ''}`} >
                 {`${selectedRecord.recorded ? '✅' : ''}${selectedRecord.sku}`}
               </h2>
               <Button
@@ -583,7 +582,7 @@ const QARecords: React.FC = () => {
       method: 'post',
       url: server + '/imageController/getUrlsBySku',
       responseType: 'text',
-      timeout: 3000,
+      timeout: 8000,
       data: { 'sku': String(record.sku) },
       withCredentials: true
     }).then((res) => {
@@ -743,7 +742,7 @@ const QARecords: React.FC = () => {
     fetchQARecordsByPage(true, Number(event.target.value))
   }
   return (
-    <div ref={topRef} >
+    <div ref={topRef}>
       {/* control panels */}
       <Grid className="gap-2" numItems={3}>
         <Col numColSpan={2}>
@@ -754,7 +753,7 @@ const QARecords: React.FC = () => {
             {selectedRecord.sku === 0 ? <Subtitle className='text-center mt-64'>Selected QA Records Details Will Be Shown Here!</Subtitle> : renderRecordingPanel()}
           </Card>
         </Col>
-        <Col numColSpan={1}>
+        <Col numColSpan={1} className='h-full'>
           <Card className="h-96 bg-stone-900">
             <Button
               color='rose'

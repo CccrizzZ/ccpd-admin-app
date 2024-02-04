@@ -29,10 +29,10 @@ const SearchPanel: React.FC<SearchPanelProp> = (props: SearchPanelProp) => {
     // send searchSKU with axios
     await axios({
       method: 'post',
-      url: server + '/adminController/getQARecordBySku/' + searchSKU,
+      url: server + '/inventoryController/getInventoryBySku',
       responseType: 'text',
-      data: '',
-      timeout: 3000,
+      data: { sku: searchSKU },
+      timeout: 8000,
       withCredentials: true
     }).then((res: AxiosResponse) => {
       setSearchRes(JSON.parse(res.data))
@@ -58,7 +58,7 @@ const SearchPanel: React.FC<SearchPanelProp> = (props: SearchPanelProp) => {
 
   return (
     <>
-      <Title>🔍 Search Record</Title>
+      <Title>🔍 Search Single Record</Title>
       <InputGroup size="sm" className="mb-3">
         <InputGroup.Text>SKU</InputGroup.Text>
         <Form.Control value={searchSKU} onChange={onSearchSKUChange} onKeyDown={handleEnterKeySearch} />

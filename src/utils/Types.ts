@@ -121,10 +121,17 @@ export type QAQueryFilter = {
   conditionFilter: string;
   platformFilter: string;
   marketplaceFilter: string;
+  qaFilter: string;
+  shelfLocationFilter: string[];
 }
 
 export type InstockQueryFilter = {
-  instockFilter: string
+  instockFilter: string;
+  msrpFilter: {
+    gte: string,
+    lt: string,
+  };
+  adminFilter: string;
 } & QAQueryFilter
 
 export type ScrapedData = {

@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from 'react'
+import { FormEventHandler, useContext, useEffect, useRef, useState } from 'react'
 import {
   Badge,
   BarChart,
@@ -42,8 +42,10 @@ import PaginationButton from '../components/PaginationButton'
 import "../style/Inventory.css"
 import CustomDatePicker from '../components/DateRangePicker'
 import PageItemStatsBox from '../components/PageItemStatsBox'
+import ShelfLocationsSelection from '../components/ShelfLocationsSelection'
 
 // mock data
+// TODO: add server graph information route
 const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()}`
 const chartdata = [
   {
@@ -72,7 +74,6 @@ const chartdata = [
   },
 ];
 
-
 const Inventory: React.FC = () => {
   const { setLoading } = useContext(AppContext)
   const tableRef = useRef<HTMLDivElement>(null)
@@ -84,7 +85,6 @@ const Inventory: React.FC = () => {
   // search keyword
   const [searchSku, setSearchSku] = useState<string>('')
   const [searchKeyword, setSearchKeyword] = useState<string>('')
-  const [shelfLocationKeyword, setshelfLocationKeyword] = useState<string>('')
   // query filters
   const [queryFilter, setQueryFilter] = useState<InstockQueryFilter>(initInstockQueryFilter)
   // flag
@@ -95,17 +95,20 @@ const Inventory: React.FC = () => {
     fetchInstockByPage()
   }, [])
 
-  const fetchInstockByPage = async () => {
+  const fetchInstockByPage = async (refresh?: boolean) => {
+    // keyword into array
+    const keywordArr = searchKeyword.length > 0 ? searchKeyword.split(/(\s+)/).filter((item) => { return item.trim().length > 0 }) : []
+
     setLoading(true)
     await axios({
       method: 'post',
       url: server + '/inventoryController/getInstockByPage',
       responseType: 'text',
-      timeout: 3000,
+      timeout: 8000,
       data: {
-        page: currPage,
+        page: refresh ? 0 : currPage,
         itemsPerPage: itemsPerPage,
-        filter: queryFilter
+        filter: refresh ? {} : { ...queryFilter, keywordFilter: keywordArr },
       },
       withCredentials: true
     }).then((res: AxiosResponse) => {
@@ -136,7 +139,7 @@ const Inventory: React.FC = () => {
       method: 'post',
       url: server + '/inventoryController/getInstockByPage',
       responseType: 'text',
-      timeout: 3000,
+      timeout: 8000,
       data: {
         page: newPage,
         itemsPerPage: itemsPerPage,
@@ -162,10 +165,9 @@ const Inventory: React.FC = () => {
   const resetFilters = () => {
     setSearchSku('')
     setSearchKeyword('')
-    setshelfLocationKeyword('')
-    setItemsPerPage(20)
     setQueryFilter(initInstockQueryFilter)
     setChanged(false)
+    fetchInstockByPage(true)
   }
 
   const renderSearchPanel = () => {
@@ -199,8 +201,8 @@ const Inventory: React.FC = () => {
       setQueryFilter({ ...queryFilter, timeRangeFilter: value })
       setChanged(true)
     }
-    const onShelfLocationKeywordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      if (event.target.value.length + 1 < 6) setshelfLocationKeyword((event.target.value).toUpperCase())
+    const onShelfLocationChange = (value: string[]) => {
+      setQueryFilter({ ...queryFilter, shelfLocationFilter: value })
       setChanged(true)
     }
 
@@ -212,15 +214,13 @@ const Inventory: React.FC = () => {
           <Col>
             <InputGroup size='sm' className='mb-3'>
               <InputGroup.Text>SKU</InputGroup.Text>
-              <Form.Control type='number' value={searchSku} onChange={onSearchSKUChange} />
+              <Form.Control type='number' min={1} max={100000} value={searchSku} onChange={onSearchSKUChange} />
             </InputGroup>
             <InputGroup size='sm' className='mb-3'>
-              <InputGroup.Text>Keyword</InputGroup.Text>
-              <Form.Control value={searchKeyword} onChange={onKeywordChange} />
-            </InputGroup>
-            <InputGroup size='sm' className='mb-3'>
-              <InputGroup.Text>Shelf Location</InputGroup.Text>
-              <Form.Control value={shelfLocationKeyword} onChange={onShelfLocationKeywordChange} />
+              <InputGroup.Text>Instock Status</InputGroup.Text>
+              <Form.Select style={{ color: getInstockColor(queryFilter.instockFilter) }} value={queryFilter.instockFilter} onChange={onInstockChange}>
+                {renderInstockOptions()}
+              </Form.Select>
             </InputGroup>
             <InputGroup size='sm' className='mb-3'>
               <InputGroup.Text>Item Condition</InputGroup.Text>
@@ -248,17 +248,16 @@ const Inventory: React.FC = () => {
                 value={queryFilter.timeRangeFilter}
               />
             </InputGroup>
+            <ShelfLocationsSelection onShelfLocationChange={onShelfLocationChange} value={queryFilter.shelfLocationFilter} />
             <InputGroup size='sm' className='mb-3'>
-              <InputGroup.Text>Instock Status</InputGroup.Text>
-              <Form.Select style={{ color: getInstockColor(queryFilter.instockFilter) }} value={queryFilter.instockFilter} onChange={onInstockChange}>
-                {renderInstockOptions()}
-              </Form.Select>
+              <InputGroup.Text>Keyword / Tags <br />(Separate By Space)</InputGroup.Text>
+              <Form.Control className='resize-none' as='textarea' value={searchKeyword} onChange={onKeywordChange} rows={4} />
             </InputGroup>
           </Col>
         </Grid>
         <Button className='absolute bottom-3 w-48' color='rose' size='xs' onClick={resetFilters}>Reset Filters</Button>
         <Button className='absolute bottom-3 w-64 right-64' color='indigo' size='xs' onClick={resetFilters}>Export Current Selection to CSV</Button>
-        <Button className='absolute bottom-3 w-48 right-6' color={changed ? 'amber' : 'emerald'} size='xs' onClick={fetchInstockByPage}>Refresh</Button>
+        <Button className='absolute bottom-3 w-48 right-6' color={changed ? 'amber' : 'emerald'} size='xs' onClick={() => fetchInstockByPage()}>Refresh</Button>
       </Card>
     )
   }
@@ -289,13 +288,14 @@ const Inventory: React.FC = () => {
           <Button size='xs' color='violet'>{instock.sku}</Button>
         </TableCell>
         <TableCell>
-          <Badge color='slate'>{instock.shelfLocation}</Badge>
-        </TableCell>
-        <TableCell>
+          <Badge className='mb-3' color='slate'>{instock.shelfLocation}</Badge><br />
           <Badge color={getConditionVariant(instock.condition)}>{instock.condition}</Badge>
         </TableCell>
         <TableCell>
           <Text>{instock.lead}</Text>
+        </TableCell>
+        <TableCell>
+          <Badge color='green'>${instock.msrp}</Badge>
         </TableCell>
         <TableCell>
           <Text>{instock.description}</Text>
@@ -364,9 +364,9 @@ const Inventory: React.FC = () => {
           <TableHead>
             <TableRow className='th-row'>
               <TableHeaderCell className='w-28'>SKU</TableHeaderCell>
-              <TableHeaderCell className='w-32'>Shelf Location</TableHeaderCell>
-              <TableHeaderCell className='w-36'>Condition</TableHeaderCell>
+              <TableHeaderCell className='w-36'>Shelf Location & <br /> Condition</TableHeaderCell>
               <TableHeaderCell className='w-36'>Lead</TableHeaderCell>
+              <TableHeaderCell className='w-36'>MSRP($CAD)</TableHeaderCell>
               <TableHeaderCell>Desc</TableHeaderCell>
               <TableHeaderCell>QAComment</TableHeaderCell>
               <TableHeaderCell className='w-28'>URL</TableHeaderCell>

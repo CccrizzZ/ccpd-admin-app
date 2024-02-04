@@ -292,7 +292,9 @@ export const initQAQueryFilter: QAQueryFilter = {
   timeRangeFilter: {} as DateRangePickerValue,
   conditionFilter: '',
   platformFilter: '',
-  marketplaceFilter: ''
+  marketplaceFilter: '',
+  qaFilter: '',
+  shelfLocationFilter: []
 }
 
 export const initInstockQueryFilter: InstockQueryFilter = {
@@ -300,5 +302,12 @@ export const initInstockQueryFilter: InstockQueryFilter = {
   conditionFilter: '' as Condition,
   platformFilter: '' as Platform,
   marketplaceFilter: '' as Platform,
-  instockFilter: 'in'
+  instockFilter: 'in',
+  msrpFilter: {
+    gte: '',
+    lt: '',
+  },
+  adminFilter: '',
+  qaFilter: '',
+  shelfLocationFilter: []
 }

@@ -1,14 +1,14 @@
 import React from 'react'
 import CustomDatePicker from './DateRangePicker'
-import { Form, Modal } from 'react-bootstrap'
-import { QueryFilter } from '../utils/Types'
+import { Form, InputGroup, Modal } from 'react-bootstrap'
+import { QAQueryFilter } from '../utils/Types'
 import { Button, DateRangePickerValue } from '@tremor/react'
 import { renderItemConditionOptions, renderMarketPlaceOptions, renderPlatformOptions } from '../utils/utils'
 import { FaFilterCircleXmark, FaFilter } from 'react-icons/fa6'
 
 type TableFilterProps = {
-  queryFilter: QueryFilter,
-  setQueryFilter: React.Dispatch<React.SetStateAction<QueryFilter>>,
+  queryFilter: QAQueryFilter,
+  setQueryFilter: React.Dispatch<React.SetStateAction<QAQueryFilter>>,
   onTimeRangeFilterChange: (value: DateRangePickerValue) => void,
   onConditionFilterChange: (event: React.ChangeEvent<HTMLSelectElement>) => void,
   onPlatformFilterChange: (event: React.ChangeEvent<HTMLSelectElement>) => void,
@@ -33,30 +33,25 @@ const TableFilter: React.FC<TableFilterProps> = (props: TableFilterProps) => {
       >
         <Modal.Header>
           <Modal.Title id="contained-modal-title-vcenter">
-            Advanced Filter
+            🔮 Advanced Filter
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <div className='right-96 gap-2 flex'>
-            <div>
-              <label className='text-gray-500'>Condition:</label>
-              <Form.Select value={props.queryFilter.conditionFilter} onChange={props.onConditionFilterChange}>
-                {renderItemConditionOptions()}
-              </Form.Select>
-            </div>
-            <div>
-              <label className='text-gray-500'>Platform:</label>
-              <Form.Select value={props.queryFilter.platformFilter} onChange={props.onPlatformFilterChange}>
-                {renderPlatformOptions()}
-              </Form.Select>
-            </div>
-            <div>
-              <label className='text-gray-500'>Marketplace:</label>
-              <Form.Select value={props.queryFilter.marketplaceFilter} onChange={props.onMarketplaceFilterChange}>
-                {renderMarketPlaceOptions()}
-              </Form.Select>
-            </div>
+          <div className='grid gap-2 w-4/5 m-auto' style={{ minWidth: '80%' }}>
+            <InputGroup>
+              <InputGroup.Text>Select SKU</InputGroup.Text>
+              <InputGroup.Text>From</InputGroup.Text>
+              <Form.Control type='number' min={0} max={100000} />
+              <InputGroup.Text>To</InputGroup.Text>
+              <Form.Control type='number' min={1} max={100000} />
+            </InputGroup>
+
+            <InputGroup>
+              <InputGroup.Text>QA Owner</InputGroup.Text>
+              <Form.Control type='text' />
+            </InputGroup>
           </div>
+
         </Modal.Body>
         <Modal.Footer>
           <Button color='emerald' onClick={applyAdvFilters}>Filter</Button>
@@ -76,7 +71,7 @@ const TableFilter: React.FC<TableFilterProps> = (props: TableFilterProps) => {
           value={props.queryFilter.timeRangeFilter}
         />
       </div>
-      <div className='absolute right-96 gap-2 flex'>
+      <div className='absolute right-80 gap-2 flex'>
         <div>
           <label className='text-gray-500'>Condition:</label>
           <Form.Select value={props.queryFilter.conditionFilter} onChange={props.onConditionFilterChange}>
@@ -107,7 +102,7 @@ const TableFilter: React.FC<TableFilterProps> = (props: TableFilterProps) => {
           className='text-white mt-4'
           color='blue'
           onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-          tooltip='Toggle Advanced Filters'
+          tooltip='Advanced Filters'
         >
           <FaFilter />
         </Button>
