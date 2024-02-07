@@ -21,7 +21,7 @@ import {
 } from '@tremor/react'
 import { Condition, InstockInventory, Platform, InstockQueryFilter } from '../utils/Types'
 import { AppContext } from '../App'
-import axios, { AxiosResponse } from 'axios'
+import axios, { AxiosError, AxiosResponse } from 'axios'
 import {
   getPlatformBadgeColor,
   getConditionVariant,
@@ -43,6 +43,7 @@ import "../style/Inventory.css"
 import CustomDatePicker from '../components/DateRangePicker'
 import PageItemStatsBox from '../components/PageItemStatsBox'
 import ShelfLocationsSelection from '../components/ShelfLocationsSelection'
+import EditInstockModal from '../components/EditInstockModal'
 
 // mock data
 // TODO: add server graph information route
@@ -78,6 +79,9 @@ const Inventory: React.FC = () => {
   const { setLoading } = useContext(AppContext)
   const tableRef = useRef<HTMLDivElement>(null)
   const [instockArr, setInstockArr] = useState<InstockInventory[]>([])
+  const [selectedInstock, setSelectedInstock] = useState<InstockInventory>(initInstockInventory)
+  const [showInstockModal, setShowInstockModal] = useState<boolean>(false)
+
   // paging
   const [currPage, setCurrPage] = useState<number>(0)
   const [itemsPerPage, setItemsPerPage] = useState<number>(20)
@@ -95,7 +99,9 @@ const Inventory: React.FC = () => {
     fetchInstockByPage()
   }, [])
 
-  const fetchInstockByPage = async (refresh?: boolean) => {
+  const getTotalPage = () => Math.ceil(itemCount / itemsPerPage) - 1
+
+  const fetchInstockByPage = async (refresh?: boolean, newItemsPerPage?: number) => {
     // keyword into array
     const keywordArr = searchKeyword.length > 0 ? searchKeyword.split(/(\s+)/).filter((item) => { return item.trim().length > 0 }) : []
 
@@ -107,7 +113,7 @@ const Inventory: React.FC = () => {
       timeout: 8000,
       data: {
         page: refresh ? 0 : currPage,
-        itemsPerPage: itemsPerPage,
+        itemsPerPage: newItemsPerPage ?? itemsPerPage,
         filter: refresh ? {} : { ...queryFilter, keywordFilter: keywordArr },
       },
       withCredentials: true
@@ -121,20 +127,10 @@ const Inventory: React.FC = () => {
     })
     setLoading(false)
     setCurrPage(0)
+    setChanged(false)
   }
 
-  // for next and prev page button
-  const fetchPage = async (direction: number) => {
-    scrollToTable()
-    // direction for page turning
-    let newPage = 0
-    if (direction > 0) {
-      newPage = currPage + 1
-    } else {
-      newPage = currPage - 1
-      if (newPage < 0) return alert('This is the first page!')
-    }
-    setLoading(true)
+  const pageAxios = async (newPage: number) => {
     await axios({
       method: 'post',
       url: server + '/inventoryController/getInstockByPage',
@@ -152,14 +148,51 @@ const Inventory: React.FC = () => {
         setInstockArr(data['arr'])
         setChanged(false)
         setCurrPage(newPage)
-      } else {
-        alert('No More Pages!')
       }
-    }).catch(() => {
+    }).catch((res: AxiosError) => {
       setLoading(false)
-      alert('This is the last page!')
+      alert('Cannot get page: ' + res.status)
     })
+  }
+
+  // for next and prev page button
+  // direction for page turning
+  const fetchPage = async (direction: number) => {
+    let newPage = 0
+    if (direction > 0) {
+      if (currPage + 1 > getTotalPage()) return
+      newPage = currPage + 1
+    } else {
+      if (currPage - 1 < 0) return
+      newPage = currPage - 1
+    }
+    scrollToTable()
+    setLoading(true)
+    pageAxios(newPage)
     setLoading(false)
+  }
+
+  // jump to fist or last page
+  const gotoFirstLastPage = async (direction: number) => {
+    // goto fist or last page
+    let newPage = 0
+    if (direction > 0) {
+      if (currPage === getTotalPage()) return
+      newPage = getTotalPage()
+    } else {
+      if (currPage === 0) return
+      newPage = 0
+    }
+    scrollToTable()
+    setLoading(true)
+    pageAxios(newPage)
+    setLoading(false)
+  }
+
+  const exportCSV = async () => {
+    // call server for the csv file
+    // server write into csv binary with pd and pass it here
+
   }
 
   const resetFilters = () => {
@@ -205,11 +238,17 @@ const Inventory: React.FC = () => {
       setQueryFilter({ ...queryFilter, shelfLocationFilter: value })
       setChanged(true)
     }
+    const onMsrpMaxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      setQueryFilter({ ...queryFilter, msrpFilter: { ...queryFilter.msrpFilter, lt: event.target.value } })
+    }
+    const onMsrpMinChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      setQueryFilter({ ...queryFilter, msrpFilter: { ...queryFilter.msrpFilter, gte: event.target.value } })
+    }
 
     const getInstockColor = (instock: string) => instock === 'in' ? '#10b981' : instock === 'out' ? '#f43f5e' : '#3b82f6'
     return (
       <Card className='h-full'>
-        <Title>🧪 Record Filters</Title>
+        <Title>📋 Record Filters</Title>
         <Grid className='gap-2' numItems={2}>
           <Col>
             <InputGroup size='sm' className='mb-3'>
@@ -240,6 +279,12 @@ const Inventory: React.FC = () => {
                 {renderMarketPlaceOptions()}
               </Form.Select>
             </InputGroup>
+            <InputGroup size='sm' className='mb-3'>
+              <InputGroup.Text>Min MSRP</InputGroup.Text>
+              <Form.Control type='number' min={1} max={100000} value={queryFilter.msrpFilter.gte} onChange={onMsrpMinChange} />
+              <InputGroup.Text>Max MSRP</InputGroup.Text>
+              <Form.Control type='number' min={1} max={100000} value={queryFilter.msrpFilter.lt} onChange={onMsrpMaxChange} />
+            </InputGroup>
           </Col>
           <Col>
             <InputGroup size='sm' className='mb-2'>
@@ -250,13 +295,13 @@ const Inventory: React.FC = () => {
             </InputGroup>
             <ShelfLocationsSelection onShelfLocationChange={onShelfLocationChange} value={queryFilter.shelfLocationFilter} />
             <InputGroup size='sm' className='mb-3'>
-              <InputGroup.Text>Keyword / Tags <br />(Separate By Space)</InputGroup.Text>
+              <InputGroup.Text>Keyword / Tags <br />(Separate By Space) <br /> (Case Sensitive)</InputGroup.Text>
               <Form.Control className='resize-none' as='textarea' value={searchKeyword} onChange={onKeywordChange} rows={4} />
             </InputGroup>
           </Col>
         </Grid>
         <Button className='absolute bottom-3 w-48' color='rose' size='xs' onClick={resetFilters}>Reset Filters</Button>
-        <Button className='absolute bottom-3 w-64 right-64' color='indigo' size='xs' onClick={resetFilters}>Export Current Selection to CSV</Button>
+        <Button className='absolute bottom-3 w-64 right-64' color='indigo' size='xs' onClick={exportCSV}>Export Current Selection to CSV</Button>
         <Button className='absolute bottom-3 w-48 right-6' color={changed ? 'amber' : 'emerald'} size='xs' onClick={() => fetchInstockByPage()}>Refresh</Button>
       </Card>
     )
@@ -280,21 +325,28 @@ const Inventory: React.FC = () => {
     )
   }
 
+  const showModal = (i: InstockInventory) => {
+    setSelectedInstock(i)
+    setShowInstockModal(true)
+  }
+
   const renderInventoryTableBody = () => {
     if (!instockArr || instockArr.length < 1) return
     return instockArr.map((instock) => (
       <TableRow key={instock.sku}>
         <TableCell>
-          <Button size='xs' color='violet'>{instock.sku}</Button>
+          <Button size='xs' color='slate' onClick={() => showModal(instock)}>{instock.sku}</Button>
         </TableCell>
         <TableCell>
-          <Badge className='mb-3' color='slate'>{instock.shelfLocation}</Badge><br />
-          <Badge color={getConditionVariant(instock.condition)}>{instock.condition}</Badge>
+          <div className='grid justify-items-center'>
+            <Badge color='violet'>{instock.shelfLocation}</Badge><br />
+            <Badge color={getConditionVariant(instock.condition)}>{instock.condition}</Badge>
+          </div>
         </TableCell>
         <TableCell>
           <Text>{instock.lead}</Text>
         </TableCell>
-        <TableCell>
+        <TableCell className='text-center'>
           <Badge color='green'>${instock.msrp}</Badge>
         </TableCell>
         <TableCell>
@@ -307,13 +359,17 @@ const Inventory: React.FC = () => {
           <Text><a className='cursor-pointer' onClick={() => openLink(instock.url)}>{String(instock.url).slice(0, 50)}</a></Text>
         </TableCell>
         <TableCell>
-          <Text>{instock.quantityInstock}</Text>
+          <div className='grid justify-items-center'>
+            <Badge color='slate'>{instock.quantityInstock}</Badge>
+          </div>
         </TableCell>
         <TableCell>
-          <Text>{instock.quantitySold}</Text>
+          <div className='grid justify-items-center'>
+            <Badge color='lime'>{instock.quantitySold}</Badge>
+          </div>
         </TableCell>
         <TableCell>
-          <div className='grid gap-1'>
+          <div className='grid gap-1 justify-items-center'>
             <Badge color='slate'>{instock.qaName}</Badge>
             <Badge color='orange'>{instock.adminName}</Badge>
           </div>
@@ -321,7 +377,6 @@ const Inventory: React.FC = () => {
         <TableCell>
           <Text>{moment(instock.recordTime).format('LLL')}</Text>
         </TableCell>
-
       </TableRow>
     ))
   }
@@ -334,29 +389,32 @@ const Inventory: React.FC = () => {
 
   const renderInstockTable = () => {
     const onItemsPerPageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+      setCurrPage(0)
       setItemsPerPage(Number(event.target.value))
-      setChanged(true)
+      fetchInstockByPage(false, Number(event.target.value))
     }
     return (
       <Card ref={tableRef}>
-        <div className="flex top-12">
+        <EditInstockModal
+          show={showInstockModal}
+          handleClose={() => setShowInstockModal(false)}
+          selectedInventory={selectedInstock}
+        />
+        <div className="flex top-12 absolute">
           <PageItemStatsBox
             totalItems={itemCount}
             itemsPerPage={itemsPerPage}
             onItemsPerPageChange={onItemsPerPageChange}
           />
         </div>
-
-        <div className="absolute right-16 flex top-12">
-          <label className="text-sm text-gray-500 mr-4">Edit Mode</label>
-          <Switch checked={editMode} onChange={() => setEditMode(!editMode)} />
-        </div>
-
-        <div className='flex w-full'>
+        <div className='flex items-center justify-center mt-12'>
           <PaginationButton
+            totalPage={getTotalPage()}
             currentPage={currPage}
             nextPage={() => fetchPage(1)}
             prevPage={() => fetchPage(-1)}
+            firstPage={() => gotoFirstLastPage(-1)}
+            lastPage={() => gotoFirstLastPage(1)}
           />
         </div>
         <hr />
@@ -364,18 +422,18 @@ const Inventory: React.FC = () => {
           <TableHead>
             <TableRow className='th-row'>
               <TableHeaderCell className='w-28'>SKU</TableHeaderCell>
-              <TableHeaderCell className='w-36'>Shelf Location & <br /> Condition</TableHeaderCell>
+              <TableHeaderCell className='w-36 text-center'>Shelf Location & <br /> Condition</TableHeaderCell>
               <TableHeaderCell className='w-36'>Lead</TableHeaderCell>
               <TableHeaderCell className='w-36'>MSRP($CAD)</TableHeaderCell>
               <TableHeaderCell>Desc</TableHeaderCell>
               <TableHeaderCell>QAComment</TableHeaderCell>
               <TableHeaderCell className='w-28'>URL</TableHeaderCell>
-              <TableHeaderCell className='w-28'>Instock</TableHeaderCell>
-              <TableHeaderCell className='w-28'>Sold</TableHeaderCell>
-              <TableHeaderCell className='w-36'>
+              <TableHeaderCell className='w-28 text-center'>Instock</TableHeaderCell>
+              <TableHeaderCell className='w-28 text-center'>Sold</TableHeaderCell>
+              <TableHeaderCell className='w-36 text-center'>
                 <div>QAPersonal &<br /><p className='text-orange-500'>Admin</p></div>
               </TableHeaderCell>
-              <TableHeaderCell className='w-36'>Time</TableHeaderCell>
+              <TableHeaderCell className='w-36 text-center'>Time</TableHeaderCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -383,10 +441,14 @@ const Inventory: React.FC = () => {
           </TableBody>
         </Table>
         {!instockArr || instockArr.length < 1 ? <h4 className='text-red-400 w-max ml-auto mr-auto mt-12 mb-12'>No Inventory Found!</h4> : undefined}
+        <hr />
         <PaginationButton
+          totalPage={getTotalPage()}
           currentPage={currPage}
           nextPage={() => fetchPage(1)}
           prevPage={() => fetchPage(-1)}
+          firstPage={() => gotoFirstLastPage(-1)}
+          lastPage={() => gotoFirstLastPage(1)}
         />
       </Card>
     )

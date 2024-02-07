@@ -59,6 +59,7 @@ import {
 import '../style/QARecords.css'
 import TableFilter from '../components/TableFilter'
 import PageItemStatsBox from '../components/PageItemStatsBox'
+import EditInstockModal from '../components/EditInstockModal'
 
 const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()}`
 const initScrapeData: ScrapedData = { title: '', msrp: 0, imageUrl: '' }
@@ -161,6 +162,8 @@ const QARecords: React.FC = () => {
     console.log('Loading Qa RECORDS...')
   }, [])
 
+  const getTotalPage = () => Math.ceil(itemCount / itemsPerPage)
+
   // called on component mount
   const fetchQARecordsByPage = async (isInit?: boolean, newItemsPerPage?: number) => {
     setLoading(true)
@@ -231,18 +234,7 @@ const QARecords: React.FC = () => {
     setLoading(false)
   }
 
-  // for next and prev page button
-  const fetchPage = async (direction: number) => {
-    scrollToTable()
-    // direction for page turning
-    let newPage = 0
-    if (direction > 0) {
-      newPage = currPage + 1
-    } else {
-      newPage = currPage - 1
-      if (newPage < 0) return alert('This is the first page!')
-    }
-    setLoading(true)
+  const pageAxios = async (newPage: number) => {
     await axios({
       method: 'post',
       url: server + '/adminController/getQARecordsByPage',
@@ -256,17 +248,48 @@ const QARecords: React.FC = () => {
       withCredentials: true
     }).then((res: AxiosResponse) => {
       const data = JSON.parse(res.data)
-      if (data['arr'].length > 0) {
+      if (data['arr'] && data['arr'].length > 0) {
         setQARecordArr(data['arr'])
         setCurrPage(newPage)
         setChanged(false)
-      } else {
-        alert('No More Pages!')
       }
-    }).catch(() => {
+    }).catch((res: AxiosError) => {
       setLoading(false)
-      alert('This is the last page!')
+      alert('Cannot get page: ' + res.status)
     })
+  }
+
+  // for next and prev page button
+  const fetchPage = async (direction: number) => {
+    // direction for page turning
+    let newPage = 0
+    if (direction > 0) {
+      if (currPage + 1 > getTotalPage()) return
+      newPage = currPage + 1
+    } else {
+      if (currPage - 1 < 0) return
+      newPage = currPage - 1
+    }
+    scrollToTable()
+    setLoading(true)
+    pageAxios(newPage)
+    setLoading(false)
+  }
+
+  // jump to first or last page
+  const gotoFirstLastPage = async (direction: number) => {
+    // goto fist or last page
+    let newPage = 0
+    if (direction > 0) {
+      if (currPage === getTotalPage()) return
+      newPage = getTotalPage()
+    } else {
+      if (currPage === 0) return
+      newPage = 0
+    }
+    scrollToTable()
+    setLoading(true)
+    pageAxios(newPage)
     setLoading(false)
   }
 
@@ -477,6 +500,13 @@ const QARecords: React.FC = () => {
 
       const onMsrpChange = (event: React.ChangeEvent<HTMLInputElement>) => setScrapeData({ ...scrapeData, msrp: Number(event.target.value) })
       const onTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => setScrapeData({ ...scrapeData, title: event.target.value })
+      // push image to azure blob storage
+      const pushImage = () => {
+        // send image url to server
+        // server fetch from the url and push it into blob storage
+
+      }
+
       // scraped data: msrp, title, first image
       // chatgpt data: lead, description
       // B side contains web scraper and chat gpt results
@@ -563,7 +593,7 @@ const QARecords: React.FC = () => {
         <div className='absolute bottom-3 w-full'>
           <Button color='indigo' onClick={prevRecord}>Prev</Button>
           <Button className='ml-12' color={selectedRecord.problem ? 'lime' : 'rose'} onClick={() => setShowMarkConfirmPopup(true)}>{selectedRecord.problem ? 'Mark Resolved' : 'Mark Problem'}</Button>
-          <Button className='absolute mr-auto ml-96' color='emerald' onClick={record}>👌 Submit Into Inventory</Button>
+          {selectedRecord.recorded ?? <Button className='absolute mr-auto ml-96' color='emerald' onClick={record}>👌 Submit Into Inventory</Button>}
           <Button className='absolute right-12' color='indigo' onClick={nextRecord}>Next</Button>
         </div>
       </div>
@@ -811,9 +841,12 @@ const QARecords: React.FC = () => {
         {renderPlaceHolder()}
         <hr />
         <PaginationButton
+          totalPage={Math.ceil(itemCount / itemsPerPage)}
           currentPage={currPage}
           nextPage={() => fetchPage(1)}
           prevPage={() => fetchPage(-1)}
+          firstPage={() => gotoFirstLastPage(-1)}
+          lastPage={() => gotoFirstLastPage(1)}
         />
       </Card>
     </div>
