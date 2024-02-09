@@ -69,7 +69,9 @@ export interface InstockInventory {
   quantitySold: number;
   adminName: string;
   qaName: string;
-  recordTime: string;
+  time: string;
+  platform?: Platform;
+  marketplace?: Platform;
   qaRecordId?: string;
   tags?: string[];  // tag requested by James
 }
@@ -118,10 +120,11 @@ export type CreateUser = {
 
 export type QAQueryFilter = {
   timeRangeFilter: DateRangePickerValue;
+  keywordFilter: string[];
   conditionFilter: string;
   platformFilter: string;
   marketplaceFilter: string;
-  qaFilter: string;
+  qaFilter: string[];
   shelfLocationFilter: string[];
 }
 
@@ -131,7 +134,7 @@ export type InstockQueryFilter = {
     gte: string,
     lt: string,
   };
-  adminFilter: string;
+  adminFilter: string[];
 } & QAQueryFilter
 
 export type ScrapedData = {

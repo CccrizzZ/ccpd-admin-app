@@ -44,6 +44,8 @@ import CustomDatePicker from '../components/DateRangePicker'
 import PageItemStatsBox from '../components/PageItemStatsBox'
 import ShelfLocationsSelection from '../components/ShelfLocationsSelection'
 import EditInstockModal from '../components/EditInstockModal'
+import AdminNameSelection from '../components/AdminNameSelection'
+import QANameSelection, { IQANameSelection } from '../components/QANameSelection'
 
 // mock data
 // TODO: add server graph information route
@@ -78,10 +80,11 @@ const chartdata = [
 const Inventory: React.FC = () => {
   const { setLoading } = useContext(AppContext)
   const tableRef = useRef<HTMLDivElement>(null)
+  const QANameSelectionRef = useRef<IQANameSelection>(null)
+  // instock info
   const [instockArr, setInstockArr] = useState<InstockInventory[]>([])
   const [selectedInstock, setSelectedInstock] = useState<InstockInventory>(initInstockInventory)
   const [showInstockModal, setShowInstockModal] = useState<boolean>(false)
-
   // paging
   const [currPage, setCurrPage] = useState<number>(0)
   const [itemsPerPage, setItemsPerPage] = useState<number>(20)
@@ -93,18 +96,17 @@ const Inventory: React.FC = () => {
   const [queryFilter, setQueryFilter] = useState<InstockQueryFilter>(initInstockQueryFilter)
   // flag
   const [changed, setChanged] = useState<boolean>(false)
-  const [editMode, setEditMode] = useState<boolean>(false)
 
   useEffect(() => {
     fetchInstockByPage()
   }, [])
 
+  // fetch page with filters
+  const getKwArr = (refresh?: boolean) => searchKeyword.length > 0 && !refresh ? searchKeyword.split(/(\s+)/).filter((item) => { return item.trim().length > 0 }) : []
   const getTotalPage = () => Math.ceil(itemCount / itemsPerPage) - 1
-
   const fetchInstockByPage = async (refresh?: boolean, newItemsPerPage?: number) => {
-    // keyword into array
-    const keywordArr = searchKeyword.length > 0 ? searchKeyword.split(/(\s+)/).filter((item) => { return item.trim().length > 0 }) : []
-
+    const filter = { ...queryFilter, keywordFilter: getKwArr(refresh) }
+    console.log(filter)
     setLoading(true)
     await axios({
       method: 'post',
@@ -114,7 +116,7 @@ const Inventory: React.FC = () => {
       data: {
         page: refresh ? 0 : currPage,
         itemsPerPage: newItemsPerPage ?? itemsPerPage,
-        filter: refresh ? {} : { ...queryFilter, keywordFilter: keywordArr },
+        filter: filter,
       },
       withCredentials: true
     }).then((res: AxiosResponse) => {
@@ -238,6 +240,14 @@ const Inventory: React.FC = () => {
       setQueryFilter({ ...queryFilter, shelfLocationFilter: value })
       setChanged(true)
     }
+    const onAdminNameChange = (value: string[]) => {
+      setQueryFilter({ ...queryFilter, adminFilter: value })
+      setChanged(true)
+    }
+    const onQANameChange = (value: string[]) => {
+      setQueryFilter({ ...queryFilter, qaFilter: value })
+      setChanged(true)
+    }
     const onMsrpMaxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       setQueryFilter({ ...queryFilter, msrpFilter: { ...queryFilter.msrpFilter, lt: event.target.value } })
     }
@@ -249,7 +259,7 @@ const Inventory: React.FC = () => {
     return (
       <Card className='h-full'>
         <Title>📋 Record Filters</Title>
-        <Grid className='gap-2' numItems={2}>
+        <Grid className='gap-6' numItems={2}>
           <Col>
             <InputGroup size='sm' className='mb-3'>
               <InputGroup.Text>SKU</InputGroup.Text>
@@ -285,19 +295,22 @@ const Inventory: React.FC = () => {
               <InputGroup.Text>Max MSRP</InputGroup.Text>
               <Form.Control type='number' min={1} max={100000} value={queryFilter.msrpFilter.lt} onChange={onMsrpMaxChange} />
             </InputGroup>
+            <InputGroup size='sm' className='mb-3'>
+              <InputGroup.Text>Keyword / Tags<br />(Separate By Space)<br />(Case Sensitive)<br />(Or Operator)</InputGroup.Text>
+              <Form.Control className='resize-none' as='textarea' value={searchKeyword} onChange={onKeywordChange} rows={4} />
+            </InputGroup>
           </Col>
           <Col>
-            <InputGroup size='sm' className='mb-2'>
+            <InputGroup size='sm' className='mb-3'>
               <CustomDatePicker
                 onValueChange={onDatePickerChange}
                 value={queryFilter.timeRangeFilter}
               />
             </InputGroup>
-            <ShelfLocationsSelection onShelfLocationChange={onShelfLocationChange} value={queryFilter.shelfLocationFilter} />
-            <InputGroup size='sm' className='mb-3'>
-              <InputGroup.Text>Keyword / Tags <br />(Separate By Space) <br /> (Case Sensitive)</InputGroup.Text>
-              <Form.Control className='resize-none' as='textarea' value={searchKeyword} onChange={onKeywordChange} rows={4} />
-            </InputGroup>
+            <ShelfLocationsSelection onShelfLocationChange={onShelfLocationChange} />
+            <AdminNameSelection onAdminNameChange={onAdminNameChange} />
+            <QANameSelection onQANameChange={onQANameChange} ref={QANameSelectionRef} />
+
           </Col>
         </Grid>
         <Button className='absolute bottom-3 w-48' color='rose' size='xs' onClick={resetFilters}>Reset Filters</Button>
@@ -309,16 +322,16 @@ const Inventory: React.FC = () => {
 
   const renderOverviewChart = () => {
     return (
-      <Card>
+      <Card className='h-full'>
         <Title>Overview</Title>
         <Subtitle>Last 6 Weeks (Dec 7 - Dec 14)</Subtitle>
         <AreaChart
-          className="h-72 mt-4"
+          className="h-[400px] mt-4"
           data={chartdata}
           index="date"
           yAxisWidth={65}
           categories={['Recorded Inventory']}
-          colors={["sky"]}
+          colors={["purple"]}
           valueFormatter={valueFormatter}
         />
       </Card>
@@ -350,6 +363,12 @@ const Inventory: React.FC = () => {
           <Badge color='green'>${instock.msrp}</Badge>
         </TableCell>
         <TableCell>
+          <div className='grid gap-1 justify-items-center'>
+            <Badge color='green'>{instock.marketplace}</Badge>
+            <Badge color='rose'>{instock.platform}</Badge>
+          </div>
+        </TableCell>
+        <TableCell>
           <Text>{instock.description}</Text>
         </TableCell>
         <TableCell>
@@ -359,13 +378,9 @@ const Inventory: React.FC = () => {
           <Text><a className='cursor-pointer' onClick={() => openLink(instock.url)}>{String(instock.url).slice(0, 50)}</a></Text>
         </TableCell>
         <TableCell>
-          <div className='grid justify-items-center'>
-            <Badge color='slate'>{instock.quantityInstock}</Badge>
-          </div>
-        </TableCell>
-        <TableCell>
-          <div className='grid justify-items-center'>
-            <Badge color='lime'>{instock.quantitySold}</Badge>
+          <div className='grid gap-1 justify-items-center'>
+            <Badge color='green'>{instock.quantityInstock}</Badge>
+            <Badge color='rose'>{instock.quantitySold}</Badge>
           </div>
         </TableCell>
         <TableCell>
@@ -375,7 +390,7 @@ const Inventory: React.FC = () => {
           </div>
         </TableCell>
         <TableCell>
-          <Text>{moment(instock.recordTime).format('LLL')}</Text>
+          <Text>{moment(instock.time).format('LLL')}</Text>
         </TableCell>
       </TableRow>
     ))
@@ -424,16 +439,16 @@ const Inventory: React.FC = () => {
               <TableHeaderCell className='w-28'>SKU</TableHeaderCell>
               <TableHeaderCell className='w-36 text-center'>Shelf Location & <br /> Condition</TableHeaderCell>
               <TableHeaderCell className='w-36'>Lead</TableHeaderCell>
-              <TableHeaderCell className='w-36'>MSRP($CAD)</TableHeaderCell>
+              <TableHeaderCell className='w-28 text-center'>MSRP<br />($CAD)</TableHeaderCell>
+              <TableHeaderCell className='w-36 text-center'>Marketplace & <br /> Target Platform</TableHeaderCell>
               <TableHeaderCell>Desc</TableHeaderCell>
-              <TableHeaderCell>QAComment</TableHeaderCell>
+              <TableHeaderCell className='w-32'>QAComment</TableHeaderCell>
               <TableHeaderCell className='w-28'>URL</TableHeaderCell>
-              <TableHeaderCell className='w-28 text-center'>Instock</TableHeaderCell>
-              <TableHeaderCell className='w-28 text-center'>Sold</TableHeaderCell>
+              <TableHeaderCell className='w-28 text-center'>Instock<br /><p className='text-rose-500'>Sold</p></TableHeaderCell>
               <TableHeaderCell className='w-36 text-center'>
                 <div>QAPersonal &<br /><p className='text-orange-500'>Admin</p></div>
               </TableHeaderCell>
-              <TableHeaderCell className='w-36 text-center'>Time</TableHeaderCell>
+              <TableHeaderCell className='w-36 text-center'>Time<br />EST</TableHeaderCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -457,7 +472,7 @@ const Inventory: React.FC = () => {
   return (
     <div>
       {/* top 2 charts */}
-      <Grid className='gap-2 mb-2' numItems={2}>
+      <Grid className='gap-2 mb-2 h-[550px]' numItems={2}>
         <Col>
           {renderSearchPanel()}
         </Col>

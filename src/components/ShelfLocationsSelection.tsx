@@ -1,17 +1,14 @@
 import axios, { AxiosResponse } from 'axios'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { MultiSelect, MultiSelectItem } from "@tremor/react"
-import { AppContext } from '../App'
 import { server } from '../utils/utils'
 import { FaWarehouse } from 'react-icons/fa6'
 
 type ShelfLocationsSelectionProps = {
-  value: string[],
   onShelfLocationChange: (value: string[]) => void
 }
 
 const ShelfLocationsSelection: React.FC<ShelfLocationsSelectionProps> = (props: ShelfLocationsSelectionProps) => {
-  const { setLoading } = useContext(AppContext)
   const [shelfLocations, setShelfLocations] = useState<string[]>([])
   useEffect(() => {
     fetchAllShelfLocations()
@@ -28,7 +25,6 @@ const ShelfLocationsSelection: React.FC<ShelfLocationsSelectionProps> = (props: 
     }).then((res: AxiosResponse) => {
       setShelfLocations(JSON.parse(res.data))
     }).catch((err) => {
-      setLoading(false)
       alert('Failed Fetching Shelf Locations: ' + err.response.status)
     })
   }

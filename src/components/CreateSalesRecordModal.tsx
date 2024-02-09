@@ -61,13 +61,7 @@ const CreateSalesRecordModal: React.FC<CreateSalesRecordModalProps> = (props: Cr
   const { setLoading, userInfo } = useContext(AppContext)
   const [newSalesRecord, setNewSalesRecord] = useState<RetailRecord>({ ...initRetailRecord, adminName: userInfo.name })
   const [targetSku, setTargetSku] = useState<string>('')
-  const [targetInventoryRecord, setTargetInventoryRecord] = useState<InstockInventory>({
-    qaRecord: exampleQARecord,
-    recordAdmin: 'James',
-    recordTime: 'today',
-    quantityInstock: 3,
-    quantitySold: 0
-  })
+  const [targetInventoryRecord, setTargetInventoryRecord] = useState<InstockInventory>(initInstockInventory)
 
   useEffect(() => {
     setNewSalesRecord({ ...newSalesRecord, adminName: userInfo.name })
@@ -140,19 +134,19 @@ const CreateSalesRecordModal: React.FC<CreateSalesRecordModalProps> = (props: Cr
           <List className='pl-0'>
             <ListItem>
               <span>Shelf Location</span>
-              <Badge color='slate'>{targetInventoryRecord.qaRecord.shelfLocation}</Badge>
+              <Badge color='slate'>{targetInventoryRecord.shelfLocation}</Badge>
             </ListItem>
             <ListItem>
               <span>Condition</span>
-              <Badge color={getConditionVariant(targetInventoryRecord.qaRecord.itemCondition)}><Bold>{targetInventoryRecord.qaRecord.itemCondition}</Bold></Badge>
+              <Badge color={getConditionVariant(targetInventoryRecord.condition)}><Bold>{targetInventoryRecord.condition}</Bold></Badge>
             </ListItem>
             <ListItem>
               <span>Q&A Owner</span>
-              <span>{targetInventoryRecord.qaRecord.ownerName}</span>
+              <span>{targetInventoryRecord.qaName}</span>
             </ListItem>
             <ListItem>
               <span>Record Admin</span>
-              <span>{targetInventoryRecord.recordAdmin}</span>
+              <span>{targetInventoryRecord.adminName}</span>
             </ListItem>
             <ListItem>
               <span>Quantity Instock</span>
@@ -183,11 +177,11 @@ const CreateSalesRecordModal: React.FC<CreateSalesRecordModalProps> = (props: Cr
         <Col>
           <div className='border-solid border-2 border-slate-500 rounded p-2'>
             <Divider className='mt-0'>Comment</Divider>
-            <Text>{targetInventoryRecord.qaRecord.comment}</Text>
+            <Text>{targetInventoryRecord.comment}</Text>
             <Divider>Link</Divider>
             <div className='d-grid gap-2'>
-              <Button color='gray' onClick={() => copyLink(targetInventoryRecord.qaRecord.link)}>Copy</Button>
-              <Button color='emerald' onClick={() => openLink(targetInventoryRecord.qaRecord.link)}>Open</Button>
+              <Button color='gray' onClick={() => copyLink(targetInventoryRecord.url)}>Copy</Button>
+              <Button color='emerald' onClick={() => openLink(targetInventoryRecord.url)}>Open</Button>
             </div>
           </div>
         </Col>
@@ -275,7 +269,7 @@ const CreateSalesRecordModal: React.FC<CreateSalesRecordModalProps> = (props: Cr
           </Col>
           <Col>
             <Card className='h-full'>
-              {targetInventoryRecord.qaRecord.sku ? <><Title>{targetInventoryRecord.qaRecord.sku}</Title> {renderInventoryDetails()}</> : <Subtitle>👈 Search Result Will Be Shown Here</Subtitle>}
+              {targetInventoryRecord.sku ? <><Title>{targetInventoryRecord.sku}</Title> {renderInventoryDetails()}</> : <Subtitle>👈 Search Result Will Be Shown Here</Subtitle>}
             </Card>
           </Col>
         </Grid>
