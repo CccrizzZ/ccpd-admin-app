@@ -59,10 +59,12 @@ export const getPlatformBadgeColor = (platform: string | undefined) => {
       return 'rose';
     case 'Retail' || 'retail':
       return 'sky';
-    case 'Facebook' || 'facebook':
+    case 'Facebook' || 'facebook' || 'Walmart' || 'walmart':
       return 'blue';
     case 'Kijiji' || 'kijiji':
       return 'indigo';
+    case 'BestBuy' || 'bestbuy' || 'Bestbuy':
+      return 'yellow'
     case 'Other' || 'other':
       return 'gray';
     default:
@@ -70,7 +72,7 @@ export const getPlatformBadgeColor = (platform: string | undefined) => {
   }
 }
 
-// for user role Form.Select
+// user role selection
 export const renderUserRoleOptions = () => {
   return (
     <>
@@ -84,7 +86,7 @@ export const renderUserRoleOptions = () => {
   )
 }
 
-// for item condition Form.Select
+// inventory item condition selections
 export const renderItemConditionOptions = () => {
   return (
     <>
@@ -99,7 +101,7 @@ export const renderItemConditionOptions = () => {
   )
 }
 
-// for QARecord platform Form.Select
+// inventory's original platfrom selections
 export const renderPlatformOptions = () => {
   return (
     <>
@@ -108,12 +110,15 @@ export const renderPlatformOptions = () => {
       <option value="eBay">eBay</option>
       <option value="AliExpress">AliExpress</option>
       <option value="HomeDepot">HomeDepot</option>
+      <option value="Walmart">Walmart</option>
+      <option value="BestBuy">BestBuy</option>
       <option value="Official Website">Official Website</option>
       <option value="Other">Other</option>
     </>
   )
 }
 
+// target distribution platform
 export const renderMarketPlaceOptions = () => {
   return (
     <>
@@ -248,7 +253,7 @@ export const initInstockInventory: InstockInventory = {
   quantitySold: 0,
   adminName: '',
   qaName: '',
-  recordTime: '',
+  time: '',
 }
 
 export const initReturnRecord: ReturnRecord = {
@@ -293,8 +298,9 @@ export const initQAQueryFilter: QAQueryFilter = {
   conditionFilter: '',
   platformFilter: '',
   marketplaceFilter: '',
-  qaFilter: '',
-  shelfLocationFilter: []
+  qaFilter: [],
+  shelfLocationFilter: [],
+  keywordFilter: []
 }
 
 export const initInstockQueryFilter: InstockQueryFilter = {
@@ -307,7 +313,8 @@ export const initInstockQueryFilter: InstockQueryFilter = {
     gte: '',
     lt: '',
   },
-  adminFilter: '',
-  qaFilter: '',
-  shelfLocationFilter: []
+  adminFilter: [],
+  qaFilter: [],
+  shelfLocationFilter: [],
+  keywordFilter: []
 }

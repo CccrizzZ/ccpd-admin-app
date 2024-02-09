@@ -16,10 +16,12 @@ export type Platform =
   'Retail' |
   'Wholesale' |
   'Official Website' |
-  'Other' |
   'Facebook' |
   'Kijiji' |
-  'HomeDepot'
+  'HomeDepot' |
+  'Walmart' |
+  'BestBuy' |
+  'Other'
 
 export type PaymentMethod =
   'Cash' |
@@ -141,4 +143,5 @@ export type ScrapedData = {
   title: string,
   msrp: number,
   imageUrl: string,
+  currency: string
 }

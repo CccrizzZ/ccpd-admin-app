@@ -46,6 +46,7 @@ import ShelfLocationsSelection from '../components/ShelfLocationsSelection'
 import EditInstockModal from '../components/EditInstockModal'
 import AdminNameSelection from '../components/AdminNameSelection'
 import QANameSelection, { IQANameSelection } from '../components/QANameSelection'
+import { FaAnglesDown } from 'react-icons/fa6'
 
 // mock data
 // TODO: add server graph information route
@@ -106,7 +107,6 @@ const Inventory: React.FC = () => {
   const getTotalPage = () => Math.ceil(itemCount / itemsPerPage) - 1
   const fetchInstockByPage = async (refresh?: boolean, newItemsPerPage?: number) => {
     const filter = { ...queryFilter, keywordFilter: getKwArr(refresh) }
-    console.log(filter)
     setLoading(true)
     await axios({
       method: 'post',
@@ -356,31 +356,33 @@ const Inventory: React.FC = () => {
             <Badge color={getConditionVariant(instock.condition)}>{instock.condition}</Badge>
           </div>
         </TableCell>
-        <TableCell>
-          <Text>{instock.lead}</Text>
-        </TableCell>
         <TableCell className='text-center'>
           <Badge color='green'>${instock.msrp}</Badge>
         </TableCell>
         <TableCell>
-          <div className='grid gap-1 justify-items-center'>
-            <Badge color='green'>{instock.marketplace}</Badge>
-            <Badge color='rose'>{instock.platform}</Badge>
-          </div>
+          <Text>{instock.lead}</Text>
         </TableCell>
         <TableCell>
           <Text>{instock.description}</Text>
         </TableCell>
         <TableCell>
+          <Text><a className='cursor-pointer' onClick={() => openLink(instock.url)}>{String(instock.url).slice(0, 50)}</a></Text>
+        </TableCell>
+        <TableCell>
           <Text>{instock.comment}</Text>
         </TableCell>
         <TableCell>
-          <Text><a className='cursor-pointer' onClick={() => openLink(instock.url)}>{String(instock.url).slice(0, 50)}</a></Text>
+          <div className='grid gap-1 justify-items-center'>
+            <Badge color={getPlatformBadgeColor(instock.platform)}>{instock.platform}</Badge>
+            <FaAnglesDown className='m-0' />
+            <Badge color={instock.marketplace ? getPlatformBadgeColor(instock.marketplace) : 'cyan'}>{instock.marketplace ?? 'Hibid'}</Badge>
+          </div>
         </TableCell>
         <TableCell>
           <div className='grid gap-1 justify-items-center'>
             <Badge color='green'>{instock.quantityInstock}</Badge>
-            <Badge color='rose'>{instock.quantitySold}</Badge>
+            <FaAnglesDown className='m-0' />
+            <Badge color='rose'>{instock.quantitySold ?? 0}</Badge>
           </div>
         </TableCell>
         <TableCell>
@@ -438,17 +440,17 @@ const Inventory: React.FC = () => {
             <TableRow className='th-row'>
               <TableHeaderCell className='w-28'>SKU</TableHeaderCell>
               <TableHeaderCell className='w-36 text-center'>Shelf Location & <br /> Condition</TableHeaderCell>
-              <TableHeaderCell className='w-36'>Lead</TableHeaderCell>
               <TableHeaderCell className='w-28 text-center'>MSRP<br />($CAD)</TableHeaderCell>
-              <TableHeaderCell className='w-36 text-center'>Marketplace & <br /> Target Platform</TableHeaderCell>
+              <TableHeaderCell className='w-36'>Lead</TableHeaderCell>
               <TableHeaderCell>Desc</TableHeaderCell>
-              <TableHeaderCell className='w-32'>QAComment</TableHeaderCell>
               <TableHeaderCell className='w-28'>URL</TableHeaderCell>
-              <TableHeaderCell className='w-28 text-center'>Instock<br /><p className='text-rose-500'>Sold</p></TableHeaderCell>
+              <TableHeaderCell className='w-32'>QAComment</TableHeaderCell>
+              <TableHeaderCell className='w-36 text-center'>Platform &<br />Marketplace</TableHeaderCell>
+              <TableHeaderCell className='w-28 text-center'>Instock &<br /><p className='text-rose-500'>Sold</p></TableHeaderCell>
               <TableHeaderCell className='w-36 text-center'>
                 <div>QAPersonal &<br /><p className='text-orange-500'>Admin</p></div>
               </TableHeaderCell>
-              <TableHeaderCell className='w-36 text-center'>Time<br />EST</TableHeaderCell>
+              <TableHeaderCell className='w-36 text-center'>Time<br />(EST)</TableHeaderCell>
             </TableRow>
           </TableHead>
           <TableBody>

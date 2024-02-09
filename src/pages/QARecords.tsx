@@ -62,7 +62,7 @@ import PageItemStatsBox from '../components/PageItemStatsBox'
 import EditInstockModal from '../components/EditInstockModal'
 
 const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()}`
-const initScrapeData: ScrapedData = { title: '', msrp: 0, imageUrl: '' }
+const initScrapeData: ScrapedData = { title: '', msrp: 0, imageUrl: '', currency: '' }
 
 // mock data
 const barChartData = [
@@ -154,15 +154,15 @@ const QARecords: React.FC = () => {
   const [scrapeData, setScrapeData] = useState<ScrapedData>({
     title: '',
     msrp: 0,
-    imageUrl: ''
+    imageUrl: '',
+    currency: ''
   })
 
   useEffect(() => {
     fetchQARecordsByPage()
-    console.log('Loading Qa RECORDS...')
   }, [])
 
-  const getTotalPage = () => Math.ceil(itemCount / itemsPerPage)
+  const getTotalPage = () => Math.ceil(itemCount / itemsPerPage) - 1
 
   // called on component mount
   const fetchQARecordsByPage = async (isInit?: boolean, newItemsPerPage?: number) => {
@@ -500,6 +500,7 @@ const QARecords: React.FC = () => {
 
       const onMsrpChange = (event: React.ChangeEvent<HTMLInputElement>) => setScrapeData({ ...scrapeData, msrp: Number(event.target.value) })
       const onTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => setScrapeData({ ...scrapeData, title: event.target.value })
+      const onCurrencyChange = (event: React.ChangeEvent<HTMLInputElement>) => setScrapeData({ ...scrapeData, currency: event.target.value })
       // push image to azure blob storage
       const pushImage = () => {
         // send image url to server
@@ -530,6 +531,10 @@ const QARecords: React.FC = () => {
                 <InputGroup.Text>MSRP</InputGroup.Text>
                 <Form.Control value={scrapeData.msrp} onChange={onMsrpChange} />
               </InputGroup>
+              <InputGroup size="sm" className="mb-3">
+                <InputGroup.Text>Currency Type</InputGroup.Text>
+                <Form.Control value={scrapeData.currency} onChange={onCurrencyChange} />
+              </InputGroup>
             </Col>
             <Col numColSpan={1}>
               <Button className='ml-2' color='emerald' onClick={scrapeRequest}>Scrape</Button>
@@ -537,7 +542,9 @@ const QARecords: React.FC = () => {
           </Grid>
           <div>
             <p>First Stock Image:</p>
-            {scrapeData.imageUrl ? <img src={scrapeData.imageUrl} /> : undefined}
+            {scrapeData.imageUrl ?? undefined}
+            {/* {scrapeData.imageUrl ? <img src={scrapeData.imageUrl} /> : undefined} */}
+            <img src={scrapeData.imageUrl} />
           </div>
           <hr />
         </div>
@@ -819,6 +826,14 @@ const QARecords: React.FC = () => {
       <Card className='mt-2 max-w-full'>
         <div ref={tableRef}></div>
         {renderFilter()}
+        <PaginationButton
+          totalPage={getTotalPage()}
+          currentPage={currPage}
+          nextPage={() => fetchPage(1)}
+          prevPage={() => fetchPage(-1)}
+          firstPage={() => gotoFirstLastPage(-1)}
+          lastPage={() => gotoFirstLastPage(1)}
+        />
         <hr />
         <Table>
           <TableHead>
@@ -841,7 +856,7 @@ const QARecords: React.FC = () => {
         {renderPlaceHolder()}
         <hr />
         <PaginationButton
-          totalPage={Math.ceil(itemCount / itemsPerPage)}
+          totalPage={getTotalPage()}
           currentPage={currPage}
           nextPage={() => fetchPage(1)}
           prevPage={() => fetchPage(-1)}

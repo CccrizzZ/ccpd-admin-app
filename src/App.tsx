@@ -42,7 +42,6 @@ const App = () => {
     name: ''
   })
   const [isLoading, setIsLoading] = useState<boolean>(false)
-  // const [userSettings, setUserSettings] = useState<UserSettings>([])
 
   // logout user (delete http only cookies)
   const logout = async () => {
@@ -98,7 +97,7 @@ const App = () => {
     } else {
       return (
         <div className='wrapper'>
-          <TabContainer defaultActiveKey="Inventory" data-bs-theme="dark">
+          <TabContainer defaultActiveKey="Q&A Records" data-bs-theme="dark">
             {/* side navigation */}
             <div className='sideBar' style={{ backgroundColor: bgLight, userSelect: 'none' }}>
               <Nav variant="pills" className="flex-column mt-4 p-3">
