@@ -116,7 +116,7 @@ const CreateReturnRecordModal: React.FC<CreateSalesRecordModalProps> = (props: C
   }
 
   const renderRetailRecordDetails = () => {
-    if (!targetRetailRecord.time || !instockInventory.recordTime) return <Subtitle>Search Result Will Be Shown Here 👉</Subtitle>
+    if (!targetRetailRecord.time || !instockInventory.time) return <Subtitle>Search Result Will Be Shown Here 👉</Subtitle>
 
     // todo: invoice have multiple sku
     return (

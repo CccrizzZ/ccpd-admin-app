@@ -5,7 +5,8 @@ import { server } from '../utils/utils'
 import { FaWarehouse } from 'react-icons/fa6'
 
 type ShelfLocationsSelectionProps = {
-  onShelfLocationChange: (value: string[]) => void
+  onShelfLocationChange: (value: string[]) => void,
+  shelfLocationSelection: string[],
 }
 
 const ShelfLocationsSelection: React.FC<ShelfLocationsSelectionProps> = (props: ShelfLocationsSelectionProps) => {
@@ -40,7 +41,13 @@ const ShelfLocationsSelection: React.FC<ShelfLocationsSelectionProps> = (props: 
   }
 
   return (
-    <MultiSelect placeholder='Select Shelf Locations' className='mb-3' icon={FaWarehouse} onValueChange={props.onShelfLocationChange}>
+    <MultiSelect
+      placeholder='Select Shelf Locations'
+      className='mb-3'
+      icon={FaWarehouse}
+      onValueChange={props.onShelfLocationChange}
+      value={props.shelfLocationSelection}
+    >
       {renderShelfLocations()}
     </MultiSelect>
   )

@@ -778,6 +778,7 @@ const QARecords: React.FC = () => {
     setItemsPerPage(Number(event.target.value))
     fetchQARecordsByPage(true, Number(event.target.value))
   }
+
   return (
     <div ref={topRef}>
       {/* control panels */}

@@ -292,7 +292,6 @@ export const extractHttpsFromStr = (str: string) => {
   }
 }
 
-
 export const initQAQueryFilter: QAQueryFilter = {
   timeRangeFilter: {} as DateRangePickerValue,
   conditionFilter: '',

@@ -1,26 +1,20 @@
 import { MultiSelect, MultiSelectItem } from '@tremor/react'
 import axios, { AxiosResponse } from 'axios'
-import React, { useEffect, useState, forwardRef, useImperativeHandle } from 'react'
+import { useEffect, useState } from 'react'
 import { FaUser } from 'react-icons/fa6'
 import { server } from '../utils/utils'
 
-export interface IQANameSelection {
-  clearNames: () => void
-}
-
 type QANameSelectionProps = {
   onQANameChange: (value: string[]) => void,
+  qaNameSelection: string[],
 }
 
-const QANameSelection = forwardRef<IQANameSelection, QANameSelectionProps>((props: QANameSelectionProps, ref) => {
+const QANameSelection: React.FC<QANameSelectionProps> = (props: QANameSelectionProps) => {
   const [QANameArr, setQANameArr] = useState<string[]>([])
+
   useEffect(() => {
     fetchQANames()
   }, [])
-
-  useImperativeHandle(ref, () => ({
-    clearNames: () => setQANameArr([])
-  }), [])
 
   const fetchQANames = async () => {
     await axios({
@@ -48,10 +42,16 @@ const QANameSelection = forwardRef<IQANameSelection, QANameSelectionProps>((prop
   }
 
   return (
-    <MultiSelect placeholder='Select QA Personal' className='mb-3' icon={FaUser} onValueChange={props.onQANameChange}>
+    <MultiSelect
+      placeholder='Select QA Personal'
+      className='mb-3'
+      icon={FaUser}
+      onValueChange={props.onQANameChange}
+      value={props.qaNameSelection}
+    >
       {renderQANames()}
     </MultiSelect>
   )
-})
+}
 
 export default QANameSelection

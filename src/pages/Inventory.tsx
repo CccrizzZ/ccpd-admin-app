@@ -1,7 +1,6 @@
-import { FormEventHandler, useContext, useEffect, useRef, useState } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
 import {
   Badge,
-  BarChart,
   Button,
   Card,
   Col,
@@ -17,7 +16,6 @@ import {
   Text,
   DateRangePickerValue,
   AreaChart,
-  Switch,
 } from '@tremor/react'
 import { Condition, InstockInventory, Platform, InstockQueryFilter } from '../utils/Types'
 import { AppContext } from '../App'
@@ -31,10 +29,8 @@ import {
   renderMarketPlaceOptions,
   renderPlatformOptions,
   renderInstockOptions,
-  renderItemPerPageOptions,
   initInstockQueryFilter,
   openLink,
-  extractHttpsFromStr
 } from '../utils/utils'
 import moment from 'moment'
 import { Form, InputGroup } from 'react-bootstrap'
@@ -45,7 +41,7 @@ import PageItemStatsBox from '../components/PageItemStatsBox'
 import ShelfLocationsSelection from '../components/ShelfLocationsSelection'
 import EditInstockModal from '../components/EditInstockModal'
 import AdminNameSelection from '../components/AdminNameSelection'
-import QANameSelection, { IQANameSelection } from '../components/QANameSelection'
+import QANameSelection from '../components/QANameSelection'
 import { FaAnglesDown } from 'react-icons/fa6'
 
 // mock data
@@ -81,7 +77,6 @@ const chartdata = [
 const Inventory: React.FC = () => {
   const { setLoading } = useContext(AppContext)
   const tableRef = useRef<HTMLDivElement>(null)
-  const QANameSelectionRef = useRef<IQANameSelection>(null)
   // instock info
   const [instockArr, setInstockArr] = useState<InstockInventory[]>([])
   const [selectedInstock, setSelectedInstock] = useState<InstockInventory>(initInstockInventory)
@@ -106,7 +101,8 @@ const Inventory: React.FC = () => {
   const getKwArr = (refresh?: boolean) => searchKeyword.length > 0 && !refresh ? searchKeyword.split(/(\s+)/).filter((item) => { return item.trim().length > 0 }) : []
   const getTotalPage = () => Math.ceil(itemCount / itemsPerPage) - 1
   const fetchInstockByPage = async (refresh?: boolean, newItemsPerPage?: number) => {
-    const filter = { ...queryFilter, keywordFilter: getKwArr(refresh) }
+    // if refresh use init query filter
+    const filter = refresh ? initInstockQueryFilter : { ...queryFilter, keywordFilter: getKwArr(refresh) }
     setLoading(true)
     await axios({
       method: 'post',
@@ -141,7 +137,7 @@ const Inventory: React.FC = () => {
       data: {
         page: newPage,
         itemsPerPage: itemsPerPage,
-        filter: queryFilter
+        filter: { ...queryFilter, keywordFilter: getKwArr() }
       },
       withCredentials: true
     }).then((res: AxiosResponse) => {
@@ -205,7 +201,7 @@ const Inventory: React.FC = () => {
     fetchInstockByPage(true)
   }
 
-  const renderSearchPanel = () => {
+  const renderFilterPanel = () => {
     const onSearchSKUChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       if (event.target.value.length < 8) {
         setSearchSku(event.target.value)
@@ -291,13 +287,33 @@ const Inventory: React.FC = () => {
             </InputGroup>
             <InputGroup size='sm' className='mb-3'>
               <InputGroup.Text>Min MSRP</InputGroup.Text>
-              <Form.Control type='number' min={1} max={100000} value={queryFilter.msrpFilter.gte} onChange={onMsrpMinChange} />
+              <Form.Control
+                type='number'
+                min={1}
+                max={100000}
+                value={queryFilter.msrpFilter.gte}
+                onChange={onMsrpMinChange}
+              />
               <InputGroup.Text>Max MSRP</InputGroup.Text>
-              <Form.Control type='number' min={1} max={100000} value={queryFilter.msrpFilter.lt} onChange={onMsrpMaxChange} />
+              <Form.Control
+                type='number'
+                min={1}
+                max={100000}
+                value={queryFilter.msrpFilter.lt}
+                onChange={onMsrpMaxChange}
+              />
             </InputGroup>
             <InputGroup size='sm' className='mb-3'>
-              <InputGroup.Text>Keyword / Tags<br />(Separate By Space)<br />(Case Sensitive)<br />(Or Operator)</InputGroup.Text>
-              <Form.Control className='resize-none' as='textarea' value={searchKeyword} onChange={onKeywordChange} rows={4} />
+              <InputGroup.Text>
+                Keyword / Tags<br />(Separate By Space)<br />(Case Sensitive)<br />(Or Operator)
+              </InputGroup.Text>
+              <Form.Control
+                className='resize-none'
+                as='textarea'
+                value={searchKeyword}
+                onChange={onKeywordChange}
+                rows={4}
+              />
             </InputGroup>
           </Col>
           <Col>
@@ -307,10 +323,18 @@ const Inventory: React.FC = () => {
                 value={queryFilter.timeRangeFilter}
               />
             </InputGroup>
-            <ShelfLocationsSelection onShelfLocationChange={onShelfLocationChange} />
-            <AdminNameSelection onAdminNameChange={onAdminNameChange} />
-            <QANameSelection onQANameChange={onQANameChange} ref={QANameSelectionRef} />
-
+            <ShelfLocationsSelection
+              onShelfLocationChange={onShelfLocationChange}
+              shelfLocationSelection={queryFilter.shelfLocationFilter}
+            />
+            <AdminNameSelection
+              onAdminNameChange={onAdminNameChange}
+              adminNameSelection={queryFilter.adminFilter}
+            />
+            <QANameSelection
+              onQANameChange={onQANameChange}
+              qaNameSelection={queryFilter.qaFilter}
+            />
           </Col>
         </Grid>
         <Button className='absolute bottom-3 w-48' color='rose' size='xs' onClick={resetFilters}>Reset Filters</Button>
@@ -476,7 +500,7 @@ const Inventory: React.FC = () => {
       {/* top 2 charts */}
       <Grid className='gap-2 mb-2 h-[550px]' numItems={2}>
         <Col>
-          {renderSearchPanel()}
+          {renderFilterPanel()}
         </Col>
         <Col>
           {renderOverviewChart()}

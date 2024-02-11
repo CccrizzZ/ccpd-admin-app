@@ -1,15 +1,17 @@
 import { MultiSelect, MultiSelectItem } from '@tremor/react'
 import axios, { AxiosResponse } from 'axios'
-import React, { useEffect, useState } from 'react'
+import React, { forwardRef, useEffect, useState } from 'react'
 import { FaUserTie } from 'react-icons/fa6'
 import { server } from '../utils/utils'
 
 type AdminNameSelectionProps = {
-  onAdminNameChange: (value: string[]) => void
+  onAdminNameChange: (value: string[]) => void;
+  adminNameSelection: string[],
 }
 
 const AdminNameSelection: React.FC<AdminNameSelectionProps> = (props: AdminNameSelectionProps) => {
   const [AdminNameArr, setAdminNameArr] = useState<string[]>([])
+
   useEffect(() => {
     fetchAdminNames()
   }, [])
@@ -40,7 +42,13 @@ const AdminNameSelection: React.FC<AdminNameSelectionProps> = (props: AdminNameS
   }
 
   return (
-    <MultiSelect className='mb-3' placeholder='Select Admin' icon={FaUserTie} onValueChange={props.onAdminNameChange}>
+    <MultiSelect
+      className='mb-3'
+      placeholder='Select Admin'
+      icon={FaUserTie}
+      onValueChange={props.onAdminNameChange}
+      value={props.adminNameSelection}
+    >
       {renderAdminNames()}
     </MultiSelect>
   )
