@@ -28,6 +28,7 @@ Administration control console, full control over ccpd backend.
     - Pagination.
 - Q&A records to instock inventory records conversion panel.
     - Scraping function panel.
+    - Scraped first stock image can be compressed and uploaded into blob container.
     - Chat GPT text generation panel.
     - Adding tags function in submit panel.
 - Problematic records panel:

@@ -142,6 +142,6 @@ export type InstockQueryFilter = {
 export type ScrapedData = {
   title: string,
   msrp: number,
-  imageUrl: string,
+  imgUrl: string,
   currency: string
 }

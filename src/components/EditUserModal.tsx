@@ -67,7 +67,9 @@ const EditUserModal: React.FC<EditUserModalProp> = (props: EditUserModalProp) =>
         alert('updated ' + targetUserDetail.name)
       }
     }).catch((err) => {
-      alert('Failed Deleting User: ' + err.response.status)
+      if (err.response?.status === 403) {
+        alert('Failed Updating User: Only Super Admin Allowed')
+      }
     })
     // clean up
     setLoading(false)

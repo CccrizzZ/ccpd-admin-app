@@ -27,7 +27,7 @@ import {
   FaPenToSquare
 } from "react-icons/fa6";
 import { server, initUser } from '../utils/utils'
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import '../style/UserManager.css'
 import moment from 'moment';
 import { isExpired } from '../utils/utils';
@@ -170,8 +170,10 @@ const UserManager: React.FC = () => {
       withCredentials: true
     }).then(() => {
       fetchAllInvitationCode()
-    }).catch((err) => {
-      alert('Failed Getting All Invitation Code: ' + err.response.status)
+    }).catch((err: AxiosError) => {
+      if (err.response?.status === 403) {
+        alert('Failed Getting All Invitation Code: Only Super Admin Allowed')
+      }
     })
     setLoading(false)
   }
@@ -188,7 +190,9 @@ const UserManager: React.FC = () => {
     }).then(() => {
       fetchAllInvitationCode()
     }).catch((err) => {
-      alert('Failed Getting All Invitation Code: ' + err.response.status)
+      if (err.response?.status === 403) {
+        alert('Failed Deleting Invitation Code: Only Super Admin Allowed')
+      }
     })
     setLoading(false)
   }
@@ -205,7 +209,9 @@ const UserManager: React.FC = () => {
     }).then(() => {
       fetchAllUserInfo()
     }).catch((err) => {
-      alert('Failed Deleting User: ' + targetUser._id + err.response.status)
+      if (err.response?.status === 403) {
+        alert('Failed Deleting User: Only Super Admin Allowed')
+      }
     })
     setLoading(false)
     setShowDeletePopup(false)

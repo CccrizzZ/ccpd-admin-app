@@ -287,7 +287,6 @@ export const extractHttpsFromStr = (str: string) => {
   if (res !== 'null') {
     return res
   } else {
-    console.log(str.slice(str.indexOf('https')))
     return str.slice(str.indexOf('https'))
   }
 }
@@ -316,4 +315,16 @@ export const initInstockQueryFilter: InstockQueryFilter = {
   qaFilter: [],
   shelfLocationFilter: [],
   keywordFilter: []
+}
+
+// convert QA record comment to inventory comment
+export const convertCommentsInitial = (input: string) => {
+  input.replace('UT.', 'UNTEST ')
+  input.replace('MP.', 'MISSING PARTS ')
+  input.replace('FT.', 'FUNCTION TEST ')
+  input.replace('SI.', 'IMAGE SHOW SIMILAR ITEM ')
+  input.replace('PT.', 'POWER TESTED ')
+  input.replace('API.', 'ALL PARTS IN ')
+  input.replace('MA.', 'MISSING ACCESSORIES ')
+  return input
 }

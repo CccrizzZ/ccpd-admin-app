@@ -60,9 +60,15 @@ import '../style/QARecords.css'
 import TableFilter from '../components/TableFilter'
 import PageItemStatsBox from '../components/PageItemStatsBox'
 import EditInstockModal from '../components/EditInstockModal'
+import ImageUploadModal from '../components/ImageUploadModal'
 
 const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()}`
-const initScrapeData: ScrapedData = { title: '', msrp: 0, imageUrl: '', currency: '' }
+const initScrapeData: ScrapedData = {
+  title: '',
+  msrp: 0,
+  imgUrl: '',
+  currency: ''
+}
 
 // mock data
 const barChartData = [
@@ -151,17 +157,13 @@ const QARecords: React.FC = () => {
   // filtering
   const [queryFilter, setQueryFilter] = useState<QAQueryFilter>(initQAQueryFilter)
   // scraping and chat gpt
-  const [scrapeData, setScrapeData] = useState<ScrapedData>({
-    title: '',
-    msrp: 0,
-    imageUrl: '',
-    currency: ''
-  })
+  const [scrapeData, setScrapeData] = useState<ScrapedData>(initScrapeData)
 
   useEffect(() => {
     fetchQARecordsByPage()
   }, [])
 
+  const clearScrape = () => setScrapeData(initScrapeData)
   const getTotalPage = () => Math.ceil(itemCount / itemsPerPage) - 1
 
   // called on component mount
@@ -297,13 +299,13 @@ const QARecords: React.FC = () => {
   const nextRecord = () => {
     const next = QARecordArr[QARecordArr.indexOf(selectedRecord) + 1]
     setSelectedRecordImagesArr([])
-    if (next !== undefined) setSelectedRecord(next); setOriginalSelectedRecord(next); setScrapeData(initScrapeData)
+    if (next !== undefined) setSelectedRecord(next); setOriginalSelectedRecord(next); clearScrape()
   }
 
   const prevRecord = () => {
     const prev = QARecordArr[QARecordArr.indexOf(selectedRecord) - 1]
     setSelectedRecordImagesArr([])
-    if (prev !== undefined) setSelectedRecord(prev); setOriginalSelectedRecord(prev); setScrapeData(initScrapeData)
+    if (prev !== undefined) setSelectedRecord(prev); setOriginalSelectedRecord(prev); clearScrape()
   }
 
   // take QA record scrape and generate info, then push data into instock inventory db
@@ -327,9 +329,9 @@ const QARecords: React.FC = () => {
     const onCommentChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       if (event.target.value.length < 100) setSelectedRecord({ ...selectedRecord, comment: event.target.value })
     }
-    const onLinkChange = (event: React.ChangeEvent<HTMLInputElement>) => setSelectedRecord({ ...selectedRecord, comment: event.target.value })
+    const onLinkChange = (event: React.ChangeEvent<HTMLInputElement>) => setSelectedRecord({ ...selectedRecord, link: event.target.value })
     const onPlatformChange = (event: React.ChangeEvent<HTMLSelectElement>) => setSelectedRecord({ ...selectedRecord, platform: event.target.value as Platform })
-
+    const onRecordTimeChange = (event: React.ChangeEvent<HTMLInputElement>) => setSelectedRecord({ ...selectedRecord, time: event.target.value })
     const clearImagePopup = () => {
       setImagePopupUrl('')
       setShowImagePopup(false)
@@ -467,7 +469,7 @@ const QARecords: React.FC = () => {
               onChange={onCommentChange}
             />
           </InputGroup>
-          <InputGroup size="sm" className="mb-12">
+          <InputGroup size="sm" className="mb-6">
             <InputGroup.Text>Link</InputGroup.Text>
             <Form.Control
               className='resize-none h-32'
@@ -477,6 +479,10 @@ const QARecords: React.FC = () => {
             />
             <Button size='xs' color='slate' onClick={() => setSelectedRecord({ ...selectedRecord, link: extractHttpsFromStr(selectedRecord.link) })}>Extract</Button>
             <Button size='xs' color='gray' onClick={() => openLink(selectedRecord.link)}>Open</Button>
+          </InputGroup>
+          <InputGroup>
+            <InputGroup.Text>QA Input Time</InputGroup.Text>
+            <Form.Control value={selectedRecord.time} onChange={onRecordTimeChange} />
           </InputGroup>
         </div>
       )
@@ -502,10 +508,30 @@ const QARecords: React.FC = () => {
       const onTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => setScrapeData({ ...scrapeData, title: event.target.value })
       const onCurrencyChange = (event: React.ChangeEvent<HTMLInputElement>) => setScrapeData({ ...scrapeData, currency: event.target.value })
       // push image to azure blob storage
-      const pushImage = () => {
+      const pushImage = async () => {
         // send image url to server
         // server fetch from the url and push it into blob storage
-
+        if (!scrapeData.imgUrl) return
+        setLoading(true)
+        await axios({
+          method: 'post',
+          url: server + '/imageController/uploadScrapedImage',
+          responseType: 'text',
+          timeout: 12000,   // scraping takes longer time
+          data: JSON.stringify({
+            'sku': String(selectedRecord.sku),
+            'owner': userInfo,
+            'url': scrapeData.imgUrl
+          }),
+          withCredentials: true
+        }).then((res: AxiosResponse) => {
+          if (res.status === 200) {
+            alert(`uploaded stock image for: ${selectedRecord.sku}`)
+          }
+        }).catch((res: AxiosError) => {
+          alert('Failed Scraping: ' + res.response?.data)
+        })
+        setLoading(false)
       }
 
       // scraped data: msrp, title, first image
@@ -513,8 +539,9 @@ const QARecords: React.FC = () => {
       // B side contains web scraper and chat gpt results
       const renderB = () => (
         <div className='min-h-[500px]'>
-          <div className='flex m-2'>
+          <div className='flex m-2 gap-2'>
             <Badge color={getPlatformBadgeColor(selectedRecord.platform)}>{selectedRecord.platform}</Badge>
+            <a href={extractHttpsFromStr(selectedRecord.link)} target='_blank'>{extractHttpsFromStr(selectedRecord.link)}</a>
           </div>
           <InputGroup size="sm" className="mb-3">
             <InputGroup.Text>Title</InputGroup.Text>
@@ -528,10 +555,6 @@ const QARecords: React.FC = () => {
           <Grid numItems={4}>
             <Col numColSpan={3}>
               <InputGroup size="sm" className="mb-3">
-                <InputGroup.Text>MSRP</InputGroup.Text>
-                <Form.Control value={scrapeData.msrp} onChange={onMsrpChange} />
-              </InputGroup>
-              <InputGroup size="sm" className="mb-3">
                 <InputGroup.Text>Currency Type</InputGroup.Text>
                 <Form.Control value={scrapeData.currency} onChange={onCurrencyChange} />
               </InputGroup>
@@ -540,13 +563,16 @@ const QARecords: React.FC = () => {
               <Button className='ml-2' color='emerald' onClick={scrapeRequest}>Scrape</Button>
             </Col>
           </Grid>
-          <div>
-            <p>First Stock Image:</p>
-            {scrapeData.imageUrl ?? undefined}
-            {/* {scrapeData.imageUrl ? <img src={scrapeData.imageUrl} /> : undefined} */}
-            <img src={scrapeData.imageUrl} />
-          </div>
+          <InputGroup size="sm" className="mb-3">
+            <InputGroup.Text>MSRP</InputGroup.Text>
+            <Form.Control value={scrapeData.msrp} onChange={onMsrpChange} />
+            <InputGroup.Text>{scrapeData.currency === 'USD' ? `x1.3 = ${(scrapeData.msrp * 1.3).toFixed(2)} $CAD 🍁` : ''}</InputGroup.Text>
+          </InputGroup>
           <hr />
+          <p>First Stock Image:</p>
+          <img className='max-w-[300px]' src={scrapeData.imgUrl} />
+          <hr />
+          {scrapeData.imgUrl ? <Button className='p-8 mt-8 ml-2' color='indigo' onClick={pushImage}>Push to {selectedRecord.sku} Gallery 👉</Button> : undefined}
         </div>
       )
 
@@ -556,6 +582,7 @@ const QARecords: React.FC = () => {
         </Card>
       )
     }
+
 
     return (
       <div className='h-full'>
@@ -595,6 +622,7 @@ const QARecords: React.FC = () => {
             <Card className='overflow-y-scroll inline-grid min-h-[520px]' style={{ backgroundColor: '#223' }}>
               {selectedRecordImagesArr.length < 1 ? <Subtitle>Photos Uploaded By Q&A Personal Will Show Up Here</Subtitle> : <div className='grid grid-cols-3 gap-2'>{renderThumbnails()}</div>}
             </Card>
+            <ImageUploadModal sku={selectedRecord.sku} />
           </div>
         </div>
         <div className='absolute bottom-3 w-full'>
@@ -642,7 +670,7 @@ const QARecords: React.FC = () => {
                 className={'text-white'}
                 color={record.problem ? 'rose' : record.recorded ? 'emerald' : 'slate'}
                 tooltip={record.problem ? 'This Record Have Problem' : record.recorded ? 'Already Recorded' : 'Not Recorded'}
-                onClick={() => setSelectedRecordByRecord(record)}
+                onClick={() => { setSelectedRecordByRecord(record); clearScrape() }}
               >
                 {record.sku}
               </Button>
