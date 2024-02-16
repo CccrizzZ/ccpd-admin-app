@@ -35,6 +35,7 @@ import {
   FaArrowRightArrowLeft,
   FaArrowLeft,
   FaArrowRight,
+  FaUpload
 } from 'react-icons/fa6'
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import {
@@ -61,6 +62,7 @@ import TableFilter from '../components/TableFilter'
 import PageItemStatsBox from '../components/PageItemStatsBox'
 import EditInstockModal from '../components/EditInstockModal'
 import ImageUploadModal from '../components/ImageUploadModal'
+import InventoryRecordingModal from '../components/InventoryRecordingModal'
 
 const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()}`
 const initScrapeData: ScrapedData = {
@@ -150,6 +152,8 @@ const QARecords: React.FC = () => {
   const [showImagePopup, setShowImagePopup] = useState<boolean>(false)
   const [flipQACard, setFlipQACard] = useState<boolean>(false)
   const [changed, setChanged] = useState<boolean>(false)
+  const [showUploadImagePopup, setShowUploadImagePopup] = useState<boolean>(false)
+  const [showRecordPopup, setShowRecordPopup] = useState<boolean>(false)
   // paging
   const [currPage, setCurrPage] = useState<number>(0)
   const [itemsPerPage, setItemsPerPage] = useState<number>(20)
@@ -310,11 +314,6 @@ const QARecords: React.FC = () => {
 
   // take QA record scrape and generate info, then push data into instock inventory db
   const renderRecordingPanel = () => {
-    const record = async () => {
-      // call admin create in stock inventory
-
-    }
-
     const onConditionChange = (event: React.ChangeEvent<HTMLSelectElement>) => setSelectedRecord({ ...selectedRecord, itemCondition: event.target.value as Condition })
     const onOwnerChange = (event: React.ChangeEvent<HTMLInputElement>) => setSelectedRecord({ ...selectedRecord, ownerName: event.target.value })
     const onShelfLocationChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -351,6 +350,28 @@ const QARecords: React.FC = () => {
         }
       }
 
+      const deleteImage = async () => {
+        await axios({
+          method: 'delete',
+          url: server + '/imageController/deleteImageByName',
+          responseType: 'text',
+          timeout: 8000,
+          data: JSON.stringify({
+            sku: selectedRecord.sku,
+            name: imagePopupUrl.replace(/^.*[\\/]/, '')
+          }),
+          withCredentials: true
+        }).then((res: AxiosResponse) => {
+          if (res.status === 200) {
+            alert('Image Deleted')
+          }
+        }).catch((res: AxiosError) => {
+          alert(`Cannot Delete Image ${res.message}`)
+        })
+        setShowImagePopup(false)
+        fetchImageUrlArr()
+      }
+
       return (
         <Modal
           show={showImagePopup}
@@ -374,6 +395,7 @@ const QARecords: React.FC = () => {
             </div>
           </Modal.Body>
           <Modal.Footer>
+            <Button className='absolute left-12' color='rose' onClick={deleteImage}>Delete Image</Button>
             <Button color='slate' onClick={clearImagePopup}>
               Close
             </Button>
@@ -386,40 +408,36 @@ const QARecords: React.FC = () => {
     }
 
     // populate thumbnails gallery with url in url array
-    const renderThumbnails = () => {
-      return selectedRecordImagesArr.map((link: string) =>
-        <img src={link} key={link} width={200} className='max-h-[300px]' onClick={() => { setShowImagePopup(true); setImagePopupUrl(link) }} />
-      )
-    }
+    const renderThumbnails = () => selectedRecordImagesArr.map((link: string) =>
+      <img src={link} key={link} width={200} className='max-h-[300px]' onClick={() => { setShowImagePopup(true); setImagePopupUrl(link) }} />
+    )
 
     // confirm model to set record problematic
-    const renderConfirmModal = () => {
-      return (
-        <Modal
-          show={showMarkConfirmPopup}
-          onHide={() => setShowMarkConfirmPopup(false)}
-          backdrop="static"
-          keyboard={false}
-        >
-          <Modal.Header closeButton>
-            <Modal.Title>Record {selectedRecord.sku}</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            Set this record {selectedRecord.problem ? ' resolved' : ' problematic'}?
-          </Modal.Body>
-          <Modal.Footer>
-            <Button color='slate' onClick={() => setShowMarkConfirmPopup(false)}>
-              Close
-            </Button>
-            {
-              selectedRecord.problem ?
-                <Button color='lime' onClick={() => setRecordProblematic(String(selectedRecord.sku), false)}>Confirm</Button> :
-                <Button color='red' onClick={() => setRecordProblematic(String(selectedRecord.sku), true)}>Confirm</Button>
-            }
-          </Modal.Footer>
-        </Modal>
-      )
-    }
+    const renderConfirmModal = () => (
+      <Modal
+        show={showMarkConfirmPopup}
+        onHide={() => setShowMarkConfirmPopup(false)}
+        backdrop="static"
+        keyboard={false}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Record {selectedRecord.sku}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Set this record {selectedRecord.problem ? ' resolved' : ' problematic'}?
+        </Modal.Body>
+        <Modal.Footer>
+          <Button color='slate' onClick={() => setShowMarkConfirmPopup(false)}>
+            Close
+          </Button>
+          {
+            selectedRecord.problem ?
+              <Button color='lime' onClick={() => setRecordProblematic(String(selectedRecord.sku), false)}>Confirm</Button> :
+              <Button color='red' onClick={() => setRecordProblematic(String(selectedRecord.sku), true)}>Confirm</Button>
+          }
+        </Modal.Footer>
+      </Modal>
+    )
 
     // selected QA record information card
     const renderQARecordCard = () => {
@@ -497,7 +515,11 @@ const QARecords: React.FC = () => {
           data: { 'sku': String(selectedRecord.sku) },
           withCredentials: true
         }).then((res: AxiosResponse) => {
-          setScrapeData(JSON.parse(res.data))
+          const data: ScrapedData = JSON.parse(res.data)
+          if (data.currency !== 'CAD') {
+            data.msrp = data.msrp * 1.3
+          }
+          setScrapeData(data)
         }).catch((res: AxiosError) => {
           alert('Failed Scraping: ' + res.response?.data)
         })
@@ -512,7 +534,7 @@ const QARecords: React.FC = () => {
         // send image url to server
         // server fetch from the url and push it into blob storage
         if (!scrapeData.imgUrl) return
-        setLoading(true)
+        // setLoading(true)
         await axios({
           method: 'post',
           url: server + '/imageController/uploadScrapedImage',
@@ -531,7 +553,8 @@ const QARecords: React.FC = () => {
         }).catch((res: AxiosError) => {
           alert('Failed Scraping: ' + res.response?.data)
         })
-        setLoading(false)
+        // setLoading(false)
+        fetchImageUrlArr()
       }
 
       // scraped data: msrp, title, first image
@@ -584,6 +607,11 @@ const QARecords: React.FC = () => {
     }
 
 
+    const onSubmit = () => {
+      setShowRecordPopup(true)
+
+    }
+
     return (
       <div className='h-full'>
         <div className='flex'>
@@ -617,18 +645,37 @@ const QARecords: React.FC = () => {
               >
                 <FaRotate />
               </Button>
+              <Button
+                className='absolute right-28 mt-2'
+                color='emerald'
+                tooltip='Upload Photos'
+                onClick={() => setShowUploadImagePopup(true)}
+              >
+                <FaUpload />
+              </Button>
             </div>
             <hr />
             <Card className='overflow-y-scroll inline-grid min-h-[520px]' style={{ backgroundColor: '#223' }}>
               {selectedRecordImagesArr.length < 1 ? <Subtitle>Photos Uploaded By Q&A Personal Will Show Up Here</Subtitle> : <div className='grid grid-cols-3 gap-2'>{renderThumbnails()}</div>}
             </Card>
-            <ImageUploadModal sku={selectedRecord.sku} />
+            <ImageUploadModal
+              sku={selectedRecord.sku}
+              show={showUploadImagePopup}
+              handleClose={() => setShowUploadImagePopup(false)}
+              userInfo={userInfo}
+            />
+            <InventoryRecordingModal
+              show={showRecordPopup}
+              handleClose={() => setShowRecordPopup(false)}
+              record={selectedRecord}
+              scrapeData={() => { return scrapeData }}
+            />
           </div>
         </div>
         <div className='absolute bottom-3 w-full'>
           <Button color='indigo' onClick={prevRecord}>Prev</Button>
           <Button className='ml-12' color={selectedRecord.problem ? 'lime' : 'rose'} onClick={() => setShowMarkConfirmPopup(true)}>{selectedRecord.problem ? 'Mark Resolved' : 'Mark Problem'}</Button>
-          {selectedRecord.recorded ?? <Button className='absolute mr-auto ml-96' color='emerald' onClick={record}>👌 Submit Into Inventory</Button>}
+          {selectedRecord.recorded ?? <Button className='absolute mr-auto ml-96' color='emerald' onClick={onSubmit}>👌 Submit Into Inventory</Button>}
           <Button className='absolute right-12' color='indigo' onClick={nextRecord}>Next</Button>
         </div>
       </div>
@@ -659,54 +706,52 @@ const QARecords: React.FC = () => {
     setLoading(false)
   }
 
-  const renderInventoryTableBody = () => {
-    return (
-      <TableBody>
-        {QARecordArr?.map((record) => (
-          <TableRow key={record.sku}>
-            <TableCell>
-              <p className={'absolute left-3 text-lg ' + (record.sku === selectedRecord.sku ? 'visible' : 'invisible')}>👉</p>
-              <Button
-                className={'text-white'}
-                color={record.problem ? 'rose' : record.recorded ? 'emerald' : 'slate'}
-                tooltip={record.problem ? 'This Record Have Problem' : record.recorded ? 'Already Recorded' : 'Not Recorded'}
-                onClick={() => { setSelectedRecordByRecord(record); clearScrape() }}
-              >
-                {record.sku}
-              </Button>
-            </TableCell>
-            <TableCell>
-              <Text>{record.ownerName}</Text>
-            </TableCell>
-            <TableCell>
-              <Badge color='slate'>{record.shelfLocation}</Badge>
-            </TableCell>
-            <TableCell>
-              <Badge color={getConditionVariant(record.itemCondition)}>{record.itemCondition}</Badge>
-            </TableCell>
-            <TableCell>
-              <p className='text-white-500'>{record.comment}</p>
-            </TableCell>
-            <TableCell>
-              <p><a className='cursor-pointer' onClick={() => openLink(record.link)}>{record.link.slice(0, 50)}</a></p>
-            </TableCell>
-            <TableCell>
-              <Badge color={getPlatformBadgeColor(record.platform)}>{record.platform}</Badge>
-            </TableCell>
-            <TableCell>
-              <Badge color={getPlatformBadgeColor(record.marketplace ?? 'None')}>{record.marketplace}</Badge>
-            </TableCell>
-            <TableCell>
-              <Text>{record.amount}</Text>
-            </TableCell>
-            <TableCell>
-              <Text>{moment(record.time).format('LLL')}</Text>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    )
-  }
+  const renderInventoryTableBody = () => (
+    <TableBody>
+      {QARecordArr?.map((record) => (
+        <TableRow key={record.sku}>
+          <TableCell>
+            <p className={'absolute left-3 text-lg ' + (record.sku === selectedRecord.sku ? 'visible' : 'invisible')}>👉</p>
+            <Button
+              className={'text-white'}
+              color={record.problem ? 'rose' : record.recorded ? 'emerald' : 'slate'}
+              tooltip={record.problem ? 'This Record Have Problem' : record.recorded ? 'Already Recorded' : 'Not Recorded'}
+              onClick={() => { setSelectedRecordByRecord(record); clearScrape() }}
+            >
+              {record.sku}
+            </Button>
+          </TableCell>
+          <TableCell>
+            <Text>{record.ownerName}</Text>
+          </TableCell>
+          <TableCell>
+            <Badge color='slate'>{record.shelfLocation}</Badge>
+          </TableCell>
+          <TableCell>
+            <Badge color={getConditionVariant(record.itemCondition)}>{record.itemCondition}</Badge>
+          </TableCell>
+          <TableCell>
+            <p className='text-white-500'>{record.comment}</p>
+          </TableCell>
+          <TableCell>
+            <p><a className='cursor-pointer' onClick={() => openLink(record.link)}>{record.link.slice(0, 50)}</a></p>
+          </TableCell>
+          <TableCell>
+            <Badge color={getPlatformBadgeColor(record.platform)}>{record.platform}</Badge>
+          </TableCell>
+          <TableCell>
+            <Badge color={getPlatformBadgeColor(record.marketplace ?? 'None')}>{record.marketplace}</Badge>
+          </TableCell>
+          <TableCell>
+            <Text>{record.amount}</Text>
+          </TableCell>
+          <TableCell>
+            <Text>{moment(record.time).format('LLL')}</Text>
+          </TableCell>
+        </TableRow>
+      ))}
+    </TableBody>
+  )
 
   const renderTopOverViewChart = () => {
     return (
@@ -762,6 +807,13 @@ const QARecords: React.FC = () => {
     const onConditionFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => { setQueryFilter({ ...queryFilter, conditionFilter: event.target.value }); setChanged(true) }
     const onMarketplaceFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => { setQueryFilter({ ...queryFilter, marketplaceFilter: event.target.value }); setChanged(true) }
     const onTimeRangeFilterChange = (value: DateRangePickerValue) => { setQueryFilter({ ...queryFilter, timeRangeFilter: value }); setChanged(true); console.log(value) }
+    const onQANameChange = (value: string[]) => { setQueryFilter({ ...queryFilter, qaFilter: value }) }
+    const onSkuStartChange = () => {
+
+    }
+    const onSkuEndChange = () => {
+
+    }
     const resetFilters = () => {
       setQueryFilter(initQAQueryFilter)
       setCurrPage(0)
@@ -786,6 +838,7 @@ const QARecords: React.FC = () => {
           onConditionFilterChange={onConditionFilterChange}
           onPlatformFilterChange={onPlatformFilterChange}
           onMarketplaceFilterChange={onMarketplaceFilterChange}
+          onQANameChange={onQANameChange}
           resetFilters={resetFilters}
         />
         <PageItemStatsBox

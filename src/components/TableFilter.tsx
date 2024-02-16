@@ -5,6 +5,7 @@ import { QAQueryFilter } from '../utils/Types'
 import { Button, DateRangePickerValue } from '@tremor/react'
 import { renderItemConditionOptions, renderMarketPlaceOptions, renderPlatformOptions } from '../utils/utils'
 import { FaFilterCircleXmark, FaFilter } from 'react-icons/fa6'
+import QANameSelection from './QANameSelection'
 
 type TableFilterProps = {
   queryFilter: QAQueryFilter,
@@ -13,12 +14,12 @@ type TableFilterProps = {
   onConditionFilterChange: (event: React.ChangeEvent<HTMLSelectElement>) => void,
   onPlatformFilterChange: (event: React.ChangeEvent<HTMLSelectElement>) => void,
   onMarketplaceFilterChange: (event: React.ChangeEvent<HTMLSelectElement>) => void,
+  onQANameChange: (value: string[]) => void
   resetFilters: () => void
 }
 
 const TableFilter: React.FC<TableFilterProps> = (props: TableFilterProps) => {
   const [showAdvancedFilters, setShowAdvancedFilters] = React.useState(false)
-
   const applyAdvFilters = () => {
     console.log(11111)
   }
@@ -41,17 +42,19 @@ const TableFilter: React.FC<TableFilterProps> = (props: TableFilterProps) => {
             <InputGroup>
               <InputGroup.Text>Select SKU</InputGroup.Text>
               <InputGroup.Text>From</InputGroup.Text>
-              <Form.Control type='number' min={0} max={100000} />
+              <Form.Control type='number' maxLength={8} max={8} />
               <InputGroup.Text>To</InputGroup.Text>
-              <Form.Control type='number' min={1} max={100000} />
+              <Form.Control type='number' maxLength={8} />
             </InputGroup>
-
             <InputGroup>
               <InputGroup.Text>QA Owner</InputGroup.Text>
               <Form.Control type='text' />
             </InputGroup>
+            <QANameSelection
+              onQANameChange={props.onQANameChange}
+              qaNameSelection={props.queryFilter.qaFilter}
+            />
           </div>
-
         </Modal.Body>
         <Modal.Footer>
           <Button color='emerald' onClick={applyAdvFilters}>Filter</Button>
