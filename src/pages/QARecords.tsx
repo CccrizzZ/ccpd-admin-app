@@ -45,9 +45,7 @@ import {
   renderItemConditionOptions,
   renderPlatformOptions,
   getConditionVariant,
-  renderItemPerPageOptions,
   renderMarketPlaceOptions,
-  copyLink,
   openLink,
   initQAQueryFilter,
   extractHttpsFromStr
@@ -60,9 +58,10 @@ import {
 import '../style/QARecords.css'
 import TableFilter from '../components/TableFilter'
 import PageItemStatsBox from '../components/PageItemStatsBox'
-import EditInstockModal from '../components/EditInstockModal'
 import ImageUploadModal from '../components/ImageUploadModal'
 import InventoryRecordingModal from '../components/InventoryRecordingModal'
+import { VscAzure } from "react-icons/vsc";
+import { PropagateLoader } from 'react-spinners'
 
 const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()}`
 const initScrapeData: ScrapedData = {
@@ -162,6 +161,7 @@ const QARecords: React.FC = () => {
   const [queryFilter, setQueryFilter] = useState<QAQueryFilter>(initQAQueryFilter)
   // scraping and chat gpt
   const [scrapeData, setScrapeData] = useState<ScrapedData>(initScrapeData)
+  const [isScraping, setIsScraping] = useState<boolean>(false)
 
   useEffect(() => {
     fetchQARecordsByPage()
@@ -222,20 +222,21 @@ const QARecords: React.FC = () => {
   }
 
   // get image url from Azure Blob Storage
-  const fetchImageUrlArr = async () => {
+  const fetchImageUrlArr = async (sku?: string) => {
     setLoading(true)
+    setSelectedRecordImagesArr([])
     await axios({
       method: 'post',
       url: server + '/imageController/getUrlsBySku',
       responseType: 'text',
       timeout: 8000,
-      data: { 'sku': String(selectedRecord.sku) },
+      data: { 'sku': sku ?? String(selectedRecord.sku) },
       withCredentials: true
-    }).then((res) => {
+    }).then((res: AxiosResponse) => {
       setSelectedRecordImagesArr(JSON.parse(res.data))
-    }).catch((res: AxiosError) => {
+    }).catch((err: AxiosError) => {
       setLoading(false)
-      alert('Failed Fetching Image: ' + res.response?.data)
+      console.log(err.message)
     })
     setLoading(false)
   }
@@ -506,7 +507,9 @@ const QARecords: React.FC = () => {
       )
 
       const scrapeRequest = async () => {
-        setLoading(true)
+        // setLoading(true)
+        if (isScraping) return
+        setIsScraping(true)
         await axios({
           method: 'post',
           url: server + '/inventoryController/scrapeInfoBySkuAmazon',
@@ -523,7 +526,8 @@ const QARecords: React.FC = () => {
         }).catch((res: AxiosError) => {
           alert('Failed Scraping: ' + res.response?.data)
         })
-        setLoading(false)
+        setIsScraping(false)
+        // setLoading(false)
       }
 
       const onMsrpChange = (event: React.ChangeEvent<HTMLInputElement>) => setScrapeData({ ...scrapeData, msrp: Number(event.target.value) })
@@ -593,6 +597,9 @@ const QARecords: React.FC = () => {
           </InputGroup>
           <hr />
           <p>First Stock Image:</p>
+          <div className={`absolute top-0 left-0 text-center h-full w-full bg-black opacity-60 rounded-lg ${isScraping ? 'visible' : 'invisible'}`}>
+            <PropagateLoader className='mt-[50%] ml-[50%]' color='#f97316' loading={isScraping} />
+          </div>
           <img className='max-w-[300px]' src={scrapeData.imgUrl} />
           <hr />
           {scrapeData.imgUrl ? <Button className='p-8 mt-8 ml-2' color='indigo' onClick={pushImage}>Push to {selectedRecord.sku} Gallery 👉</Button> : undefined}
@@ -606,10 +613,8 @@ const QARecords: React.FC = () => {
       )
     }
 
-
     const onSubmit = () => {
       setShowRecordPopup(true)
-
     }
 
     return (
@@ -636,7 +641,7 @@ const QARecords: React.FC = () => {
           </div>
           <div className='w-1/2 mb-10'>
             <div className='flex'>
-              <h2>📷 Photos</h2>
+              <h2 className='flex'><VscAzure /> Photos Storage</h2>
               <Button
                 className='absolute right-8 mt-2'
                 color='indigo'
@@ -668,14 +673,19 @@ const QARecords: React.FC = () => {
               show={showRecordPopup}
               handleClose={() => setShowRecordPopup(false)}
               record={selectedRecord}
-              scrapeData={() => { return scrapeData }}
+              scrapeData={scrapeData}
             />
           </div>
         </div>
         <div className='absolute bottom-3 w-full'>
           <Button color='indigo' onClick={prevRecord}>Prev</Button>
           <Button className='ml-12' color={selectedRecord.problem ? 'lime' : 'rose'} onClick={() => setShowMarkConfirmPopup(true)}>{selectedRecord.problem ? 'Mark Resolved' : 'Mark Problem'}</Button>
-          {selectedRecord.recorded ?? <Button className='absolute mr-auto ml-96' color='emerald' onClick={onSubmit}>👌 Submit Into Inventory</Button>}
+          {
+            (!selectedRecord.recorded && !selectedRecord.problem) ?
+              <Button className='absolute mr-auto ml-96' color='emerald' onClick={onSubmit}>
+                👌 Submit Into Inventory
+              </Button> : undefined
+          }
           <Button className='absolute right-12' color='indigo' onClick={nextRecord}>Next</Button>
         </div>
       </div>
@@ -687,22 +697,11 @@ const QARecords: React.FC = () => {
     setOriginalSelectedRecord(record)
     scrollToTop()
     setSelectedRecordImagesArr([])
+    clearScrape()
 
     // fetch images
     setLoading(true)
-    await axios({
-      method: 'post',
-      url: server + '/imageController/getUrlsBySku',
-      responseType: 'text',
-      timeout: 8000,
-      data: { 'sku': String(record.sku) },
-      withCredentials: true
-    }).then((res) => {
-      setSelectedRecordImagesArr(JSON.parse(res.data))
-    }).catch((res: AxiosError) => {
-      setLoading(false)
-      throw res.response?.data
-    })
+    fetchImageUrlArr(String(record.sku))
     setLoading(false)
   }
 

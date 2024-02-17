@@ -59,7 +59,7 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = (props: ImageUploadMod
         <InputGroup>
           <InputGroup.Text>Name</InputGroup.Text>
           <InputGroup.Text>{props.sku + '_'}</InputGroup.Text>
-          <Form.Control maxLength={16} value={targetImageName} onChange={onTargetImageNameChange} defaultValue={props.sku} />
+          <Form.Control maxLength={16} value={targetImageName} onChange={onTargetImageNameChange} />
         </InputGroup>
         <InputGroup>
           <InputGroup.Text>URL</InputGroup.Text>

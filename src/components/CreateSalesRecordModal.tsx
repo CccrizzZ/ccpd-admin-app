@@ -59,7 +59,7 @@ const exampleQARecord = {
 
 const CreateSalesRecordModal: React.FC<CreateSalesRecordModalProps> = (props: CreateSalesRecordModalProps) => {
   const { setLoading, userInfo } = useContext(AppContext)
-  const [newSalesRecord, setNewSalesRecord] = useState<RetailRecord>({ ...initRetailRecord, adminName: userInfo.name })
+  const [newSalesRecord, setNewSalesRecord] = useState<RetailRecord>({ ...initRetailRecord, adminName: userInfo.name ?? '' })
   const [targetSku, setTargetSku] = useState<string>('')
   const [targetInventoryRecord, setTargetInventoryRecord] = useState<InstockInventory>(initInstockInventory)
 

@@ -11,7 +11,8 @@ import {
   ReturnRecord,
   UserDetail,
   InstockQueryFilter,
-  Platform
+  Platform,
+  ScrapedData
 } from "./Types";
 import { DateRangePickerValue } from "@tremor/react";
 
@@ -317,8 +318,28 @@ export const initInstockQueryFilter: InstockQueryFilter = {
   keywordFilter: []
 }
 
+export const getInstockInventory = (qaRecord: QARecord, scrapedData: ScrapedData, adminName: string): InstockInventory => {
+  const inv: InstockInventory = {
+    sku: qaRecord.sku,
+    shelfLocation: qaRecord.shelfLocation,
+    condition: qaRecord.itemCondition,
+    comment: qaRecord.comment,
+    url: qaRecord.link,
+    quantityInstock: qaRecord.amount,
+    quantitySold: 0,
+    adminName: adminName,
+    qaName: qaRecord.ownerName ?? '',
+    time: qaRecord.time,
+    platform: qaRecord.platform,
+
+    msrp: scrapedData.msrp,
+  }
+  return inv
+}
+
 // convert QA record comment to inventory comment
 export const convertCommentsInitial = (input: string) => {
+  if (!input) return
   input.replace('UT.', 'UNTEST ')
   input.replace('MP.', 'MISSING PARTS ')
   input.replace('FT.', 'FUNCTION TEST ')

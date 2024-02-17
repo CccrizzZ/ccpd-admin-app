@@ -6,10 +6,8 @@ import {
   Title,
   Text,
   Metric,
-  LineChart,
   AreaChart,
   DonutChart,
-  BarList,
   BarChart,
   Table,
   TableHead,
@@ -25,17 +23,14 @@ import {
   TabPanels,
   TabPanel,
   Tab,
-  DateRangePickerValue
 } from '@tremor/react'
-import { RetailRecord, ReturnRecord, Condition, QAQueryFilter } from '../utils/Types'
+import { RetailRecord, ReturnRecord } from '../utils/Types'
 import '../style/RetailManager.css'
-import { Form } from 'react-bootstrap';
 import CreateSalesRecordModal from '../components/CreateSalesRecordModal';
 import { AppContext } from '../App';
-import { renderItemPerPageOptions, server, getPlatformBadgeColor, initQAQueryFilter } from '../utils/utils';
+import { server, getPlatformBadgeColor } from '../utils/utils';
 import axios from 'axios';
 import CreateReturnRecordModal from '../components/CreateReturnRecord';
-import TableFilter from '../components/TableFilter';
 import { FaRotate } from 'react-icons/fa6';
 
 const itemValueFormatter = (num: number) => `${new Intl.NumberFormat("us").format(num).toString()} Items`;
@@ -148,18 +143,18 @@ const retailPriceRangeData = [
 ]
 
 const RetailManager: React.FC = () => {
-  const { setLoading, userInfo } = useContext(AppContext)
-  const [retailArr, setRetailArr] = useState<RetailRecord[]>([])
-  const [returnArr, setReturnArr] = useState<ReturnRecord[]>([])
-  const [currPage, setCurrPage] = useState<number>(0)
-  const [itemsPerPage, setItemsPerPage] = useState<number>(20)
-  const [timeRange, setTimeRange] = useState<string>('All Time')
+  const { setLoading } = useContext(AppContext)
+  // const [retailArr, setRetailArr] = useState<RetailRecord[]>([])
+  const [returnArr] = useState<ReturnRecord[]>([])
+  const [currPage] = useState<number>(0)
+  const [itemsPerPage] = useState<number>(20)
+  // const [timeRange, setTimeRange] = useState<string>('All Time')
   const [showSalesRecordModal, setShowSalesRecordModal] = useState<boolean>(false)
   const [showReturnsRecordModal, setShowReturnsRecordModal] = useState<boolean>(false)
 
   // filters
-  const [queryFilter, setQueryFilter] = useState<QAQueryFilter>(initQAQueryFilter)
-  const [changed, setChanged] = useState<boolean>(false)
+  // const [queryFilter, setQueryFilter] = useState<QAQueryFilter>(initQAQueryFilter)
+  // const [changed, setChanged] = useState<boolean>(false)
 
   useEffect(() => {
     // fetchRetailDataByPage()
@@ -177,32 +172,32 @@ const RetailManager: React.FC = () => {
         itemsPerPage: itemsPerPage
       },
       withCredentials: true
-    }).then((res) => {
-      setRetailArr(JSON.parse(res.data))
+    }).then(() => {
+      // setRetailArr(JSON.parse(res.data))
     }).catch((err) => {
       alert('Cannot Fetch Retail Record: ' + err.response.status)
     })
     setLoading(false)
   }
 
-  const fetchReturnRecordsByPage = async () => {
-    setLoading(true)
-    await axios({
-      method: 'post',
-      url: server + '/adminController/getReturnRecordsByPage',
-      responseType: 'text',
-      data: {
-        currPage: currPage,
-        itemsPerPage: itemsPerPage
-      },
-      withCredentials: true
-    }).then((res) => {
-      setReturnArr(JSON.parse(res.data))
-    }).catch((err) => {
-      alert('Cannot Fetch Return Record: ' + err.response.status)
-    })
-    setLoading(false)
-  }
+  // const fetchReturnRecordsByPage = async () => {
+  //   setLoading(true)
+  //   await axios({
+  //     method: 'post',
+  //     url: server + '/adminController/getReturnRecordsByPage',
+  //     responseType: 'text',
+  //     data: {
+  //       currPage: currPage,
+  //       itemsPerPage: itemsPerPage
+  //     },
+  //     withCredentials: true
+  //   }).then((res) => {
+  //     setReturnArr(JSON.parse(res.data))
+  //   }).catch((err) => {
+  //     alert('Cannot Fetch Return Record: ' + err.response.status)
+  //   })
+  //   setLoading(false)
+  // }
 
   // return vs retail amount
   const renderGraph1 = () => {
@@ -310,22 +305,22 @@ const RetailManager: React.FC = () => {
     ]
 
     const renderFilter = () => {
-      const onItemsPerPageChange = (event: React.ChangeEvent<HTMLSelectElement>) => setItemsPerPage(Number(event.target.value))
-      const onPlatformFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => { setQueryFilter({ ...queryFilter, platformFilter: event.target.value }); setChanged(true) }
-      const onConditionFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => { setQueryFilter({ ...queryFilter, conditionFilter: event.target.value }); setChanged(true) }
-      const onMarketplaceFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => { setQueryFilter({ ...queryFilter, marketplaceFilter: event.target.value }); setChanged(true) }
-      const onTimeRangeFilterChange = (value: DateRangePickerValue) => { setQueryFilter({ ...queryFilter, timeRangeFilter: value }); setChanged(true) }
-      const resetFilters = () => {
-        setQueryFilter(initQAQueryFilter)
-        setCurrPage(0)
-        setChanged(false)
-        fetchRetailDataByPage()
-      }
+      // const onItemsPerPageChange = (event: React.ChangeEvent<HTMLSelectElement>) => setItemsPerPage(Number(event.target.value))
+      // const onPlatformFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => { setQueryFilter({ ...queryFilter, platformFilter: event.target.value }); setChanged(true) }
+      // const onConditionFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => { setQueryFilter({ ...queryFilter, conditionFilter: event.target.value }); setChanged(true) }
+      // const onMarketplaceFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => { setQueryFilter({ ...queryFilter, marketplaceFilter: event.target.value }); setChanged(true) }
+      // const onTimeRangeFilterChange = (value: DateRangePickerValue) => { setQueryFilter({ ...queryFilter, timeRangeFilter: value }); setChanged(true) }
+      // const resetFilters = () => {
+      //   setQueryFilter(initQAQueryFilter)
+      //   setCurrPage(0)
+      //   setChanged(false)
+      //   fetchRetailDataByPage()
+      // }
       return (
         <div className='flex'>
           <Button
             className='text-white absolute mt-4'
-            color={changed ? 'amber' : 'emerald'}
+            // color={changed ? 'amber' : 'emerald'}
             onClick={() => fetchRetailDataByPage()}
             tooltip='Refresh QA Records Table'
           >

@@ -73,7 +73,6 @@ const EditInstockModal: React.FC<EditInstockModalProps> = (props: EditInstockMod
 
           </Col>
         </Grid>
-
       </Modal.Body>
       <Modal.Footer>
         <div className='text-center'>

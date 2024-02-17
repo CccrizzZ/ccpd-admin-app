@@ -63,15 +63,15 @@ export interface InstockInventory {
   shelfLocation: string;
   condition: Condition;
   comment: string;
-  msrp: number;         // scraped
-  lead: string;         // chat gpt generated from scraped data
-  description: string;  // chat gpt generated from scraped data
   url: string;
   quantityInstock: number;
   quantitySold: number;
   adminName: string;
   qaName: string;
   time: string;
+  msrp?: number;         // scraped
+  lead?: string;         // chat gpt generated from scraped data
+  description?: string;  // chat gpt generated from scraped data
   platform?: Platform;
   marketplace?: Platform;
   qaRecordId?: string;
