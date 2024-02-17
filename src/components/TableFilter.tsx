@@ -14,7 +14,9 @@ type TableFilterProps = {
   onConditionFilterChange: (event: React.ChangeEvent<HTMLSelectElement>) => void,
   onPlatformFilterChange: (event: React.ChangeEvent<HTMLSelectElement>) => void,
   onMarketplaceFilterChange: (event: React.ChangeEvent<HTMLSelectElement>) => void,
-  onQANameChange: (value: string[]) => void
+  onQANameChange: (value: string[]) => void,
+  onSkuStartChange: (event: React.ChangeEvent<HTMLInputElement>) => void,
+  onSkuEndChange: (event: React.ChangeEvent<HTMLInputElement>) => void,
   resetFilters: () => void
 }
 
@@ -42,13 +44,19 @@ const TableFilter: React.FC<TableFilterProps> = (props: TableFilterProps) => {
             <InputGroup>
               <InputGroup.Text>Select SKU</InputGroup.Text>
               <InputGroup.Text>From</InputGroup.Text>
-              <Form.Control type='number' maxLength={8} max={8} />
+              <Form.Control
+                type='number'
+                maxLength={8}
+                onChange={props.onSkuStartChange}
+                value={props.queryFilter.skuEnd}
+              />
               <InputGroup.Text>To</InputGroup.Text>
-              <Form.Control type='number' maxLength={8} />
-            </InputGroup>
-            <InputGroup>
-              <InputGroup.Text>QA Owner</InputGroup.Text>
-              <Form.Control type='text' />
+              <Form.Control
+                type='number'
+                maxLength={8}
+                onChange={props.onSkuEndChange}
+                value={props.queryFilter.skuEnd}
+              />
             </InputGroup>
             <QANameSelection
               onQANameChange={props.onQANameChange}

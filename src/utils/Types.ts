@@ -128,6 +128,8 @@ export type QAQueryFilter = {
   marketplaceFilter: string;
   qaFilter: string[];
   shelfLocationFilter: string[];
+  skuStart?: string;
+  skuEnd?: string
 }
 
 export type InstockQueryFilter = {

@@ -318,7 +318,7 @@ export const initInstockQueryFilter: InstockQueryFilter = {
   keywordFilter: []
 }
 
-export const getInstockInventory = (qaRecord: QARecord, scrapedData: ScrapedData, adminName: string): InstockInventory => {
+export const getInstockInventory = (qaRecord: QARecord, adminName: string): InstockInventory => {
   const inv: InstockInventory = {
     sku: qaRecord.sku,
     shelfLocation: qaRecord.shelfLocation,
@@ -331,8 +331,6 @@ export const getInstockInventory = (qaRecord: QARecord, scrapedData: ScrapedData
     qaName: qaRecord.ownerName ?? '',
     time: qaRecord.time,
     platform: qaRecord.platform,
-
-    msrp: scrapedData.msrp,
   }
   return inv
 }
@@ -340,12 +338,12 @@ export const getInstockInventory = (qaRecord: QARecord, scrapedData: ScrapedData
 // convert QA record comment to inventory comment
 export const convertCommentsInitial = (input: string) => {
   if (!input) return
-  input.replace('UT.', 'UNTEST ')
-  input.replace('MP.', 'MISSING PARTS ')
-  input.replace('FT.', 'FUNCTION TEST ')
-  input.replace('SI.', 'IMAGE SHOW SIMILAR ITEM ')
-  input.replace('PT.', 'POWER TESTED ')
-  input.replace('API.', 'ALL PARTS IN ')
-  input.replace('MA.', 'MISSING ACCESSORIES ')
+  input = input.replace('UT.', 'UNTEST ')
+  input = input.replace('MP.', 'MISSING PARTS ')
+  input = input.replace('FT.', 'FUNCTION TEST ')
+  input = input.replace('SI.', 'IMAGE SHOW SIMILAR ITEM ')
+  input = input.replace('PT.', 'POWER TESTED ')
+  input = input.replace('API.', 'ALL PARTS IN ')
+  input = input.replace('MA.', 'MISSING ACCESSORIES ')
   return input
 }

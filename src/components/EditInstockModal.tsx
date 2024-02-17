@@ -36,7 +36,7 @@ const EditInstockModal: React.FC<EditInstockModalProps> = (props: EditInstockMod
 
   const onShelfLocationChange = (event: React.ChangeEvent<HTMLInputElement>) => setInstockDetail({ ...instockDetail, shelfLocation: event.target.value })
   const onConditionChange = (event: React.ChangeEvent<HTMLSelectElement>) => setInstockDetail({ ...instockDetail, condition: event.target.value as Condition })
-  const onMSRPChange = (event: React.ChangeEvent<HTMLInputElement>) => setInstockDetail({ ...instockDetail, msrp: Number(event.target.value) })
+  const onMSRPChange = (event: React.ChangeEvent<HTMLInputElement>) => setInstockDetail({ ...instockDetail, msrp: Number(event.target.value) ?? 0 })
 
   return (
     <Modal

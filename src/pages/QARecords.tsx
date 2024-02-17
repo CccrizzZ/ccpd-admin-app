@@ -234,9 +234,8 @@ const QARecords: React.FC = () => {
       withCredentials: true
     }).then((res: AxiosResponse) => {
       setSelectedRecordImagesArr(JSON.parse(res.data))
-    }).catch((err: AxiosError) => {
+    }).catch(() => {
       setLoading(false)
-      console.log(err.message)
     })
     setLoading(false)
   }
@@ -303,13 +302,13 @@ const QARecords: React.FC = () => {
   // control panel cursor jump to record
   const nextRecord = () => {
     const next = QARecordArr[QARecordArr.indexOf(selectedRecord) + 1]
-    setSelectedRecordImagesArr([])
+    fetchImageUrlArr(String(next.sku))
     if (next !== undefined) setSelectedRecord(next); setOriginalSelectedRecord(next); clearScrape()
   }
 
   const prevRecord = () => {
     const prev = QARecordArr[QARecordArr.indexOf(selectedRecord) - 1]
-    setSelectedRecordImagesArr([])
+    fetchImageUrlArr(String(prev.sku))
     if (prev !== undefined) setSelectedRecord(prev); setOriginalSelectedRecord(prev); clearScrape()
   }
 
@@ -807,11 +806,11 @@ const QARecords: React.FC = () => {
     const onMarketplaceFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => { setQueryFilter({ ...queryFilter, marketplaceFilter: event.target.value }); setChanged(true) }
     const onTimeRangeFilterChange = (value: DateRangePickerValue) => { setQueryFilter({ ...queryFilter, timeRangeFilter: value }); setChanged(true); console.log(value) }
     const onQANameChange = (value: string[]) => { setQueryFilter({ ...queryFilter, qaFilter: value }) }
-    const onSkuStartChange = () => {
-
+    const onSkuStartChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      setQueryFilter({ ...queryFilter, skuStart: event.target.value })
     }
-    const onSkuEndChange = () => {
-
+    const onSkuEndChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      setQueryFilter({ ...queryFilter, skuEnd: event?.target.value })
     }
     const resetFilters = () => {
       setQueryFilter(initQAQueryFilter)
@@ -839,6 +838,8 @@ const QARecords: React.FC = () => {
           onMarketplaceFilterChange={onMarketplaceFilterChange}
           onQANameChange={onQANameChange}
           resetFilters={resetFilters}
+          onSkuStartChange={onSkuStartChange}
+          onSkuEndChange={onSkuEndChange}
         />
         <PageItemStatsBox
           totalItems={itemCount}

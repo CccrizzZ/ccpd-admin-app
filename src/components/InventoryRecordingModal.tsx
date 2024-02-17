@@ -24,7 +24,6 @@ import {
   List,
   ListItem,
   Button,
-  Badge,
   Grid
 } from '@tremor/react';
 
@@ -40,16 +39,20 @@ const leadCharLimit = 50
 const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: InventoryRecordingModalProps) => {
   const { setLoading, userInfo } = useContext(AppContext)
   const [newInv, setNewInv] = useState<InstockInventory>(initInstockInventory)
-  const [lead, setLead] = useState<string>()
-  const [description, setDescription] = useState<string>()
+  const [lead, setLead] = useState<string>('')
+  const [description, setDescription] = useState<string>('')
 
   useEffect(() => {
     setNewInv({
-      ...getInstockInventory(props.record, props.scrapeData, userInfo.name),
+      ...getInstockInventory(props.record, userInfo.name),
       url: extractHttpsFromStr(props.record.link),
       comment: convertCommentsInitial(props.record.comment) ?? ''
     })
 
+    return (() => {
+      setDescription('')
+      setLead('')
+    })
   }, [props.record, props.scrapeData])
 
   const recordInventory = async () => {
@@ -59,9 +62,7 @@ const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: 
       url: server + '/inventoryController/createInstockInventory',
       responseType: 'text',
       timeout: 8000,
-      data: {
-
-      },
+      data: JSON.stringify(newInv),
       withCredentials: true
     }).then((res: AxiosResponse) => {
       if (res.status === 200) {
@@ -74,18 +75,52 @@ const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: 
   }
 
   const renderItems = () => {
-    // const recordEntries = Object.entries({ ...newInv, link: extractHttpsFromStr(newInv.url) })
     const recordEntries = Object.entries(newInv)
     return recordEntries.map(([index, val]) => {
-
-      // if (index === 'link') val = extractHttpsFromStr(val)
       return (
         <ListItem key={index}>
           <span>{index}</span>
-          <span className={index === 'adminName' || index === 'sku' ? 'text-rose-500' : ''}>{val}</span>
+          <span className={`${index === 'adminName' || index === 'sku' ? 'text-rose-500' : ''} max-w-64`}>{val}</span>
         </ListItem>
       )
     })
+  }
+
+  const renderScrapes = () => {
+    const recordEntries = Object.entries(props.scrapeData)
+    return recordEntries.map(([index, val]) => {
+      return (
+        <ListItem key={index}>
+          <span>{index}</span>
+          <span className={`max-w-64`}>{val}</span>
+        </ListItem>
+      )
+    })
+  }
+
+  const getLeadDesc = async () => {
+    setLoading(true)
+    await axios({
+      method: 'post',
+      url: server + '/inventoryController/generateDescriptionBySku',
+      responseType: 'text',
+      timeout: 8000,
+      data: ({
+        comment: newInv.comment,
+        condition: newInv.condition,
+        title: props.scrapeData.title
+      }),
+      withCredentials: true
+    }).then((res: AxiosResponse) => {
+      if (res.status === 200) {
+        const data = JSON.parse(res.data)
+        setLead(data['lead'])
+        setDescription(data['desc'])
+      }
+    }).catch((res: AxiosError) => {
+      alert('Cannot get page: ' + res.status)
+    })
+    setLoading(false)
   }
 
   const onLeadChange = (event: React.ChangeEvent<HTMLInputElement>) => setLead(event.target.value)
@@ -99,7 +134,7 @@ const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: 
       show={props.show}
       onHide={props.handleClose}
       backdrop="static"
-      size='lg'
+      size='xl'
       keyboard={false}
     >
       <div className='p-8'>
@@ -130,13 +165,16 @@ const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: 
                 />
               </InputGroup>
             </Col>
-            <Col>
-              <List className="p-6">
-                {renderItems()}
-              </List>
+            <Col className="p-2">
+              <Card>
+                <List className="p-6">
+                  {renderItems()}
+                  {renderScrapes()}
+                </List>
+              </Card>
             </Col>
             <Col className='gap-2 grid'>
-              <Button color='indigo'>Generate Lead & Desc with ChatGPT</Button>
+              <Button color='indigo' onClick={getLeadDesc}>Generate Lead & Desc with ChatGPT</Button>
             </Col>
             <Col>
 
