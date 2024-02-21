@@ -12,7 +12,8 @@ import {
   initInstockInventory,
   server,
   getInstockInventory,
-  convertCommentsInitial
+  convertCommentsInitial,
+  toCad
 } from '../utils/utils'
 import { AppContext } from '../App'
 import {
@@ -41,12 +42,16 @@ const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: 
   const [newInv, setNewInv] = useState<InstockInventory>(initInstockInventory)
   const [lead, setLead] = useState<string>('')
   const [description, setDescription] = useState<string>('')
+  // TODO: add tags record state
+  // const [tags, setTages] = useState<Record<string, string>>({})
 
   useEffect(() => {
     setNewInv({
       ...getInstockInventory(props.record, userInfo.name),
       url: extractHttpsFromStr(props.record.link),
-      comment: convertCommentsInitial(props.record.comment) ?? ''
+      comment: convertCommentsInitial(props.record.comment) ?? '',
+      msrp: toCad(props.scrapeData.msrp, props.scrapeData.currency) ?? props.scrapeData.msrp,
+      time: 'today' // let the server decide
     })
 
     return (() => {
@@ -65,11 +70,9 @@ const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: 
       data: JSON.stringify(newInv),
       withCredentials: true
     }).then((res: AxiosResponse) => {
-      if (res.status === 200) {
-        alert(`Instock Inventory Created: ${props.record.sku}`)
-      }
+      if (res.status === 200) alert(`Instock Inventory Created: ${props.record.sku}`)
     }).catch((res: AxiosError) => {
-      alert('Cannot get page: ' + res.status)
+      alert('Cannot Push to Database: ' + res.message)
     })
     setLoading(false)
   }
@@ -80,7 +83,7 @@ const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: 
       return (
         <ListItem key={index}>
           <span>{index}</span>
-          <span className={`${index === 'adminName' || index === 'sku' ? 'text-rose-500' : ''} max-w-64`}>{val}</span>
+          {index === 'msrp' ? <span>{val} (CAD)</span> : <span className={`${index === 'adminName' || index === 'sku' ? 'text-rose-500' : ''} max-w-64`}>{val}</span>}
         </ListItem>
       )
     })
@@ -92,7 +95,11 @@ const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: 
       return (
         <ListItem key={index}>
           <span>{index}</span>
-          <span className={`max-w-64`}>{val}</span>
+          {
+            index === 'imgUrl' ?
+              <p className='max-w-64 min-h-12 text-wrap'>{val}</p> : index === 'msrp' ? <span>{val} ({props.scrapeData.currency})</span> :
+                <span className={`${index === 'msrp' ? 'text-rose-500' : ''} max-w-64`}>{val}</span>
+          }
         </ListItem>
       )
     })
@@ -118,7 +125,7 @@ const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: 
         setDescription(data['desc'])
       }
     }).catch((res: AxiosError) => {
-      alert('Cannot get page: ' + res.status)
+      alert('Cannot Get Description: ' + res.message)
     })
     setLoading(false)
   }
@@ -138,7 +145,7 @@ const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: 
       keyboard={false}
     >
       <div className='p-8'>
-        <h2>Confirm Inventory Info: #{newInv.sku}</h2>
+        <h2>Stage Q&A Record: #{newInv.sku}</h2>
         <Card className='p-3'>
           <Grid numItems={2}>
             <Col className='gap-2 grid mb-2'>
@@ -147,10 +154,10 @@ const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: 
                 <Form.Control
                   className='resize-none'
                   as="textarea"
-                  rows={4}
+                  rows={2}
                   value={lead}
                   onChange={onLeadChange}
-                  maxLength={leadCharLimit}
+                // maxLength={leadCharLimit}
                 />
               </InputGroup>
               <InputGroup>
@@ -161,14 +168,20 @@ const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: 
                   rows={4}
                   value={description}
                   onChange={onDescChange}
-                  maxLength={descriptionCharLimit}
+                // maxLength={descriptionCharLimit}
                 />
               </InputGroup>
             </Col>
             <Col className="p-2">
-              <Card>
+              <Card style={{ borderColor: '#4BBB8B' }}>
+                <h4 className='p-3 mb-0'>Q&A Record #{newInv.sku}</h4>
                 <List className="p-6">
                   {renderItems()}
+                </List>
+              </Card>
+              <Card className='mt-2'>
+                <h4 className='p-3 mb-0'> Scraped Data</h4>
+                <List className='p-6'>
                   {renderScrapes()}
                 </List>
               </Card>
@@ -183,7 +196,7 @@ const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: 
         </Card>
         <div className='flex mt-3'>
           <Button color='slate' onClick={props.handleClose}>Close</Button>
-          <Button className='absolute right-6' color='emerald' onClick={recordInventory}>Submit</Button>
+          {(lead.length > 0 && description.length > 0) ? <Button className='absolute right-6' color='emerald' onClick={recordInventory}>👌 Submit Into Inventory</Button> : undefined}
         </div>
       </div>
     </Modal>

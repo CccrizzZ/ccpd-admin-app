@@ -48,7 +48,9 @@ import {
   renderMarketPlaceOptions,
   openLink,
   initQAQueryFilter,
-  extractHttpsFromStr
+  extractHttpsFromStr,
+  toCad,
+  getEndOfDay
 } from '../utils/utils'
 import {
   Form,
@@ -301,12 +303,14 @@ const QARecords: React.FC = () => {
 
   // control panel cursor jump to record
   const nextRecord = () => {
+    if (isScraping) return
     const next = QARecordArr[QARecordArr.indexOf(selectedRecord) + 1]
     fetchImageUrlArr(String(next.sku))
     if (next !== undefined) setSelectedRecord(next); setOriginalSelectedRecord(next); clearScrape()
   }
 
   const prevRecord = () => {
+    if (isScraping) return
     const prev = QARecordArr[QARecordArr.indexOf(selectedRecord) - 1]
     fetchImageUrlArr(String(prev.sku))
     if (prev !== undefined) setSelectedRecord(prev); setOriginalSelectedRecord(prev); clearScrape()
@@ -518,9 +522,8 @@ const QARecords: React.FC = () => {
           withCredentials: true
         }).then((res: AxiosResponse) => {
           const data: ScrapedData = JSON.parse(res.data)
-          if (data.currency !== 'CAD') {
-            data.msrp = data.msrp * 1.3
-          }
+          // if not CAD, convert to CAD
+          if (data.currency !== 'CAD') data.msrp = toCad(data.msrp, data.currency) ?? data.msrp
           setScrapeData(data)
         }).catch((res: AxiosError) => {
           alert('Failed Scraping: ' + res.response?.data)
@@ -592,7 +595,7 @@ const QARecords: React.FC = () => {
           <InputGroup size="sm" className="mb-3">
             <InputGroup.Text>MSRP</InputGroup.Text>
             <Form.Control value={scrapeData.msrp} onChange={onMsrpChange} />
-            <InputGroup.Text>{scrapeData.currency === 'USD' ? `x1.3 = ${(scrapeData.msrp * 1.3).toFixed(2)} $CAD 🍁` : ''}</InputGroup.Text>
+            <InputGroup.Text>{scrapeData.currency === 'USD' ? `x1.3 = ${toCad(scrapeData.msrp, scrapeData.currency)} $CAD 🍁` : ''}</InputGroup.Text>
           </InputGroup>
           <hr />
           <p>First Stock Image:</p>
@@ -610,10 +613,6 @@ const QARecords: React.FC = () => {
           {flipQACard ? renderB() : renderA()}
         </Card>
       )
-    }
-
-    const onSubmit = () => {
-      setShowRecordPopup(true)
     }
 
     return (
@@ -681,8 +680,8 @@ const QARecords: React.FC = () => {
           <Button className='ml-12' color={selectedRecord.problem ? 'lime' : 'rose'} onClick={() => setShowMarkConfirmPopup(true)}>{selectedRecord.problem ? 'Mark Resolved' : 'Mark Problem'}</Button>
           {
             (!selectedRecord.recorded && !selectedRecord.problem) ?
-              <Button className='absolute mr-auto ml-96' color='emerald' onClick={onSubmit}>
-                👌 Submit Into Inventory
+              <Button className='absolute mr-auto ml-96' color='emerald' onClick={() => setShowRecordPopup(true)}>
+                Stage QA Record
               </Button> : undefined
           }
           <Button className='absolute right-12' color='indigo' onClick={nextRecord}>Next</Button>
@@ -804,7 +803,11 @@ const QARecords: React.FC = () => {
     const onPlatformFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => { setQueryFilter({ ...queryFilter, platformFilter: event.target.value }); setChanged(true) }
     const onConditionFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => { setQueryFilter({ ...queryFilter, conditionFilter: event.target.value }); setChanged(true) }
     const onMarketplaceFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => { setQueryFilter({ ...queryFilter, marketplaceFilter: event.target.value }); setChanged(true) }
-    const onTimeRangeFilterChange = (value: DateRangePickerValue) => { setQueryFilter({ ...queryFilter, timeRangeFilter: value }); setChanged(true); console.log(value) }
+    const onTimeRangeFilterChange = (value: DateRangePickerValue) => {
+      setQueryFilter({ ...queryFilter, timeRangeFilter: value })
+      setChanged(true)
+      console.log(value)
+    }
     const onQANameChange = (value: string[]) => { setQueryFilter({ ...queryFilter, qaFilter: value }) }
     const onSkuStartChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       setQueryFilter({ ...queryFilter, skuStart: event.target.value })

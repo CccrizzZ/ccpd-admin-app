@@ -7,7 +7,8 @@ import {
   getStartOfThisWeek,
   getEndOfThisWeek,
   getStartOfThisMonth,
-  getEndOfThisMonth
+  getEndOfThisMonth,
+  getYesterday,
 } from '../utils/utils'
 import React from "react"
 
@@ -38,7 +39,7 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = (props: CustomDatePick
         from={getStartOfYesterday()}
         to={getEndOfYesterday()}
       >
-        Yesterday: {new Date().toDateString()}
+        Yesterday: {getYesterday()}
       </DateRangePickerItem>
       <DateRangePickerItem
         key="This Week"

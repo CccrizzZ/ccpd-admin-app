@@ -46,14 +46,12 @@ const TableFilter: React.FC<TableFilterProps> = (props: TableFilterProps) => {
               <InputGroup.Text>From</InputGroup.Text>
               <Form.Control
                 type='number'
-                maxLength={8}
                 onChange={props.onSkuStartChange}
-                value={props.queryFilter.skuEnd}
+                value={props.queryFilter.skuStart}
               />
               <InputGroup.Text>To</InputGroup.Text>
               <Form.Control
                 type='number'
-                maxLength={8}
                 onChange={props.onSkuEndChange}
                 value={props.queryFilter.skuEnd}
               />

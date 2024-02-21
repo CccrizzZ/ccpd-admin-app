@@ -12,7 +12,6 @@ import {
   UserDetail,
   InstockQueryFilter,
   Platform,
-  ScrapedData
 } from "./Types";
 import { DateRangePickerValue } from "@tremor/react";
 
@@ -23,8 +22,10 @@ export const server = import.meta.env.VITE_APP_SERVER
 // time zones
 export const est = 'America/Toronto'
 // get iso format dates
+export const getEndOfDay = (day: Date) => moment.tz(day, est).endOf('day').toDate()
 export const getStartOfToday = () => moment.tz(moment(), est).startOf('day').toDate()
 export const getEndOfToday = () => moment.tz(moment(), est).endOf('day').toDate()
+export const getYesterday = () => moment.tz(moment(), est).subtract(1, 'day').toDate().toDateString()
 export const getStartOfYesterday = () => moment.tz(moment(), est).subtract(1, 'day').startOf('day').toDate()
 export const getEndOfYesterday = () => moment.tz(moment(), est).subtract(1, 'day').endOf('day').toDate()
 export const getStartOfThisWeek = () => moment.tz(moment(), est).startOf('week').toDate()
@@ -346,4 +347,19 @@ export const convertCommentsInitial = (input: string) => {
   input = input.replace('API.', 'ALL PARTS IN ')
   input = input.replace('MA.', 'MISSING ACCESSORIES ')
   return input
+}
+
+export const toCad = (input: number, currency: string): number | undefined => {
+  switch (currency) {
+    case 'CAD':
+      return input
+    case 'USD':
+      return Number((input * 1.3).toFixed(2))
+    case 'EUR':
+      return Number((input * 1.45).toFixed(2))
+    case 'GBP':
+      return Number((input * 1.7).toFixed(2))
+    default:
+      break;
+  }
 }
