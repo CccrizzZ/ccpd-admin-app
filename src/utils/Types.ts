@@ -75,7 +75,7 @@ export interface InstockInventory {
   platform?: Platform;
   marketplace?: Platform;
   qaRecordId?: string;
-  tags?: string[];  // tag requested by James
+  tags?: string[];
 }
 
 export interface QARecord {
@@ -127,9 +127,12 @@ export type QAQueryFilter = {
   platformFilter: string;
   marketplaceFilter: string;
   qaFilter: string[];
+  adminFilter: string[];
   shelfLocationFilter: string[];
-  skuStart?: string;
-  skuEnd?: string
+  sku?: {
+    gte?: string,
+    lte?: string,
+  }
 }
 
 export type InstockQueryFilter = {

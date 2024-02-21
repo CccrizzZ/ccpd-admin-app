@@ -65,7 +65,7 @@ const App = () => {
       'Dashboard',
       'Q&A Records',
       'Inventory',
-      'Retail & Return',
+      // 'Retail & Return',
       'User Management',
       // 'Procurement'
       // 'Pallet Manager'
@@ -74,7 +74,7 @@ const App = () => {
       <FaHouseChimney />,
       <FaTableList />,
       <FaBoxesStacked />,
-      <FaFileInvoiceDollar />,
+      // <FaFileInvoiceDollar />,
       <FaUsersGear />,
       <FaCommentDollar />
     ]
@@ -121,7 +121,7 @@ const App = () => {
                 <Tab.Pane eventKey="Q&A Records"><QARecords /></Tab.Pane>
                 <Tab.Pane eventKey="Inventory"><Inventory /></Tab.Pane>
                 <Tab.Pane eventKey="User Management"><UserManager /></Tab.Pane>
-                <Tab.Pane eventKey="Retail & Return"><RetailManager /></Tab.Pane>
+                {/* <Tab.Pane eventKey="Retail & Return"><RetailManager /></Tab.Pane> */}
               </Tab.Content>
             </div>
           </TabContainer >

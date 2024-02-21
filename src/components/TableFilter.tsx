@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import CustomDatePicker from './DateRangePicker'
 import { Form, InputGroup, Modal } from 'react-bootstrap'
 import { QAQueryFilter } from '../utils/Types'
@@ -6,26 +6,52 @@ import { Button, DateRangePickerValue } from '@tremor/react'
 import { renderItemConditionOptions, renderMarketPlaceOptions, renderPlatformOptions } from '../utils/utils'
 import { FaFilterCircleXmark, FaFilter } from 'react-icons/fa6'
 import QANameSelection from './QANameSelection'
+import AdminNameSelection from './AdminNameSelection'
+import ShelfLocationsSelection from './ShelfLocationsSelection'
 
 type TableFilterProps = {
   queryFilter: QAQueryFilter,
   setQueryFilter: React.Dispatch<React.SetStateAction<QAQueryFilter>>,
-  onTimeRangeFilterChange: (value: DateRangePickerValue) => void,
-  onConditionFilterChange: (event: React.ChangeEvent<HTMLSelectElement>) => void,
-  onPlatformFilterChange: (event: React.ChangeEvent<HTMLSelectElement>) => void,
-  onMarketplaceFilterChange: (event: React.ChangeEvent<HTMLSelectElement>) => void,
-  onQANameChange: (value: string[]) => void,
-  onSkuStartChange: (event: React.ChangeEvent<HTMLInputElement>) => void,
-  onSkuEndChange: (event: React.ChangeEvent<HTMLInputElement>) => void,
-  resetFilters: () => void
+  setChanged: React.Dispatch<React.SetStateAction<boolean>>,
+  resetFilters: () => void,
+  refresh: () => void
 }
 
 const TableFilter: React.FC<TableFilterProps> = (props: TableFilterProps) => {
-  const [showAdvancedFilters, setShowAdvancedFilters] = React.useState(false)
-  const applyAdvFilters = () => {
-    console.log(11111)
-  }
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
 
+  const onSkuStartChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    props.setQueryFilter({ ...props.queryFilter, sku: { ...props.queryFilter.sku, gte: event.target.value } })
+    props.setChanged(true)
+  }
+  const onSkuEndChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    props.setQueryFilter({ ...props.queryFilter, sku: { ...props.queryFilter.sku, lte: event.target.value } })
+    props.setChanged(true)
+  }
+  const onMarketplaceFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    props.setQueryFilter({ ...props.queryFilter, marketplaceFilter: event.target.value })
+    props.setChanged(true)
+  }
+  const onTimeRangeFilterChange = (value: DateRangePickerValue) => {
+    props.setQueryFilter({ ...props.queryFilter, timeRangeFilter: value })
+    props.setChanged(true)
+  }
+  const onQANameChange = (value: string[]) => {
+    props.setQueryFilter({ ...props.queryFilter, qaFilter: value })
+    props.setChanged(true)
+  }
+  const onShelfLocationsChange = (value: string[]) => {
+    props.setQueryFilter({ ...props.queryFilter, shelfLocationFilter: value })
+    props.setChanged(true)
+  }
+  const onPlatformFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    props.setQueryFilter({ ...props.queryFilter, platformFilter: event.target.value })
+    props.setChanged(true)
+  }
+  const onConditionFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    props.setQueryFilter({ ...props.queryFilter, conditionFilter: event.target.value })
+    props.setChanged(true)
+  }
   const renderAdvFilters = () => {
     return (
       <Modal
@@ -46,24 +72,36 @@ const TableFilter: React.FC<TableFilterProps> = (props: TableFilterProps) => {
               <InputGroup.Text>From</InputGroup.Text>
               <Form.Control
                 type='number'
-                onChange={props.onSkuStartChange}
-                value={props.queryFilter.skuStart}
+                onChange={onSkuStartChange}
+                value={props.queryFilter.sku?.gte}
               />
               <InputGroup.Text>To</InputGroup.Text>
               <Form.Control
                 type='number'
-                onChange={props.onSkuEndChange}
-                value={props.queryFilter.skuEnd}
+                onChange={onSkuEndChange}
+                value={props.queryFilter.sku?.lte}
               />
             </InputGroup>
             <QANameSelection
-              onQANameChange={props.onQANameChange}
+              onQANameChange={onQANameChange}
               qaNameSelection={props.queryFilter.qaFilter}
+            />
+            <ShelfLocationsSelection
+              onShelfLocationChange={onShelfLocationsChange}
+              shelfLocationSelection={props.queryFilter.shelfLocationFilter}
             />
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button color='emerald' onClick={applyAdvFilters}>Filter</Button>
+          <Button
+            color='emerald'
+            onClick={() => {
+              props.refresh()
+              setShowAdvancedFilters(false)
+            }}
+          >
+            Filter
+          </Button>
           <Button color='slate' onClick={() => setShowAdvancedFilters(false)}>Close</Button>
         </Modal.Footer>
       </Modal>
@@ -76,26 +114,26 @@ const TableFilter: React.FC<TableFilterProps> = (props: TableFilterProps) => {
       <div className='ml-6 mr-6 absolute'>
         <label className='text-gray-500'>Time Filter:</label>
         <CustomDatePicker
-          onValueChange={props.onTimeRangeFilterChange}
+          onValueChange={onTimeRangeFilterChange}
           value={props.queryFilter.timeRangeFilter}
         />
       </div>
       <div className='absolute right-80 gap-2 flex'>
         <div>
           <label className='text-gray-500'>Condition:</label>
-          <Form.Select value={props.queryFilter.conditionFilter} onChange={props.onConditionFilterChange}>
+          <Form.Select value={props.queryFilter.conditionFilter} onChange={onConditionFilterChange}>
             {renderItemConditionOptions()}
           </Form.Select>
         </div>
         <div>
           <label className='text-gray-500'>Platform:</label>
-          <Form.Select value={props.queryFilter.platformFilter} onChange={props.onPlatformFilterChange}>
+          <Form.Select value={props.queryFilter.platformFilter} onChange={onPlatformFilterChange}>
             {renderPlatformOptions()}
           </Form.Select>
         </div>
         <div>
           <label className='text-gray-500'>Marketplace:</label>
-          <Form.Select value={props.queryFilter.marketplaceFilter} onChange={props.onMarketplaceFilterChange}>
+          <Form.Select value={props.queryFilter.marketplaceFilter} onChange={onMarketplaceFilterChange}>
             {renderMarketPlaceOptions()}
           </Form.Select>
         </div>

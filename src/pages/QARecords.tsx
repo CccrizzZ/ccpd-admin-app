@@ -180,11 +180,11 @@ const QARecords: React.FC = () => {
       url: server + '/adminController/getQARecordsByPage',
       responseType: 'text',
       timeout: 8000,
-      data: {
+      data: JSON.stringify({
         page: isInit ? 0 : currPage,
         itemsPerPage: newItemsPerPage ?? itemsPerPage,
         filter: isInit ? initQAQueryFilter : queryFilter
-      },
+      }),
       withCredentials: true
     }).then((res: AxiosResponse) => {
       const data = JSON.parse(res.data)
@@ -568,8 +568,8 @@ const QARecords: React.FC = () => {
       // B side contains web scraper and chat gpt results
       const renderB = () => (
         <div className='min-h-[500px]'>
+          <Badge color={getPlatformBadgeColor(selectedRecord.platform)}>{selectedRecord.platform}</Badge>
           <div className='flex m-2 gap-2'>
-            <Badge color={getPlatformBadgeColor(selectedRecord.platform)}>{selectedRecord.platform}</Badge>
             <a href={extractHttpsFromStr(selectedRecord.link)} target='_blank'>{extractHttpsFromStr(selectedRecord.link)}</a>
           </div>
           <InputGroup size="sm" className="mb-3">
@@ -722,7 +722,7 @@ const QARecords: React.FC = () => {
             <Text>{record.ownerName}</Text>
           </TableCell>
           <TableCell>
-            <Badge color='slate'>{record.shelfLocation}</Badge>
+            <Badge color='purple' className='font-bold'>{record.shelfLocation}</Badge>
           </TableCell>
           <TableCell>
             <Badge color={getConditionVariant(record.itemCondition)}>{record.itemCondition}</Badge>
@@ -800,21 +800,6 @@ const QARecords: React.FC = () => {
   }
 
   const renderFilter = () => {
-    const onPlatformFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => { setQueryFilter({ ...queryFilter, platformFilter: event.target.value }); setChanged(true) }
-    const onConditionFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => { setQueryFilter({ ...queryFilter, conditionFilter: event.target.value }); setChanged(true) }
-    const onMarketplaceFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => { setQueryFilter({ ...queryFilter, marketplaceFilter: event.target.value }); setChanged(true) }
-    const onTimeRangeFilterChange = (value: DateRangePickerValue) => {
-      setQueryFilter({ ...queryFilter, timeRangeFilter: value })
-      setChanged(true)
-      console.log(value)
-    }
-    const onQANameChange = (value: string[]) => { setQueryFilter({ ...queryFilter, qaFilter: value }) }
-    const onSkuStartChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      setQueryFilter({ ...queryFilter, skuStart: event.target.value })
-    }
-    const onSkuEndChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      setQueryFilter({ ...queryFilter, skuEnd: event?.target.value })
-    }
     const resetFilters = () => {
       setQueryFilter(initQAQueryFilter)
       setCurrPage(0)
@@ -835,14 +820,9 @@ const QARecords: React.FC = () => {
         <TableFilter
           queryFilter={queryFilter}
           setQueryFilter={setQueryFilter}
-          onTimeRangeFilterChange={onTimeRangeFilterChange}
-          onConditionFilterChange={onConditionFilterChange}
-          onPlatformFilterChange={onPlatformFilterChange}
-          onMarketplaceFilterChange={onMarketplaceFilterChange}
-          onQANameChange={onQANameChange}
+          setChanged={setChanged}
           resetFilters={resetFilters}
-          onSkuStartChange={onSkuStartChange}
-          onSkuEndChange={onSkuEndChange}
+          refresh={() => { fetchQARecordsByPage(false); setCurrPage(0) }}
         />
         <PageItemStatsBox
           totalItems={itemCount}

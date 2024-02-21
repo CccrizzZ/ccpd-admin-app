@@ -327,6 +327,7 @@ const Inventory: React.FC = () => {
               onShelfLocationChange={onShelfLocationChange}
               shelfLocationSelection={queryFilter.shelfLocationFilter}
             />
+            <br />
             <AdminNameSelection
               onAdminNameChange={onAdminNameChange}
               adminNameSelection={queryFilter.adminFilter}
@@ -376,7 +377,7 @@ const Inventory: React.FC = () => {
         </TableCell>
         <TableCell>
           <div className='grid justify-items-center'>
-            <Badge color='violet'>{instock.shelfLocation}</Badge><br />
+            <Badge color='purple' className='font-bold'>{instock.shelfLocation}</Badge><br />
             <Badge color={getConditionVariant(instock.condition)}>{instock.condition}</Badge>
           </div>
         </TableCell>

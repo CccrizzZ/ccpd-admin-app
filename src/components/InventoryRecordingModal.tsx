@@ -61,16 +61,21 @@ const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: 
   }, [props.record, props.scrapeData])
 
   const recordInventory = async () => {
+    if (String(props.scrapeData.msrp) === 'NaN' || !props.scrapeData.msrp) return alert('MSRP of Scraped Data is Missing')
+    if (!description || !lead) return alert('Description or Lead is Missing')
     setLoading(true)
     await axios({
       method: 'post',
       url: server + '/inventoryController/createInstockInventory',
       responseType: 'text',
       timeout: 8000,
-      data: JSON.stringify(newInv),
+      data: JSON.stringify({ ...newInv, lead: lead, description: description }),
       withCredentials: true
     }).then((res: AxiosResponse) => {
-      if (res.status === 200) alert(`Instock Inventory Created: ${props.record.sku}`)
+      if (res.status === 200) {
+        alert(`Instock Inventory Created: ${props.record.sku}`)
+        props.handleClose()
+      }
     }).catch((res: AxiosError) => {
       alert('Cannot Push to Database: ' + res.message)
     })
@@ -83,7 +88,11 @@ const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: 
       return (
         <ListItem key={index}>
           <span>{index}</span>
-          {index === 'msrp' ? <span>{val} (CAD)</span> : <span className={`${index === 'adminName' || index === 'sku' ? 'text-rose-500' : ''} max-w-64`}>{val}</span>}
+          {
+            index === 'msrp' ?
+              <span>{val} (CAD)</span> :
+              <span className={`${index === 'adminName' || index === 'sku' ? 'text-rose-500' : ''} max-w-64`}>{val}</span>
+          }
         </ListItem>
       )
     })
@@ -106,6 +115,7 @@ const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: 
   }
 
   const getLeadDesc = async () => {
+    if (props.scrapeData.title === '') return alert('Title of Scraped Data is Missing')
     setLoading(true)
     await axios({
       method: 'post',
@@ -157,7 +167,6 @@ const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: 
                   rows={2}
                   value={lead}
                   onChange={onLeadChange}
-                // maxLength={leadCharLimit}
                 />
               </InputGroup>
               <InputGroup>
@@ -168,7 +177,6 @@ const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: 
                   rows={4}
                   value={description}
                   onChange={onDescChange}
-                // maxLength={descriptionCharLimit}
                 />
               </InputGroup>
             </Col>
@@ -179,7 +187,7 @@ const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: 
                   {renderItems()}
                 </List>
               </Card>
-              <Card className='mt-2'>
+              <Card className={`mt-2 ${props.scrapeData.msrp ? '' : 'bg-[#f07]'}`}>
                 <h4 className='p-3 mb-0'> Scraped Data</h4>
                 <List className='p-6'>
                   {renderScrapes()}
@@ -190,7 +198,7 @@ const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: 
               <Button color='indigo' onClick={getLeadDesc}>Generate Lead & Desc with ChatGPT</Button>
             </Col>
             <Col>
-
+              {/* implement tag selection here */}
             </Col>
           </Grid>
         </Card>

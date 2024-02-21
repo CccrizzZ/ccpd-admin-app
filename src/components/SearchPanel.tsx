@@ -2,7 +2,7 @@ import React, { useContext, useState } from 'react'
 import { QARecord } from '../utils/Types'
 import { getConditionVariant, getPlatformBadgeColor, initQARecord, server } from '../utils/utils'
 import { AppContext } from '../App'
-import axios, { AxiosResponse } from 'axios'
+import axios, { AxiosError, AxiosResponse } from 'axios'
 import {
   Badge,
   Card,
@@ -36,9 +36,9 @@ const SearchPanel: React.FC<SearchPanelProp> = (props: SearchPanelProp) => {
       withCredentials: true
     }).then((res: AxiosResponse) => {
       setSearchRes(JSON.parse(res.data))
-    }).catch((err) => {
+    }).catch((err: AxiosError) => {
       setLoading(false)
-      alert('No Record: ' + err.response.status)
+      alert('No Record: ' + err.message)
     })
     setLoading(false)
   }

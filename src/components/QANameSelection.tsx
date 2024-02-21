@@ -44,7 +44,6 @@ const QANameSelection: React.FC<QANameSelectionProps> = (props: QANameSelectionP
   return (
     <MultiSelect
       placeholder='Select QA Personal'
-      className='mb-3'
       icon={FaUser}
       onValueChange={props.onQANameChange}
       value={props.qaNameSelection}

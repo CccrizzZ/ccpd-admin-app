@@ -47,30 +47,46 @@ export const hashPass = (userPass: string) => SHA256(userPass).toString(enc.Base
 export const getPlatformBadgeColor = (platform: string | undefined) => {
   if (platform === undefined || platform === '') return 'slate'
   switch (platform) {
-    case 'Amazon' || 'amazon':
+    case 'Amazon':
+    case 'amazon':
       return 'orange'
-    case 'eBay' || 'Ebay' || 'ebay':
-      return 'lime';
-    case 'Official Website' || 'official website':
-      return 'slate';
-    case 'Hibid' || 'hibid':
-      return 'cyan';
-    case 'HomeDepot' || 'homedepot' || 'Homedepot':
+    case 'eBay':
+    case 'Ebay':
+    case 'ebay':
+      return 'lime'
+    case 'Official Website':
+    case 'official website':
+      return 'slate'
+    case 'Hibid':
+    case 'hibid':
+      return 'cyan'
+    case 'HomeDepot':
+    case 'homedepot':
+    case 'Homedepot':
       return 'orange'
-    case 'Wholesale' || 'wholesale':
-      return 'rose';
-    case 'Retail' || 'retail':
-      return 'sky';
-    case 'Facebook' || 'facebook' || 'Walmart' || 'walmart':
-      return 'blue';
-    case 'Kijiji' || 'kijiji':
-      return 'indigo';
-    case 'BestBuy' || 'bestbuy' || 'Bestbuy':
+    case 'Wholesale':
+    case 'wholesale':
+      return 'rose'
+    case 'Retail':
+    case 'retail':
+      return 'sky'
+    case 'Facebook':
+    case 'facebook':
+    case 'Walmart':
+    case 'walmart':
+      return 'blue'
+    case 'Kijiji':
+    case 'kijiji':
+      return 'indigo'
+    case 'BestBuy':
+    case 'bestbuy':
+    case 'Bestbuy':
       return 'yellow'
-    case 'Other' || 'other':
-      return 'gray';
+    case 'Other':
+    case 'other':
+      return 'gray'
     default:
-      return 'slate';
+      return 'slate'
   }
 }
 
@@ -300,7 +316,11 @@ export const initQAQueryFilter: QAQueryFilter = {
   marketplaceFilter: '',
   qaFilter: [],
   shelfLocationFilter: [],
-  keywordFilter: []
+  keywordFilter: [],
+  sku: {
+    gte: '',
+    lte: ''
+  }
 }
 
 export const initInstockQueryFilter: InstockQueryFilter = {
