@@ -20,12 +20,12 @@ import {
   FaUsersGear,
   FaTableList,
   FaHouseChimney,
-  FaFileInvoiceDollar,
+  // FaFileInvoiceDollar,
   FaDoorOpen,
   FaGear,
   FaCommentDollar
 } from "react-icons/fa6";
-import RetailManager from './pages/RetailManager'
+// import RetailManager from './pages/RetailManager'
 
 // type for app context
 type ContextType = {

@@ -315,6 +315,7 @@ export const initQAQueryFilter: QAQueryFilter = {
   platformFilter: '',
   marketplaceFilter: '',
   qaFilter: [],
+  adminFilter: [],
   shelfLocationFilter: [],
   keywordFilter: [],
   sku: {
@@ -383,3 +384,5 @@ export const toCad = (input: number, currency: string): number | undefined => {
       break;
   }
 }
+
+export const isObjectsEqual = (a: Object, b: Object) => JSON.stringify(a) === JSON.stringify(b)

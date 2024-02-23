@@ -441,6 +441,7 @@ const Inventory: React.FC = () => {
           show={showInstockModal}
           handleClose={() => setShowInstockModal(false)}
           selectedInventory={selectedInstock}
+          refreshTable={() => fetchInstockByPage(false)}
         />
         <div className="flex top-12 absolute">
           <PageItemStatsBox

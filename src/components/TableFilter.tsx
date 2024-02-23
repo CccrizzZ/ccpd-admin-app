@@ -90,6 +90,15 @@ const TableFilter: React.FC<TableFilterProps> = (props: TableFilterProps) => {
               onShelfLocationChange={onShelfLocationsChange}
               shelfLocationSelection={props.queryFilter.shelfLocationFilter}
             />
+            <InputGroup>
+              <InputGroup.Text>Keyword</InputGroup.Text>
+              <Form.Control
+                as='textarea'
+                rows={4}
+              // onChange={onKeywordChange}
+              // value={props.queryFilter.sku?.lte}
+              />
+            </InputGroup>
           </div>
         </Modal.Body>
         <Modal.Footer>

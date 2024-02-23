@@ -532,7 +532,7 @@ const QARecords: React.FC = () => {
         // setLoading(false)
       }
 
-      const onMsrpChange = (event: React.ChangeEvent<HTMLInputElement>) => setScrapeData({ ...scrapeData, msrp: Number(event.target.value) })
+      const onMsrpChange = (event: React.ChangeEvent<HTMLInputElement>) => setScrapeData({ ...scrapeData, msrp: isNaN(Number(event.target.value)) ? 0 : Number(event.target.value) })
       const onTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => setScrapeData({ ...scrapeData, title: event.target.value })
       const onCurrencyChange = (event: React.ChangeEvent<HTMLInputElement>) => setScrapeData({ ...scrapeData, currency: event.target.value })
       // push image to azure blob storage
@@ -594,8 +594,13 @@ const QARecords: React.FC = () => {
           </Grid>
           <InputGroup size="sm" className="mb-3">
             <InputGroup.Text>MSRP</InputGroup.Text>
-            <Form.Control value={scrapeData.msrp} onChange={onMsrpChange} />
-            <InputGroup.Text>{scrapeData.currency === 'USD' ? `x1.3 = ${toCad(scrapeData.msrp, scrapeData.currency)} $CAD 🍁` : ''}</InputGroup.Text>
+            <Form.Control
+              value={scrapeData.msrp}
+              onChange={onMsrpChange}
+              type='number'
+              step={0.01}
+            />
+            <InputGroup.Text>{scrapeData.currency === 'USD' ? `${scrapeData.msrp / 1.3}USD x1.3 = ${scrapeData.msrp} $CAD 🍁` : ''}</InputGroup.Text>
           </InputGroup>
           <hr />
           <p>First Stock Image:</p>
