@@ -16,7 +16,6 @@ import {
   BarChart,
   Subtitle,
   AreaChart,
-  DateRangePickerValue,
 } from '@tremor/react'
 import {
   Condition,
@@ -50,7 +49,7 @@ import {
   initQAQueryFilter,
   extractHttpsFromStr,
   toCad,
-  getEndOfDay
+  getKwArr
 } from '../utils/utils'
 import {
   Form,
@@ -173,7 +172,7 @@ const QARecords: React.FC = () => {
   const getTotalPage = () => Math.ceil(itemCount / itemsPerPage) - 1
 
   // called on component mount
-  const fetchQARecordsByPage = async (isInit?: boolean, newItemsPerPage?: number) => {
+  const fetchQARecordsByPage = async (isInit?: boolean, newItemsPerPage?: number, skeyword?: string,) => {
     setLoading(true)
     await axios({
       method: 'post',
@@ -183,7 +182,7 @@ const QARecords: React.FC = () => {
       data: JSON.stringify({
         page: isInit ? 0 : currPage,
         itemsPerPage: newItemsPerPage ?? itemsPerPage,
-        filter: isInit ? initQAQueryFilter : queryFilter
+        filter: isInit ? initQAQueryFilter : { ...queryFilter, keywordFilter: skeyword ? getKwArr(skeyword) : [] }
       }),
       withCredentials: true
     }).then((res: AxiosResponse) => {
@@ -827,7 +826,7 @@ const QARecords: React.FC = () => {
           setQueryFilter={setQueryFilter}
           setChanged={setChanged}
           resetFilters={resetFilters}
-          refresh={() => { fetchQARecordsByPage(false); setCurrPage(0) }}
+          refresh={(searchKeyword: string) => { fetchQARecordsByPage(false, undefined, searchKeyword); setCurrPage(0) }}
         />
         <PageItemStatsBox
           totalItems={itemCount}

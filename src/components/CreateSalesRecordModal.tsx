@@ -13,10 +13,10 @@ import {
   openLink
 } from '../utils/utils'
 import {
-  Condition,
+  // Condition,
   InstockInventory,
   PaymentMethod,
-  Platform,
+  // Platform,
   RetailRecord
 } from '../utils/Types'
 import {
@@ -45,18 +45,6 @@ type CreateSalesRecordModalProps = {
   handleClose: (refresh: boolean) => void,
 }
 
-const exampleQARecord = {
-  sku: 11110,
-  time: 'today',
-  itemCondition: 'New' as Condition,
-  comment: 'BLACK COLOR, ALL PARTS IN, MINOR DAMAGE ON CORNER,BLACK COLOR, ALL PARTS IN, MINOR DAMAGE ON CORNER,BLACK COLOR, ALL PARTS IN, MINOR DAMAGE ON CORNER',
-  link: 'https://www.amazon.ca/dp/B0BTSM2KW9?ref_=cm_sw_r_cp_ud_dp_6XH1B0Z9EPD11X4VSE9F_1',
-  platform: 'Amazon' as Platform,
-  shelfLocation: 'N11',
-  amount: 0,
-  ownerName: 'Michael'
-}
-
 const CreateSalesRecordModal: React.FC<CreateSalesRecordModalProps> = (props: CreateSalesRecordModalProps) => {
   const { setLoading, userInfo } = useContext(AppContext)
   const [newSalesRecord, setNewSalesRecord] = useState<RetailRecord>({ ...initRetailRecord, adminName: userInfo.name ?? '' })
@@ -65,6 +53,7 @@ const CreateSalesRecordModal: React.FC<CreateSalesRecordModalProps> = (props: Cr
 
   useEffect(() => {
     setNewSalesRecord({ ...newSalesRecord, adminName: userInfo.name })
+    console.log(targetSku)
   }, [])
 
   // create a single retail record

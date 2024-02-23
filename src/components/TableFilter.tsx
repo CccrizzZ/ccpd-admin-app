@@ -6,7 +6,6 @@ import { Button, DateRangePickerValue } from '@tremor/react'
 import { renderItemConditionOptions, renderMarketPlaceOptions, renderPlatformOptions } from '../utils/utils'
 import { FaFilterCircleXmark, FaFilter } from 'react-icons/fa6'
 import QANameSelection from './QANameSelection'
-import AdminNameSelection from './AdminNameSelection'
 import ShelfLocationsSelection from './ShelfLocationsSelection'
 
 type TableFilterProps = {
@@ -14,11 +13,12 @@ type TableFilterProps = {
   setQueryFilter: React.Dispatch<React.SetStateAction<QAQueryFilter>>,
   setChanged: React.Dispatch<React.SetStateAction<boolean>>,
   resetFilters: () => void,
-  refresh: () => void
+  refresh: (skeyword: string) => void
 }
 
 const TableFilter: React.FC<TableFilterProps> = (props: TableFilterProps) => {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
+  const [searchKeyword, setSearchKeyword] = useState<string>('')
 
   const onSkuStartChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     props.setQueryFilter({ ...props.queryFilter, sku: { ...props.queryFilter.sku, gte: event.target.value } })
@@ -50,6 +50,10 @@ const TableFilter: React.FC<TableFilterProps> = (props: TableFilterProps) => {
   }
   const onConditionFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     props.setQueryFilter({ ...props.queryFilter, conditionFilter: event.target.value })
+    props.setChanged(true)
+  }
+  const onKeywordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchKeyword(event.target.value)
     props.setChanged(true)
   }
   const renderAdvFilters = () => {
@@ -91,12 +95,13 @@ const TableFilter: React.FC<TableFilterProps> = (props: TableFilterProps) => {
               shelfLocationSelection={props.queryFilter.shelfLocationFilter}
             />
             <InputGroup>
-              <InputGroup.Text>Keyword</InputGroup.Text>
+              <InputGroup.Text>Keyword / Tags<br />(Separate By Space)<br />(Case Sensitive)<br />(Or Operator)</InputGroup.Text>
               <Form.Control
+                className='resize-none'
                 as='textarea'
                 rows={4}
-              // onChange={onKeywordChange}
-              // value={props.queryFilter.sku?.lte}
+                onChange={onKeywordChange}
+                value={searchKeyword}
               />
             </InputGroup>
           </div>
@@ -105,7 +110,7 @@ const TableFilter: React.FC<TableFilterProps> = (props: TableFilterProps) => {
           <Button
             color='emerald'
             onClick={() => {
-              props.refresh()
+              props.refresh(searchKeyword)
               setShowAdvancedFilters(false)
             }}
           >

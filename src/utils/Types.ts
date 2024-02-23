@@ -98,6 +98,7 @@ export interface QARecord {
 export type UserInfo = {
   id: string,
   name: string,
+  role?: string
 }
 
 // used in user manager

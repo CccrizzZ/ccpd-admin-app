@@ -79,6 +79,7 @@ const App = () => {
       <FaCommentDollar />
     ]
     return pages.map((item, index) => {
+      if (userInfo.role !== 'Super Admin' && item === 'User Management') return
       return (
         <Nav.Item className='mb-3' key={item}>
           <Nav.Link className='text-white' eventKey={item} style={{ display: 'flex' }}>
@@ -97,7 +98,7 @@ const App = () => {
     } else {
       return (
         <div className='wrapper'>
-          <TabContainer defaultActiveKey="Q&A Records" data-bs-theme="dark">
+          <TabContainer defaultActiveKey="Inventory" data-bs-theme="dark">
             {/* side navigation */}
             <div className='sideBar' style={{ backgroundColor: bgLight, userSelect: 'none' }}>
               <Nav variant="pills" className="flex-column mt-4 p-3">
@@ -106,6 +107,7 @@ const App = () => {
               {/* side panel footer */}
               <div className='bottom-2.5 absolute'>
                 <p className='mt-3' style={{ color: '#6B7280' }}>Signed in As: {userInfo.name}</p>
+                <p className='mt-3' style={{ color: '#6B7280' }}>Role: {userInfo.role}</p>
                 <Button className='mr-3' variant='danger' onClick={logout}>
                   <FaDoorOpen className='m-auto' />
                 </Button>
@@ -120,7 +122,7 @@ const App = () => {
                 <Tab.Pane eventKey="Dashboard"><Dashboard /></Tab.Pane>
                 <Tab.Pane eventKey="Q&A Records"><QARecords /></Tab.Pane>
                 <Tab.Pane eventKey="Inventory"><Inventory /></Tab.Pane>
-                <Tab.Pane eventKey="User Management"><UserManager /></Tab.Pane>
+                {userInfo.role === 'Super Admin' ? <Tab.Pane eventKey="User Management"><UserManager /></Tab.Pane> : undefined}
                 {/* <Tab.Pane eventKey="Retail & Return"><RetailManager /></Tab.Pane> */}
               </Tab.Content>
             </div>

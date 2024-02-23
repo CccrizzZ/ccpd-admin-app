@@ -1,6 +1,6 @@
 import { MultiSelect, MultiSelectItem } from '@tremor/react'
 import axios, { AxiosResponse } from 'axios'
-import React, { forwardRef, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { FaUserTie } from 'react-icons/fa6'
 import { server } from '../utils/utils'
 

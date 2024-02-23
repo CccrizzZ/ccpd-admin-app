@@ -301,6 +301,7 @@ export const openLink = (link: string) => {
 
 // extract https link from string
 export const extractHttpsFromStr = (str: string) => {
+  if (!str.includes('http')) return str
   const res = String(str.match(/\bhttps?:\/\/\S+/gi))
   if (res !== 'null') {
     return res
@@ -386,3 +387,7 @@ export const toCad = (input: number, currency: string): number | undefined => {
 }
 
 export const isObjectsEqual = (a: Object, b: Object) => JSON.stringify(a) === JSON.stringify(b)
+
+export const getKwArr = (skey: string, refresh?: boolean) => {
+  return skey.length > 0 && !refresh ? skey.split(/(\s+)/).filter((item) => { return item.trim().length > 0 }) : []
+}

@@ -97,16 +97,16 @@ const Dashboard: React.FC = () => {
   ];
 
   // get all data from server
-  const getBarChartData = () => {
-    const data = []
-    for (let i = 0; i < 6; i++) {
-      data.push({
-        name: 'New',
-        'Number of Items': i
-      })
-    }
-    return data
-  }
+  // const getBarChartData = () => {
+  //   const data = []
+  //   for (let i = 0; i < 6; i++) {
+  //     data.push({
+  //       name: 'New',
+  //       'Number of Items': i
+  //     })
+  //   }
+  //   return data
+  // }
 
   const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()}`
 

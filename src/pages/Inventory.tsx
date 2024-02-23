@@ -15,7 +15,7 @@ import {
   Title,
   Text,
   DateRangePickerValue,
-  AreaChart,
+  BarChart,
 } from '@tremor/react'
 import { Condition, InstockInventory, Platform, InstockQueryFilter } from '../utils/Types'
 import { AppContext } from '../App'
@@ -47,32 +47,10 @@ import { FaAnglesDown } from 'react-icons/fa6'
 // mock data
 // TODO: add server graph information route
 const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()}`
-const chartdata = [
-  {
-    date: 'Jan 22',
-    'Recorded Inventory': 0,
-  },
-  {
-    date: 'Feb 22',
-    'Recorded Inventory': 2,
-  },
-  {
-    date: 'Mar 22',
-    'Recorded Inventory': 194,
-  },
-  {
-    date: 'Apr 22',
-    'Recorded Inventory': 218,
-  },
-  {
-    date: 'May 22',
-    'Recorded Inventory': 182,
-  },
-  {
-    date: 'Jun 22',
-    'Recorded Inventory': 176,
-  },
-];
+type ChartData = {
+  date: string,
+  'Recorded Invenotry': number
+}
 
 const Inventory: React.FC = () => {
   const { setLoading } = useContext(AppContext)
@@ -81,6 +59,7 @@ const Inventory: React.FC = () => {
   const [instockArr, setInstockArr] = useState<InstockInventory[]>([])
   const [selectedInstock, setSelectedInstock] = useState<InstockInventory>(initInstockInventory)
   const [showInstockModal, setShowInstockModal] = useState<boolean>(false)
+  const [pastInventoryData, setPastInventoryData] = useState<ChartData[]>([])
   // paging
   const [currPage, setCurrPage] = useState<number>(0)
   const [itemsPerPage, setItemsPerPage] = useState<number>(20)
@@ -97,12 +76,30 @@ const Inventory: React.FC = () => {
     fetchInstockByPage()
   }, [])
 
+  const populateChartData = (newItemArr: ChartData[]) => {
+    const arr: ChartData[] = []
+    for (let i = 0; i < 10; i++) {
+      arr.push({
+        date: moment().subtract(Math.abs(i), 'day').format('MMM DD').toString(),
+        'Recorded Invenotry': 0
+      })
+    }
+    const arr1: ChartData[] = []
+    arr.map(item => {
+      const initem = newItemArr.find((newItem) => String(newItem['date']) === String(item.date))
+      arr1.push(initem === undefined ? item : initem)
+    })
+    setPastInventoryData(arr1.reverse())
+  }
+
   // fetch page with filters
-  const getKwArr = (refresh?: boolean) => searchKeyword.length > 0 && !refresh ? searchKeyword.split(/(\s+)/).filter((item) => { return item.trim().length > 0 }) : []
+  const getKwArr = (skey: string, refresh?: boolean) => {
+    return skey.length > 0 && !refresh ? skey.split(/(\s+)/).filter((item) => { return item.trim().length > 0 }) : []
+  }
   const getTotalPage = () => Math.ceil(itemCount / itemsPerPage) - 1
   const fetchInstockByPage = async (refresh?: boolean, newItemsPerPage?: number) => {
     // if refresh use init query filter
-    const filter = refresh ? initInstockQueryFilter : { ...queryFilter, keywordFilter: getKwArr(refresh) }
+    const filter = refresh ? initInstockQueryFilter : { ...queryFilter, keywordFilter: getKwArr(searchKeyword, refresh) }
     setLoading(true)
     await axios({
       method: 'post',
@@ -119,6 +116,7 @@ const Inventory: React.FC = () => {
       const data = JSON.parse(res.data)
       setInstockArr(data['arr'])
       setItemCount(data['count'])
+      populateChartData(data['chartData'])
     }).catch((err) => {
       setLoading(false)
       alert('Failed Fetching QA Records: ' + err.response.status)
@@ -137,7 +135,7 @@ const Inventory: React.FC = () => {
       data: {
         page: newPage,
         itemsPerPage: itemsPerPage,
-        filter: { ...queryFilter, keywordFilter: getKwArr() }
+        filter: { ...queryFilter, keywordFilter: getKwArr(searchKeyword) }
       },
       withCredentials: true
     }).then((res: AxiosResponse) => {
@@ -204,7 +202,8 @@ const Inventory: React.FC = () => {
   const renderFilterPanel = () => {
     const onSearchSKUChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       if (event.target.value.length < 8) {
-        setSearchSku(event.target.value)
+        // setSearchSku(event.target.value)
+        setQueryFilter({ ...queryFilter, sku: { gte: event.target.value, lte: event.target.value } })
         setChanged(true)
       }
     }
@@ -259,7 +258,7 @@ const Inventory: React.FC = () => {
           <Col>
             <InputGroup size='sm' className='mb-3'>
               <InputGroup.Text>SKU</InputGroup.Text>
-              <Form.Control type='number' min={1} max={100000} value={searchSku} onChange={onSearchSKUChange} />
+              <Form.Control type='number' value={searchSku} onChange={onSearchSKUChange} />
             </InputGroup>
             <InputGroup size='sm' className='mb-3'>
               <InputGroup.Text>Instock Status</InputGroup.Text>
@@ -289,16 +288,15 @@ const Inventory: React.FC = () => {
               <InputGroup.Text>Min MSRP</InputGroup.Text>
               <Form.Control
                 type='number'
-                min={1}
-                max={100000}
+                maxLength={6}
+                step={0.1}
                 value={queryFilter.msrpFilter.gte}
                 onChange={onMsrpMinChange}
               />
               <InputGroup.Text>Max MSRP</InputGroup.Text>
               <Form.Control
                 type='number'
-                min={1}
-                max={100000}
+                step={0.1}
                 value={queryFilter.msrpFilter.lt}
                 onChange={onMsrpMaxChange}
               />
@@ -348,15 +346,15 @@ const Inventory: React.FC = () => {
   const renderOverviewChart = () => {
     return (
       <Card className='h-full'>
-        <Title>Overview</Title>
-        <Subtitle>Last 6 Weeks (Dec 7 - Dec 14)</Subtitle>
-        <AreaChart
+        <Title>Inventory Recorded Last 10 Days</Title>
+        <Subtitle>{`${moment().subtract(10, 'days').format('L')} to ${moment().format('L')}`}</Subtitle>
+        <BarChart
           className="h-[400px] mt-4"
-          data={chartdata}
+          data={pastInventoryData}
           index="date"
           yAxisWidth={65}
           categories={['Recorded Inventory']}
-          colors={["purple"]}
+          colors={["emerald"]}
           valueFormatter={valueFormatter}
         />
       </Card>

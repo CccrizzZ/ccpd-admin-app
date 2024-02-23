@@ -5,11 +5,11 @@ import {
   server,
   deSpace,
   initRetailRecord,
-  renderMarketPlaceOptions,
+  // renderMarketPlaceOptions,
   renderPaymentMethodOptions,
   initReturnRecord,
   copyLink,
-  getConditionVariant,
+  // getConditionVariant,
   openLink,
   initInstockInventory
 } from '../utils/utils'
@@ -48,7 +48,7 @@ const CreateReturnRecordModal: React.FC<CreateSalesRecordModalProps> = (props: C
   const { setLoading, userInfo } = useContext(AppContext)
   const [newReturnRecord, setNewReturnRecord] = useState<ReturnRecord>(initReturnRecord)
   const [targetRetailRecord, setTargetRetailRecord] = useState<RetailRecord>(initRetailRecord)
-  const [instockInventory, setInstockInventory] = useState<InstockInventory>(initInstockInventory)
+  const [instockInventory] = useState<InstockInventory>(initInstockInventory)
   const [targetInvoiceNumber, setTargetInvoiceNumber] = useState<string>('')
   const [targetSku, setTargetSku] = useState<string>('')
 
