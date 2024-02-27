@@ -16,7 +16,7 @@ const PaginationButton: React.FC<PaginationButtonProps> = (props: PaginationButt
     <div className='flex gap-2 mr-auto ml-auto w-max h-8'>
       <Button className='w-8' color='orange' tooltip='First Page' onClick={props.firstPage}><FaAnglesLeft /></Button>
       <Button className='w-32' color='blue' onClick={props.prevPage}><FaCaretLeft /> Prev Page</Button>
-      <Subtitle className='mt-2'>Page {props.currentPage + 1} / {props.totalPage + 1}</Subtitle>
+      <Subtitle className='mt-2'>Page {props.currentPage + 1} / {isNaN(props.totalPage + 1) ? 0 : props.totalPage + 1}</Subtitle>
       <Button className='w-32' color='blue' onClick={props.nextPage}>Next Page <FaCaretRight /></Button>
       <Button className='w-8' color='orange' tooltip='Last Page' onClick={props.lastPage}><FaAnglesRight /></Button>
     </div>

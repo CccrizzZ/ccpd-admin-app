@@ -116,7 +116,7 @@ const Inventory: React.FC = () => {
       const data = JSON.parse(res.data)
       setInstockArr(data['arr'])
       setItemCount(data['count'])
-      populateChartData(data['chartData'])
+      if (data['chartData'].length > 0) populateChartData(data['chartData'])
     }).catch((err) => {
       setLoading(false)
       alert('Failed Fetching QA Records: ' + err.response.status)
@@ -325,7 +325,6 @@ const Inventory: React.FC = () => {
               onShelfLocationChange={onShelfLocationChange}
               shelfLocationSelection={queryFilter.shelfLocationFilter}
             />
-            <br />
             <AdminNameSelection
               onAdminNameChange={onAdminNameChange}
               adminNameSelection={queryFilter.adminFilter}
@@ -348,15 +347,16 @@ const Inventory: React.FC = () => {
       <Card className='h-full'>
         <Title>Inventory Recorded Last 10 Days</Title>
         <Subtitle>{`${moment().subtract(10, 'days').format('L')} to ${moment().format('L')}`}</Subtitle>
-        <BarChart
-          className="h-[400px] mt-4"
-          data={pastInventoryData}
-          index="date"
-          yAxisWidth={65}
-          categories={['Recorded Inventory']}
-          colors={["emerald"]}
-          valueFormatter={valueFormatter}
-        />
+        {pastInventoryData.length !== 0 ?
+          <BarChart
+            className="h-[400px] mt-4"
+            data={pastInventoryData}
+            index="date"
+            yAxisWidth={65}
+            categories={['Recorded Inventory']}
+            colors={["emerald"]}
+            valueFormatter={valueFormatter}
+          /> : <h2>No Data Available Last 10 Days</h2>}
       </Card>
     )
   }

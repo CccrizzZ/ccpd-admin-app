@@ -1,5 +1,5 @@
 import { MultiSelect, MultiSelectItem } from '@tremor/react'
-import axios, { AxiosResponse } from 'axios'
+import axios, { AxiosError, AxiosResponse } from 'axios'
 import { useEffect, useState } from 'react'
 import { FaUser } from 'react-icons/fa6'
 import { server } from '../utils/utils'
@@ -18,16 +18,15 @@ const QANameSelection: React.FC<QANameSelectionProps> = (props: QANameSelectionP
 
   const fetchQANames = async () => {
     await axios({
-      method: 'post',
-      url: server + '/adminController/getInstockDistinct',
+      method: 'get',
+      url: server + '/userController/getAllActiveQAPersonal',
       responseType: 'text',
       timeout: 8000,
-      data: JSON.stringify({ 'distinct': 'qaName' }),
       withCredentials: true
     }).then((res: AxiosResponse) => {
       setQANameArr(JSON.parse(res.data))
-    }).catch((err) => {
-      alert('Failed Fetching QA Names: ' + err.response.status)
+    }).catch((err: AxiosError) => {
+      alert('Failed Fetching QA Names: ' + err.message)
     })
   }
 

@@ -19,6 +19,10 @@ import { DateRangePickerValue } from "@tremor/react";
 export const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 export const server = import.meta.env.VITE_APP_SERVER
 
+// conversion rate
+export const usdToCadRate = 1.38
+export const eurToCadRate = 1.55
+
 // time zones
 export const est = 'America/Toronto'
 // get iso format dates

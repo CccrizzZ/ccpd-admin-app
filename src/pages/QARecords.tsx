@@ -15,7 +15,6 @@ import {
   Button,
   BarChart,
   Subtitle,
-  AreaChart,
 } from '@tremor/react'
 import {
   Condition,
@@ -49,7 +48,8 @@ import {
   initQAQueryFilter,
   extractHttpsFromStr,
   toCad,
-  getKwArr
+  getKwArr,
+  usdToCadRate
 } from '../utils/utils'
 import {
   Form,
@@ -63,6 +63,7 @@ import ImageUploadModal from '../components/ImageUploadModal'
 import InventoryRecordingModal from '../components/InventoryRecordingModal'
 import { VscAzure } from "react-icons/vsc";
 import { PropagateLoader } from 'react-spinners'
+import DailyQAOverview from '../components/DailyQAOverview'
 
 const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()}`
 const initScrapeData: ScrapedData = {
@@ -147,7 +148,7 @@ const QARecords: React.FC = () => {
   const [imagePopupUrl, setImagePopupUrl] = useState<string>('')
   // flags
   const [displaySearchRecords, setDisplaySearchRecords] = useState<boolean>(true)
-  const [displayProblemRecordsPanel, setDisplayProblemRecordsPanel] = useState<boolean>(true)
+  const [displayProblemRecordsPanel, setDisplayProblemRecordsPanel] = useState<boolean>(false)
   const [showMarkConfirmPopup, setShowMarkConfirmPopup] = useState<boolean>(false)
   const [showImagePopup, setShowImagePopup] = useState<boolean>(false)
   const [flipQACard, setFlipQACard] = useState<boolean>(false)
@@ -262,7 +263,7 @@ const QARecords: React.FC = () => {
       }
     }).catch((res: AxiosError) => {
       setLoading(false)
-      alert('Cannot get page: ' + res.status)
+      alert('Cannot get page: ' + res.message)
     })
   }
 
@@ -599,7 +600,7 @@ const QARecords: React.FC = () => {
               type='number'
               step={0.01}
             />
-            <InputGroup.Text>{scrapeData.currency === 'USD' ? `${scrapeData.msrp / 1.3}USD x1.3 = ${scrapeData.msrp} $CAD 🍁` : ''}</InputGroup.Text>
+            <InputGroup.Text>{scrapeData.currency === 'USD' ? `${scrapeData.msrp / 1.3}USD x${usdToCadRate} = ${scrapeData.msrp} $CAD 🍁` : ''}</InputGroup.Text>
           </InputGroup>
           <hr />
           <p>First Stock Image:</p>
@@ -773,24 +774,6 @@ const QARecords: React.FC = () => {
     )
   }
 
-  const renderBottomOverviewChart = () => {
-    return (
-      <>
-        <Title>Compare QA Records and Recorded Records</Title>
-        <Subtitle>Last 7 Days (Dec 7 - Dec 14)</Subtitle>
-        <AreaChart
-          className="h-64"
-          data={chartdata}
-          index="date"
-          categories={["Recorded", "QARecorded"]}
-          colors={["green", "red"]}
-          valueFormatter={valueFormatter}
-          showAnimation={true}
-        />
-      </>
-    )
-  }
-
   const scrollToTable = () => {
     if (tableRef.current) tableRef.current.scrollIntoView({
       behavior: 'instant'
@@ -844,7 +827,7 @@ const QARecords: React.FC = () => {
   const onItemsPerPageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setCurrPage(0)
     setItemsPerPage(Number(event.target.value))
-    fetchQARecordsByPage(true, Number(event.target.value))
+    fetchQARecordsByPage(false, Number(event.target.value))
   }
 
   return (
@@ -871,7 +854,7 @@ const QARecords: React.FC = () => {
             </Button>
             {displaySearchRecords ? <SearchPanel setSelectedRecord={setSelectedRecordByRecord} /> : renderTopOverViewChart()}
           </Card>
-          <Card className="h-96 mt-2">
+          <Card className="min-h-96 mt-2">
             <Button
               color='rose'
               className='right-6 absolute p-2'
@@ -886,7 +869,7 @@ const QARecords: React.FC = () => {
                   ref={ProblemPanelRef}
                   setSelectedRecord={setSelectedRecordByRecord}
                   setSelectedRecordImagesArr={setSelectedRecordImagesArr}
-                /> : renderBottomOverviewChart()
+                /> : <DailyQAOverview />
             }
           </Card>
         </Col>
