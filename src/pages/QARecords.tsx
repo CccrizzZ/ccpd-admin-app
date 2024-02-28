@@ -101,39 +101,6 @@ const barChartData = [
   }
 ]
 
-const chartdata = [
-  {
-    date: "Jan 22",
-    Recorded: 2890,
-    "QARecorded": 2338,
-  },
-  {
-    date: "Feb 22",
-    Recorded: 2756,
-    "QARecorded": 2103,
-  },
-  {
-    date: "Mar 22",
-    Recorded: 3322,
-    "QARecorded": 2194,
-  },
-  {
-    date: "Apr 22",
-    Recorded: 3470,
-    "QARecorded": 2108,
-  },
-  {
-    date: "May 22",
-    Recorded: 3475,
-    "QARecorded": 1812,
-  },
-  {
-    date: "Jun 22",
-    Recorded: 3129,
-    "QARecorded": 1726,
-  },
-]
-
 const QARecords: React.FC = () => {
   const { setLoading, userInfo } = useContext(AppContext)
   // reference to components

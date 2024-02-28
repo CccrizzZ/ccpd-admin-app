@@ -6,7 +6,7 @@ import { ClipLoader } from "react-spinners"
 import { FaRotate } from "react-icons/fa6"
 import { Table } from 'react-bootstrap'
 
-
+// Daily QA record count overview table 
 const DailyQAOverview = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [data, setData] = useState<Record<string, number[]>[]>([])
@@ -44,7 +44,7 @@ const DailyQAOverview = () => {
     return Object.entries(item).map(([name, countArr]) =>
       <tr key={i}>
         <td>{name}</td>
-        {countArr.map((item, i) => <td key={i}>{item}</td>)}
+        {countArr.reverse().map((item, i) => <td key={i}>{item}</td>)}
       </tr>
     )
   })
