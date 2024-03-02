@@ -23,8 +23,10 @@ import {
   // FaFileInvoiceDollar,
   FaDoorOpen,
   FaGear,
-  FaCommentDollar
+  FaCommentDollar,
+  FaGavel
 } from "react-icons/fa6";
+import AuctionHistory from './pages/AuctionHistory'
 // import RetailManager from './pages/RetailManager'
 
 // type for app context
@@ -65,6 +67,7 @@ const App = () => {
       'Dashboard',
       'Q&A Records',
       'Inventory',
+      'Auction History',
       // 'Retail & Return',
       'User Management',
       // 'Procurement'
@@ -74,6 +77,7 @@ const App = () => {
       <FaHouseChimney />,
       <FaTableList />,
       <FaBoxesStacked />,
+      <FaGavel />,
       // <FaFileInvoiceDollar />,
       <FaUsersGear />,
       <FaCommentDollar />
@@ -122,6 +126,7 @@ const App = () => {
                 <Tab.Pane eventKey="Dashboard"><Dashboard /></Tab.Pane>
                 <Tab.Pane eventKey="Q&A Records"><QARecords /></Tab.Pane>
                 <Tab.Pane eventKey="Inventory"><Inventory /></Tab.Pane>
+                <Tab.Pane eventKey="Auction History"><AuctionHistory /></Tab.Pane>
                 {userInfo.role === 'Super Admin' ? <Tab.Pane eventKey="User Management"><UserManager /></Tab.Pane> : undefined}
                 {/* <Tab.Pane eventKey="Retail & Return"><RetailManager /></Tab.Pane> */}
               </Tab.Content>

@@ -29,3 +29,7 @@ button > .tremor-Button-text {
 .truncate {
     margin-bottom: 0;
 }
+
+#recordingPanel {
+    background-color: #282f3c !important;
+}

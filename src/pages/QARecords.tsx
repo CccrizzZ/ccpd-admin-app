@@ -537,7 +537,13 @@ const QARecords: React.FC = () => {
         <div className='min-h-[500px]'>
           <Badge color={getPlatformBadgeColor(selectedRecord.platform)}>{selectedRecord.platform}</Badge>
           <div className='flex m-2 gap-2'>
-            <a href={extractHttpsFromStr(selectedRecord.link)} target='_blank'>{extractHttpsFromStr(selectedRecord.link)}</a>
+            <a
+              className='max-w-28'
+              href={extractHttpsFromStr(selectedRecord.link)}
+              target='_blank'
+            >
+              {extractHttpsFromStr(selectedRecord.link).slice(0, 100)}
+            </a>
           </div>
           <InputGroup size="sm" className="mb-3">
             <InputGroup.Text>Title</InputGroup.Text>
@@ -581,7 +587,7 @@ const QARecords: React.FC = () => {
       )
 
       return (
-        <Card className='h-fit mb-12' style={{ backgroundColor: '#223' }}>
+        <Card className='h-fit mb-12' id='recordingPanel'>
           {flipQACard ? renderB() : renderA()}
         </Card>
       )
@@ -810,7 +816,7 @@ const QARecords: React.FC = () => {
           </Card>
         </Col>
         <Col numColSpan={1} className='h-full'>
-          <Card className="h-96 bg-stone-900">
+          <Card className="h-96">
             <Button
               color='rose'
               className='right-6 absolute p-2'

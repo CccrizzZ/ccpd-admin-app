@@ -23,12 +23,12 @@ const DailyQAOverview = () => {
       method: 'get',
       url: server + '/inventoryController/getDailyQARecordData',
       responseType: 'text',
-      timeout: 8000,
+      timeout: 10000,
       withCredentials: true
     }).then((res: AxiosResponse) => {
       const data = JSON.parse(res.data)
       setData(data['res'])
-      setDatesArr(data['dates'])
+      setDatesArr(data['dates'].reverse())
     }).catch((res: AxiosError) => {
       alert('Cannot Get Daily QA Data: ' + res.message)
     })
@@ -62,7 +62,7 @@ const DailyQAOverview = () => {
     })
   }
 
-  const renderTableHead = () => datesArr.reverse().map((val, i) => (
+  const renderTableHead = () => datesArr.map((val, i) => (
     <th key={i}>{val}</th>
   ))
 
@@ -72,7 +72,7 @@ const DailyQAOverview = () => {
     return Object.entries(item).map(([name, countArr]) =>
       <tr key={i}>
         <td>{name}</td>
-        {countArr.reverse().map((item, i) => <td key={i}>{item}</td>)}
+        {countArr.slice(0).reverse().map((item, i) => <td key={i}>{item}</td>)}
       </tr>
     )
   })
