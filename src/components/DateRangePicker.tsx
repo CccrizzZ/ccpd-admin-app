@@ -20,7 +20,7 @@ type CustomDatePickerProps = {
 const CustomDatePicker: React.FC<CustomDatePickerProps> = (props: CustomDatePickerProps) => {
   return (
     <DateRangePicker
-      className="max-w-[300px]"
+      className="max-w-[400px]"
       enableSelect={true}
       onValueChange={props.onValueChange}
       value={props.value}

@@ -19,7 +19,7 @@ const PageItemStatsBox: React.FC<PageItemStatsBoxProps> = (props: PageItemStatsB
       </div>
       <div className="text-center ml-6">
         <label className='text-gray-500 mb-1'>Total Items</label>
-        <h4>{props.totalItems}</h4>
+        <h4>{props.totalItems ?? 0}</h4>
       </div>
     </div>
   )

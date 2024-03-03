@@ -587,7 +587,7 @@ const QARecords: React.FC = () => {
       )
 
       return (
-        <Card className='h-fit mb-12' id='recordingPanel'>
+        <Card className='h-fit mb-12 !bg-[#223]'>
           {flipQACard ? renderB() : renderA()}
         </Card>
       )
@@ -636,7 +636,7 @@ const QARecords: React.FC = () => {
               </Button>
             </div>
             <hr />
-            <Card className='overflow-y-scroll inline-grid min-h-[520px]' style={{ backgroundColor: '#223' }}>
+            <Card className='overflow-y-scroll inline-grid min-h-[520px] !bg-[#223]'>
               {selectedRecordImagesArr.length < 1 ? <Subtitle>Photos Uploaded By Q&A Personal Will Show Up Here</Subtitle> : <div className='grid grid-cols-3 gap-2'>{renderThumbnails()}</div>}
             </Card>
             <ImageUploadModal
@@ -803,6 +803,24 @@ const QARecords: React.FC = () => {
     fetchQARecordsByPage(false, Number(event.target.value))
   }
 
+  const updateQARecord = () => {
+
+  }
+
+  const deleteQARecord = () => {
+    axios({
+
+    })
+  }
+
+  const renderOperationButtons = () => (
+    <div className='absolute right-16 flex top-6 gap-2'>
+      <Button color='rose' onClick={deleteQARecord}>Delete</Button>
+      <Button color='amber' onClick={updateQARecord}>Update</Button>
+      <Button color='emerald' onClick={() => setSelectedRecord(originalSelectedRecord)}>Reset</Button>
+    </div>
+  )
+
   return (
     <div ref={topRef}>
       {/* control panels */}
@@ -810,7 +828,7 @@ const QARecords: React.FC = () => {
         <Col numColSpan={2}>
           <Card className="h-full">
             <Title>📥 Inventory Recording</Title>
-            {selectedRecord.sku ? <Button className='absolute right-8 top-6' color='emerald' onClick={() => setSelectedRecord(originalSelectedRecord)}>Reset Inventory</Button> : undefined}
+            {selectedRecord.sku ? renderOperationButtons() : undefined}
             <hr />
             {selectedRecord.sku === 0 ? <Subtitle className='text-center mt-64'>Selected QA Records Details Will Be Shown Here!</Subtitle> : renderRecordingPanel()}
           </Card>

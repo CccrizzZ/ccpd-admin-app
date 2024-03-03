@@ -43,6 +43,7 @@ import EditInstockModal from '../components/EditInstockModal'
 import AdminNameSelection from '../components/AdminNameSelection'
 import QANameSelection from '../components/QANameSelection'
 import { FaAnglesDown } from 'react-icons/fa6'
+import InstockStagingModal from '../components/InstockStagingModal'
 
 // mock data
 // TODO: add server graph information route
@@ -71,6 +72,7 @@ const Inventory: React.FC = () => {
   const [queryFilter, setQueryFilter] = useState<InstockQueryFilter>(initInstockQueryFilter)
   // flag
   const [changed, setChanged] = useState<boolean>(false)
+  const [showStagePopup, setShowStagePopup] = useState<boolean>(false)
 
   useEffect(() => {
     fetchInstockByPage()
@@ -183,12 +185,6 @@ const Inventory: React.FC = () => {
     setLoading(true)
     pageAxios(newPage)
     setLoading(false)
-  }
-
-  const exportCSV = async () => {
-    // call server for the csv file
-    // server write into csv binary with pd and pass it here
-
   }
 
   const resetFilters = () => {
@@ -336,7 +332,7 @@ const Inventory: React.FC = () => {
           </Col>
         </Grid>
         <Button className='absolute bottom-3 w-48' color='rose' size='xs' onClick={resetFilters}>Reset Filters</Button>
-        <Button className='absolute bottom-3 w-64 right-64' color='indigo' size='xs' onClick={exportCSV}>Export Current Selection to CSV</Button>
+        <Button className='absolute bottom-3 w-64 right-64' color='indigo' size='xs' onClick={() => setShowStagePopup(true)}>Stage Current Selection</Button>
         <Button className='absolute bottom-3 w-48 right-6' color={changed ? 'amber' : 'emerald'} size='xs' onClick={() => fetchInstockByPage()}>Refresh</Button>
       </Card>
     )
@@ -497,6 +493,12 @@ const Inventory: React.FC = () => {
 
   return (
     <div>
+      <InstockStagingModal
+        show={showStagePopup}
+        handleClose={() => setShowStagePopup(false)}
+        queryFilter={queryFilter}
+        keywords={searchKeyword}
+      />
       {/* top 2 charts */}
       <Grid className='gap-2 mb-2 h-[550px]' numItems={2}>
         <Col>
