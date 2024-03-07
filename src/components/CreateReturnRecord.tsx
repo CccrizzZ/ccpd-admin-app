@@ -81,7 +81,7 @@ const CreateReturnRecordModal: React.FC<CreateSalesRecordModalProps> = (props: C
         alert('Record Not Created: ' + res.status)
       }
     }).catch((err) => {
-      alert('Create Retail Record Failed: ' + err.response.status)
+      alert('Create Retail Record Failed: ' + err.message)
     })
     setLoading(false)
     props.handleClose(true)

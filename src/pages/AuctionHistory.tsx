@@ -20,44 +20,12 @@ import {
 } from "@tremor/react"
 import moment from "moment"
 import { FaRotate, FaUpload } from "react-icons/fa6"
-
-type InstockItem = {
-  sku: number,
-  title: string,
-  msrp: number,
-  amount: number,
-}
-
-type AuctionInfo = {
-  lot: number,
-  totalItems: number,
-  openTime: string,
-  closeTime: string,
-  closed: boolean,
-  itemsArr: InstockItem[],
-  title?: string,
-  description?: string,
-  minMSRP?: number,
-  maxMSRP?: number,
-  remainingResolved?: boolean,
-  inventorySpan?: {
-    gt: string,
-    lt: string
-  }
-}
-
-type RemainingInfo = {
-  lot: number,
-  totalItems: number,
-  sold: number,
-  unsold: number,
-  soldItems: {
-    sku: number,
-    amt: number
-  }[],
-  timeClosed: string,
-}
-
+import {
+  RemainingInfo,
+  AuctionInfo
+} from "../utils/Types"
+import axios, { AxiosError, AxiosResponse } from "axios"
+import { server } from "../utils/utils"
 
 const mockremainingInfo: RemainingInfo[] = [
   {
@@ -192,9 +160,9 @@ const mockAuctionInfo: AuctionInfo[] = [
 ]
 
 const AuctionHistory: React.FC = () => {
-  // const { setLoading, userInfo } = useContext(AppContext)
+  const { setLoading, userInfo } = useContext(AppContext)
   const topRef = useRef<HTMLDivElement>(null)
-  const [drag, setDrag] = useState<boolean>(false)
+  // const [dragging, setDragging] = useState<boolean>(false)
   const [showremainingModal, setShowremainingModal] = useState<boolean>(false)
   const [auctionHistoryArr, setAuctionArr] = useState<AuctionInfo[]>(mockAuctionInfo)
   const [remainingHistoryArr, setremainingHistoryArr] = useState<RemainingInfo[]>(mockremainingInfo)
@@ -206,6 +174,37 @@ const AuctionHistory: React.FC = () => {
 
   const getAuctionAndRemainingArr = () => {
     // get both column data in one call
+  }
+
+  const getAuctionRecordCSV = async () => {
+    setLoading(true)
+    await axios({
+      method: 'post',
+      url: server + '/inventoryController/getInstockCsv',
+      responseType: 'blob',
+      timeout: 8000,
+      data: { 'lot': 100 },
+      withCredentials: true
+    }).then(async (res: AxiosResponse) => {
+      if (res.status > 200) return alert('Failed to Get CSV')
+
+      // JSON parse csv content
+      let file = new Blob([res.data], { type: 'text/csv' })
+      const csv = JSON.parse(await file.text())
+      file = new Blob([csv], { type: 'text/csv' })
+
+      // way to get custom file name
+      let link = document.createElement("a")
+      link.setAttribute("href", URL.createObjectURL(file))
+      link.setAttribute("download", `${100}.csv`)
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    }).catch((err: AxiosError) => {
+      setLoading(false)
+      alert('Failed Fetching Auction CSV: ' + err.message)
+    })
+    setLoading(false)
   }
 
   const executeremainingRecordToDB = () => {
@@ -312,7 +311,13 @@ const AuctionHistory: React.FC = () => {
     <Card key={index} className='!bg-[#223] !border-slate-500 border-2'>
       <div className="flex gap-2">
         <h4>Lot #{val.lot}</h4>
-        <Button color="emerald" className="absolute right-6">Download CSV</Button>
+        <Button
+          color="emerald"
+          className="absolute right-6"
+          onClick={getAuctionRecordCSV}
+        >
+          Download CSV
+        </Button>
       </div>
       <h6>{val.title}</h6>
       <hr />
@@ -338,16 +343,21 @@ const AuctionHistory: React.FC = () => {
 
   const renderremainingCard = () => remainingHistoryArr.map((val, index) => (
     <Card key={index} className="!bg-[#223] border-2 !border-slate-500	">
-      <h4>{val.sold}</h4>
-
-      {/* <small>{moment(val.time).format('LLL')}</small> */}
+      <h4>Lot #{val.lot}</h4>
+      <h6>Total Items: {val.totalItems}</h6>
+      <h6>💵 Sold Items: {val.sold}</h6>
+      <p>Sold Over Reserve: 8</p>
+      <p>Under or Equal Reserve: 3</p>
+      <h6>📦 Unsold Items: {val.totalItems - val.sold}</h6>
+      {/* <h6>Irregular Items: 0</h6> */}
+      <small>Time Closed: {moment(val.timeClosed).format('LLL')}</small>
     </Card>
   ))
 
   return (
     <div ref={topRef}>
       {renderremainingRecordModal()}
-      <Grid numItems={2} className="gap-2">
+      <Grid numItems={2} className="gap-3">
         <Col>
           <Card className="min-h-[90vh]">
             <div className="flex">

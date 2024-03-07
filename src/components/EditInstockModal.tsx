@@ -248,10 +248,12 @@ const EditInstockModal: React.FC<EditInstockModalProps> = (props: EditInstockMod
                 <Form.Control
                   value={instockDetail.quantityInstock}
                   onChange={onQuantityInstockChange}
+                  min={0}
                   type='number'
                 />
                 <InputGroup.Text style={{ color: '#f43f5e' }}>Sold</InputGroup.Text>
                 <Form.Control
+                  min={0}
                   value={instockDetail.quantitySold}
                   onChange={onQuantitySoldChange}
                   type='number'

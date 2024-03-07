@@ -26,7 +26,7 @@ const ShelfLocationsSelection: React.FC<ShelfLocationsSelectionProps> = (props: 
     }).then((res: AxiosResponse) => {
       setShelfLocations(JSON.parse(res.data))
     }).catch((err) => {
-      alert('Failed Fetching Shelf Locations: ' + err.response.status)
+      alert('Failed Fetching Shelf Locations: ' + err.message)
     })
   }
 

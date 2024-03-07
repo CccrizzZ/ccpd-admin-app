@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { AppContext } from '../App'
-import axios from 'axios'
+import axios, { AxiosError, AxiosResponse } from 'axios'
 import {
   server,
   deSpace,
@@ -70,15 +70,15 @@ const CreateSalesRecordModal: React.FC<CreateSalesRecordModalProps> = (props: Cr
       responseType: 'text',
       data: newSalesRecord,
       withCredentials: true
-    }).then((res) => {
+    }).then((res: AxiosResponse) => {
       if (res.status < 230) {
         alert('Retail Record Created!')
         props.handleClose(true)
       } else {
         alert('Record Not Created: ' + res.status)
       }
-    }).catch((err) => {
-      alert('Create Retail Record Failed: ' + err.response.status)
+    }).catch((err: AxiosError) => {
+      alert('Create Retail Record Failed: ' + err.message)
     })
     setLoading(false)
     props.handleClose(true)

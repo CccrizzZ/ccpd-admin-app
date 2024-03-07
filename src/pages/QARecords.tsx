@@ -158,11 +158,11 @@ const QARecords: React.FC = () => {
       setQARecordArr(data['arr'])
       setItemCount(data['count'])
       if (changed) setChanged(false)
-    }).catch((err) => {
+    }).catch((err: AxiosError) => {
       setQARecordArr([])
       setItemCount(0)
       setLoading(false)
-      alert('Failed Fetching QA Records: ' + err.response)
+      alert('Failed Fetching QA Records: ' + err.message)
     })
     setLoading(false)
   }
@@ -182,7 +182,7 @@ const QARecords: React.FC = () => {
       // refresh
     }).catch((err) => {
       setLoading(false)
-      alert('Failed Fetching QA Records: ' + err.response.status)
+      alert('Failed Fetching QA Records: ' + err.message)
     })
     setLoading(false)
     fetchQARecordsByPage()

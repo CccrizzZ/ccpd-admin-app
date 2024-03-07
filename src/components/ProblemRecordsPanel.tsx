@@ -48,7 +48,7 @@ const ProblemRecordsPanel = forwardRef<IProblemRecordsPanel, ProblemRecordsPanel
       setProblemRecordsArr(JSON.parse(res.data))
     }).catch((err) => {
       setLoading(false)
-      alert('Failed Fetching Problematic Records: ' + err.response.status)
+      alert('Failed Fetching Problematic Records: ' + err.message)
     })
     setLoading(false)
   }

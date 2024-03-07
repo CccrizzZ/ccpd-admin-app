@@ -27,7 +27,7 @@ const AdminNameSelection: React.FC<AdminNameSelectionProps> = (props: AdminNameS
     }).then((res: AxiosResponse) => {
       setAdminNameArr(JSON.parse(res.data))
     }).catch((err) => {
-      alert('Failed Fetching Admin Names: ' + err.response.status)
+      alert('Failed Fetching Admin Names: ' + err.message)
     })
   }
 

@@ -118,10 +118,11 @@ const Inventory: React.FC = () => {
       const data = JSON.parse(res.data)
       setInstockArr(data['arr'])
       setItemCount(data['count'])
-      if (data['chartData'].length > 0) populateChartData(data['chartData'])
-    }).catch((err) => {
+      if (!data['chartData']) return
+      populateChartData(data['chartData'])
+    }).catch((err: AxiosError) => {
       setLoading(false)
-      alert('Failed Fetching QA Records: ' + err.response.status)
+      alert('Failed Fetching Instock Records: ' + err.message)
     })
     setLoading(false)
     setCurrPage(0)
@@ -332,7 +333,7 @@ const Inventory: React.FC = () => {
           </Col>
         </Grid>
         <Button className='absolute bottom-3 w-48' color='rose' size='xs' onClick={resetFilters}>Reset Filters</Button>
-        <Button className='absolute bottom-3 w-64 right-64' color='indigo' size='xs' onClick={() => setShowStagePopup(true)}>Stage Current Selection</Button>
+        {changed ? undefined : <Button className='absolute bottom-3 w-64 right-64' color='indigo' size='xs' onClick={() => setShowStagePopup(true)}>Stage Current Selection</Button>}
         <Button className='absolute bottom-3 w-48 right-6' color={changed ? 'amber' : 'emerald'} size='xs' onClick={() => fetchInstockByPage()}>Refresh</Button>
       </Card>
     )
@@ -345,6 +346,8 @@ const Inventory: React.FC = () => {
         <Subtitle>{`${moment().subtract(10, 'days').format('L')} to ${moment().format('L')}`}</Subtitle>
         {pastInventoryData.length !== 0 ?
           <BarChart
+            animationDuration={2000}
+            showAnimation={true}
             className="h-[400px] mt-4"
             data={pastInventoryData}
             index="date"

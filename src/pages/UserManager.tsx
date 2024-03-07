@@ -137,7 +137,7 @@ const UserManager: React.FC = () => {
       setUserArr(parsedData)
       getPieData(parsedData)
     }).catch((err) => {
-      alert('Failed Getting All User info: ' + err.response.status)
+      alert('Failed Getting All User info: ' + err.message)
     })
     setLoading(false)
   }
@@ -154,7 +154,7 @@ const UserManager: React.FC = () => {
     }).then((res) => {
       setInvitationArr(JSON.parse(res.data))
     }).catch((err) => {
-      alert('Failed Getting All Invitation Code: ' + err.response.status)
+      alert('Failed Getting All Invitation Code: ' + err.message)
     })
     setLoading(false)
   }

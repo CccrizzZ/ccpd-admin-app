@@ -151,3 +151,40 @@ export type ScrapedData = {
   imgUrl: string,
   currency: string
 }
+
+export type InstockItem = {
+  sku: number,
+  title: string,
+  msrp: number,
+  amount: number,
+}
+
+export type AuctionInfo = {
+  lot: number,
+  totalItems: number,
+  openTime: string,
+  closeTime: string,
+  closed: boolean,
+  itemsArr: InstockItem[],
+  title?: string,
+  description?: string,
+  minMSRP?: number,
+  maxMSRP?: number,
+  remainingResolved?: boolean,
+  inventorySpan?: {
+    gt: string,
+    lt: string
+  }
+}
+
+export type RemainingInfo = {
+  lot: number,
+  totalItems: number,
+  sold: number,
+  unsold: number,
+  soldItems: {
+    sku: number,
+    amt: number
+  }[],
+  timeClosed: string,
+}

@@ -46,7 +46,7 @@ const CreateUserModal: React.FC<CreateUserModalProps> = (props: CreateUserModalP
         setNewUser(initCreateUser)
       }
     }).catch((err) => {
-      alert('Create User Failed: ' + err.response.status)
+      alert('Create User Failed: ' + err.message)
     })
     setLoading(false)
     props.handleClose(true)

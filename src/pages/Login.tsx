@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import axios from 'axios'
+import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { UserInfo } from '../utils/Types'
 import { server, hashPass } from '../utils/utils'
 import { Form, Button } from 'react-bootstrap'
@@ -24,14 +24,14 @@ const Login: React.FC<LoginProp> = (prop: LoginProp) => {
       responseType: 'text',
       data: '',
       withCredentials: true
-    }).then((res) => {
+    }).then((res: AxiosResponse) => {
       if (res.status === 200) {
         prop.setLogin(true)
         prop.setUserInfo(JSON.parse(res.data))
       }
-    }).catch((err) => {
+    }).catch((err: AxiosError) => {
       if (err.response) {
-        console.log('Please Login: ' + err.response.data)
+        console.log('Please Login: ' + err.message)
       }
     })
     prop.setLoading(false)
