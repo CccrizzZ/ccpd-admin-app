@@ -342,7 +342,11 @@ export const initInstockQueryFilter: InstockQueryFilter = {
   adminFilter: [],
   qaFilter: [],
   shelfLocationFilter: [],
-  keywordFilter: []
+  keywordFilter: [],
+  sku: {
+    gte: '',
+    lte: ''
+  }
 }
 
 export const getInstockInventory = (qaRecord: QARecord, adminName: string): InstockInventory => {

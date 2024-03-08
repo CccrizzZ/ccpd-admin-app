@@ -66,7 +66,6 @@ const Inventory: React.FC = () => {
   const [itemsPerPage, setItemsPerPage] = useState<number>(20)
   const [itemCount, setItemCount] = useState<number>(0)
   // search keyword
-  const [searchSku, setSearchSku] = useState<string>('')
   const [searchKeyword, setSearchKeyword] = useState<string>('')
   // query filters
   const [queryFilter, setQueryFilter] = useState<InstockQueryFilter>(initInstockQueryFilter)
@@ -189,7 +188,6 @@ const Inventory: React.FC = () => {
   }
 
   const resetFilters = () => {
-    setSearchSku('')
     setSearchKeyword('')
     setQueryFilter(initInstockQueryFilter)
     setChanged(false)
@@ -197,13 +195,6 @@ const Inventory: React.FC = () => {
   }
 
   const renderFilterPanel = () => {
-    const onSearchSKUChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      if (event.target.value.length < 8) {
-        // setSearchSku(event.target.value)
-        setQueryFilter({ ...queryFilter, sku: { gte: event.target.value, lte: event.target.value } })
-        setChanged(true)
-      }
-    }
     const onKeywordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       setSearchKeyword(event.target.value)
       setChanged(true)
@@ -242,9 +233,19 @@ const Inventory: React.FC = () => {
     }
     const onMsrpMaxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       setQueryFilter({ ...queryFilter, msrpFilter: { ...queryFilter.msrpFilter, lt: event.target.value } })
+      setChanged(true)
     }
     const onMsrpMinChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       setQueryFilter({ ...queryFilter, msrpFilter: { ...queryFilter.msrpFilter, gte: event.target.value } })
+      setChanged(true)
+    }
+    const onMinSKUChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      setQueryFilter({ ...queryFilter, sku: { ...queryFilter.sku, gte: event.target.value } })
+      setChanged(true)
+    }
+    const onMaxSKUChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      setQueryFilter({ ...queryFilter, sku: { ...queryFilter.sku, lte: event.target.value } })
+      setChanged(true)
     }
 
     const getInstockColor = (instock: string) => instock === 'in' ? '#10b981' : instock === 'out' ? '#f43f5e' : '#3b82f6'
@@ -254,8 +255,20 @@ const Inventory: React.FC = () => {
         <Grid className='gap-6' numItems={2}>
           <Col>
             <InputGroup size='sm' className='mb-3'>
-              <InputGroup.Text>SKU</InputGroup.Text>
-              <Form.Control type='number' value={searchSku} onChange={onSearchSKUChange} />
+              <InputGroup.Text>Min SKU</InputGroup.Text>
+              <Form.Control
+                type='number'
+                value={queryFilter.sku?.gte}
+                min={0}
+                onChange={onMinSKUChange}
+              />
+              <InputGroup.Text>Max SKU</InputGroup.Text>
+              <Form.Control
+                type='number'
+                value={queryFilter.sku?.lte}
+                min={0}
+                onChange={onMaxSKUChange}
+              />
             </InputGroup>
             <InputGroup size='sm' className='mb-3'>
               <InputGroup.Text>Instock Status</InputGroup.Text>
@@ -333,8 +346,15 @@ const Inventory: React.FC = () => {
           </Col>
         </Grid>
         <Button className='absolute bottom-3 w-48' color='rose' size='xs' onClick={resetFilters}>Reset Filters</Button>
-        {changed ? undefined : <Button className='absolute bottom-3 w-64 right-64' color='indigo' size='xs' onClick={() => setShowStagePopup(true)}>Stage Current Selection</Button>}
-        <Button className='absolute bottom-3 w-48 right-6' color={changed ? 'amber' : 'emerald'} size='xs' onClick={() => fetchInstockByPage()}>Refresh</Button>
+        {changed ? undefined : <Button className='absolute bottom-3 w-64 right-64' color='indigo' size='xs' onClick={() => setShowStagePopup(true)}>Create Auction Record</Button>}
+        <Button
+          className='absolute bottom-3 w-48 right-6'
+          color={changed ? 'amber' : 'emerald'}
+          size='xs'
+          onClick={() => fetchInstockByPage()}
+        >
+          Refresh
+        </Button>
       </Card>
     )
   }
@@ -501,6 +521,7 @@ const Inventory: React.FC = () => {
         handleClose={() => setShowStagePopup(false)}
         queryFilter={queryFilter}
         keywords={searchKeyword}
+        totalItems={itemCount}
       />
       {/* top 2 charts */}
       <Grid className='gap-2 mb-2 h-[550px]' numItems={2}>

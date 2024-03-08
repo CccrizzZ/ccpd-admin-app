@@ -225,11 +225,17 @@ const EditInstockModal: React.FC<EditInstockModalProps> = (props: EditInstockMod
             </InputGroup>
             <InputGroup className="mb-3">
               <InputGroup.Text>QA Personal</InputGroup.Text>
-              <Form.Control value={instockDetail.qaName} onChange={onQANameChange} />
+              <Form.Control
+                value={instockDetail.qaName}
+                onChange={onQANameChange}
+              />
             </InputGroup>
             <InputGroup className="mb-3">
               <InputGroup.Text>Time</InputGroup.Text>
-              <Form.Control value={instockDetail.time} onChange={onTimeChange} />
+              <Form.Control
+                value={instockDetail.time}
+                onChange={onTimeChange}
+              />
             </InputGroup>
           </Col>
           <Col>
