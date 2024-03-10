@@ -16,7 +16,8 @@ import {
   renderItemConditionOptions,
   renderMarketPlaceOptions,
   renderPlatformOptions,
-  server
+  server,
+  stringToNumber
 } from '../utils/utils'
 import ConfirmationModal from './ConfirmationModal'
 import { AppContext } from '../App'
@@ -117,8 +118,8 @@ const EditInstockModal: React.FC<EditInstockModalProps> = (props: EditInstockMod
 
   const onShelfLocationChange = (event: React.ChangeEvent<HTMLInputElement>) => setInstockDetail({ ...instockDetail, shelfLocation: event.target.value })
   const onConditionChange = (event: React.ChangeEvent<HTMLSelectElement>) => setInstockDetail({ ...instockDetail, condition: event.target.value as Condition })
-  const onMSRPChange = (event: React.ChangeEvent<HTMLInputElement>) => setInstockDetail({ ...instockDetail, msrp: isNaN(Number(event.target.value)) ? 0 : Number(event.target.value) })
-  const onSkuChange = (event: React.ChangeEvent<HTMLInputElement>) => setInstockDetail({ ...instockDetail, sku: isNaN(Number(event.target.value)) ? 0 : Number(event.target.value) })
+  const onMSRPChange = (event: React.ChangeEvent<HTMLInputElement>) => setInstockDetail({ ...instockDetail, msrp: stringToNumber(event.target.value) })
+  const onSkuChange = (event: React.ChangeEvent<HTMLInputElement>) => setInstockDetail({ ...instockDetail, sku: stringToNumber(event.target.value) })
   const onCommentChange = (event: React.ChangeEvent<HTMLInputElement>) => setInstockDetail({ ...instockDetail, comment: event.target.value })
   const onUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => setInstockDetail({ ...instockDetail, url: event.target.value })
   const onLeadChange = (event: React.ChangeEvent<HTMLInputElement>) => setInstockDetail({ ...instockDetail, lead: event.target.value })
@@ -129,17 +130,17 @@ const EditInstockModal: React.FC<EditInstockModalProps> = (props: EditInstockMod
   const onMarketplaceChange = (event: React.ChangeEvent<HTMLSelectElement>) => setInstockDetail({ ...instockDetail, marketplace: event.target.value as Platform })
 
   const onQuantityInstockChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setInstockDetail({ ...instockDetail, quantityInstock: isNaN(Number(event.target.value)) ? 0 : Number(event.target.value) })
+    setInstockDetail({ ...instockDetail, quantityInstock: stringToNumber(event.target.value) })
     setInstockChartData([
       { name: 'sold', amount: instockDetail.quantitySold },
-      { name: 'instock', amount: isNaN(Number(event.target.value)) ? 0 : Number(event.target.value) },
+      { name: 'instock', amount: stringToNumber(event.target.value) },
     ])
   }
 
   const onQuantitySoldChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setInstockDetail({ ...instockDetail, quantitySold: isNaN(Number(event.target.value)) ? 0 : Number(event.target.value) })
+    setInstockDetail({ ...instockDetail, quantitySold: stringToNumber(event.target.value) })
     setInstockChartData([
-      { name: 'sold', amount: isNaN(Number(event.target.value)) ? 0 : Number(event.target.value) },
+      { name: 'sold', amount: stringToNumber(event.target.value) },
       { name: 'instock', amount: instockDetail.quantityInstock },
     ])
   }

@@ -153,10 +153,14 @@ export type ScrapedData = {
 }
 
 export type InstockItem = {
+  lot: number,
   sku: number,
-  title: string,
+  lead: string,
   msrp: number,
-  amount: number,
+  shelfLocation: string,
+  description?: string
+  startBid?: number,
+  reserve?: number
 }
 
 export type AuctionInfo = {
@@ -171,10 +175,8 @@ export type AuctionInfo = {
   minMSRP?: number,
   maxMSRP?: number,
   remainingResolved?: boolean,
-  inventorySpan?: {
-    gt: string,
-    lt: string
-  }
+  minSku: number,
+  maxSku: number
 }
 
 export type RemainingInfo = {

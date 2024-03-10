@@ -399,3 +399,5 @@ export const isObjectsEqual = (a: Object, b: Object) => JSON.stringify(a) === JS
 export const getKwArr = (skey: string, refresh?: boolean) => {
   return skey.length > 0 && !refresh ? skey.split(/(\s+)/).filter((item) => { return item.trim().length > 0 }) : []
 }
+
+export const stringToNumber = (input: string) => isNaN(Number(input)) ? 0 : Number(input)

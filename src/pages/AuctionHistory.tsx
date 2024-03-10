@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef, useState } from "react"
 import { AppContext } from "../App"
-import { Modal } from "react-bootstrap"
+import { Form, InputGroup, Modal } from "react-bootstrap"
 import {
   Button,
   Card,
@@ -16,16 +16,19 @@ import {
   TableRow,
   TableHeaderCell,
   TableBody,
-  TableCell
+  TableCell,
+  Switch,
 } from "@tremor/react"
 import moment from "moment"
-import { FaRotate, FaUpload } from "react-icons/fa6"
+import { FaFileCirclePlus, FaRotate, FaUpload } from "react-icons/fa6"
 import {
   RemainingInfo,
-  AuctionInfo
+  AuctionInfo,
+  InstockInventory,
+  InstockItem
 } from "../utils/Types"
 import axios, { AxiosError, AxiosResponse } from "axios"
-import { server } from "../utils/utils"
+import { server, stringToNumber } from "../utils/utils"
 
 const mockremainingInfo: RemainingInfo[] = [
   {
@@ -46,7 +49,7 @@ const mockremainingInfo: RemainingInfo[] = [
     timeClosed: '2024-02-13'
   },
   {
-    lot: 111,
+    lot: 112,
     totalItems: 111,
     sold: 11,
     unsold: 100,
@@ -60,10 +63,10 @@ const mockremainingInfo: RemainingInfo[] = [
       { sku: 10026, amt: 4 },
       { sku: 10027, amt: 1 },
     ],
-    timeClosed: '2024-02-13'
+    timeClosed: '2024-02-14'
   },
   {
-    lot: 111,
+    lot: 113,
     totalItems: 111,
     sold: 11,
     unsold: 100,
@@ -77,113 +80,83 @@ const mockremainingInfo: RemainingInfo[] = [
       { sku: 10026, amt: 4 },
       { sku: 10027, amt: 1 },
     ],
-    timeClosed: '2024-02-13'
+    timeClosed: '2024-02-15'
   },
 ]
 
-const mockAuctionInfo: AuctionInfo[] = [
-  {
-    lot: 113,
-    totalItems: 86,
-    openTime: '2024-03-02',
-    closeTime: '2024-03-08',
-    closed: false,
-    title: 'LOT 111, Amazon Tools Ryobi DeWalt High Value Items.',
-    description: 'Mostly power tools, high value (>=$80)',
-    minMSRP: 25,
-    maxMSRP: 660,
-    remainingResolved: false,
-    itemsArr: [
-      { sku: 33250, msrp: 30, title: '', amount: 1 },
-      { sku: 33251, msrp: 130, title: '', amount: 1 },
-      { sku: 33252, msrp: 30, title: '', amount: 1 },
-      { sku: 33253, msrp: 30, title: '', amount: 1 },
-      { sku: 33254, msrp: 30, title: '', amount: 1 },
-      { sku: 33255, msrp: 30, title: '', amount: 1 },
-      { sku: 33256, msrp: 230, title: '', amount: 1 },
-      { sku: 33257, msrp: 25, title: '', amount: 1 },
-      { sku: 33258, msrp: 660, title: '', amount: 1 },
-      { sku: 33259, msrp: 30, title: '', amount: 1 },
-      { sku: 33260, msrp: 30, title: '', amount: 1 },
-    ]
-  },
-  {
-    lot: 111,
-    totalItems: 111,
-    openTime: '2024-02-10',
-    closeTime: '2024-02-13',
-    closed: true,
-    title: 'LOT 111, Amazon Tools Ryobi DeWalt High Value Items.',
-    description: 'Mostly power tools, high value (>=$80)',
-    minMSRP: 75,
-    maxMSRP: 550,
-    remainingResolved: false,
-    itemsArr: [
-      { sku: 33250, msrp: 30, title: '', amount: 1 },
-      { sku: 33251, msrp: 130, title: '', amount: 1 },
-      { sku: 33252, msrp: 30, title: '', amount: 1 },
-      { sku: 33253, msrp: 30, title: '', amount: 1 },
-      { sku: 33254, msrp: 30, title: '', amount: 1 },
-      { sku: 33255, msrp: 30, title: '', amount: 1 },
-      { sku: 33256, msrp: 230, title: '', amount: 1 },
-      { sku: 33257, msrp: 30, title: '', amount: 1 },
-      { sku: 33258, msrp: 430, title: '', amount: 1 },
-      { sku: 33259, msrp: 30, title: '', amount: 1 },
-      { sku: 33260, msrp: 30, title: '', amount: 1 },
-    ]
-  },
-  {
-    lot: 107,
-    totalItems: 98,
-    openTime: '2024-02-01',
-    closeTime: '2024-02-06',
-    closed: true,
-    title: 'LOT 107, Amazon Tools Ryobi DeWalt High Value Items.',
-    description: 'Mostly power tools, high value (>=$80)',
-    minMSRP: 30,
-    maxMSRP: 430,
-    remainingResolved: true,
-    itemsArr: [
-      { sku: 33250, msrp: 30, title: '', amount: 1 },
-      { sku: 33251, msrp: 130, title: '', amount: 1 },
-      { sku: 33252, msrp: 30, title: '', amount: 1 },
-      { sku: 33253, msrp: 30, title: '', amount: 1 },
-      { sku: 33254, msrp: 30, title: '', amount: 1 },
-      { sku: 33255, msrp: 30, title: '', amount: 1 },
-      { sku: 33256, msrp: 230, title: '', amount: 1 },
-      { sku: 33257, msrp: 30, title: '', amount: 1 },
-      { sku: 33258, msrp: 430, title: '', amount: 1 },
-      { sku: 33259, msrp: 30, title: '', amount: 1 },
-      { sku: 33260, msrp: 30, title: '', amount: 1 },
-    ]
-  }
-]
+const initInstockItem: InstockItem = {
+  lot: 0,
+  sku: 0,
+  shelfLocation: '',
+  msrp: 0,
+  lead: '',
+  description: ''
+}
 
 const AuctionHistory: React.FC = () => {
   const { setLoading, userInfo } = useContext(AppContext)
   const topRef = useRef<HTMLDivElement>(null)
   // const [dragging, setDragging] = useState<boolean>(false)
   const [showremainingModal, setShowremainingModal] = useState<boolean>(false)
-  const [auctionHistoryArr, setAuctionArr] = useState<AuctionInfo[]>(mockAuctionInfo)
-  const [remainingHistoryArr, setremainingHistoryArr] = useState<RemainingInfo[]>(mockremainingInfo)
-  const [countDown, setCountDown] = useState<number>(0)
+  const [auctionHistoryArr, setAuctionArr] = useState<AuctionInfo[]>([])
+  const [remainingHistoryArr, setremainingHistoryArr] = useState<RemainingInfo[]>([])
+  const [topRowRec, setTopRowRec] = useState<Record<string, InstockItem[]>>({
+    '120': [],
+    '105': []
+  })
+  const [newTopRowItem, setNewTopRowItem] = useState<InstockItem>(initInstockItem)
+  // const [editMode, setEditMode] = useState<boolean>(false)
+  // const [countDown, setCountDown] = useState<number>(0)
 
   useEffect(() => {
-
+    getAuctionAndRemainingArr()
   }, [])
 
-  const getAuctionAndRemainingArr = () => {
-    // get both column data in one call
+  // apend to top row record
+  const appendItemToRecord = (auctionLotNumber: string | number, newItem: InstockItem) => {
+    setTopRowRec(prevRecords => ({
+      ...prevRecords,
+      [auctionLotNumber]: [...(prevRecords[auctionLotNumber] || []), newItem],
+    }))
   }
 
-  const getAuctionRecordCSV = async () => {
+  const getAuctionAndRemainingArr = async () => {
+    setLoading(true)
+    await axios({
+      method: 'get',
+      url: server + '/inventoryController/getAuctionRemainingRecord',
+      responseType: 'text',
+      timeout: 8000,
+      withCredentials: true
+    }).then((res: AxiosResponse) => {
+      if (res.status > 200) alert('Failed to Fetch Auction Record')
+      const data = JSON.parse(res.data)
+      setAuctionArr(data['auctions'])
+      if (data['auctions'].length > 0) {
+        const arr: AuctionInfo[] = data['auctions']
+        // TODO: add top row 
+        // populate every auction's top row record with empty array
+        arr.forEach(element => setTopRowRec({ ...topRowRec, [element.lot]: [] }))
+      }
+      setremainingHistoryArr(data['remaining'])
+    }).catch((err: AxiosError) => {
+      setLoading(false)
+      alert('Failed Fetching QA Records: ' + err.message)
+    })
+    setLoading(false)
+  }
+
+  const getAuctionRecordCSV = async (lot: number) => {
     setLoading(true)
     await axios({
       method: 'post',
-      url: server + '/inventoryController/getInstockCsv',
+      url: server + '/inventoryController/getAuctionCsv',
       responseType: 'blob',
       timeout: 8000,
-      data: { 'lot': 100 },
+      data: {
+        'lot': lot,
+        'topRow': topRowRec[lot]
+      },
       withCredentials: true
     }).then(async (res: AxiosResponse) => {
       if (res.status > 200) return alert('Failed to Get CSV')
@@ -262,42 +235,189 @@ const AuctionHistory: React.FC = () => {
     if (moment().unix() > close.unix()) {
       diff = 'Auction Closed ✅'
     } else {
-      diff = `⏱️ ${close.diff(open, 'days')} Days ${close.diff(open, 'hours')} Hours ${close.diff(open, 'minutes')} Minutes`
+      diff = `⏱️ ${close.diff(open, 'days')} Days ` // ${close.diff(open, 'hours')} Hours ${close.diff(open, 'minutes')} Minutes
     }
 
     return (
       <Badge color={diff.length > 17 ? 'blue' : 'emerald'}>
         <div className="pt-2">
           {diff.length > 17 ? 'Time Untill Closing' : undefined}
-          <h6>{diff}</h6>
+          <h4>{diff}</h4>
         </div>
       </Badge>
     )
   }
 
-  const renderInventoryTable = (val: AuctionInfo) => (
+  // update inventory amount to auction info arr
+  const changeAmount = (direction: number, auc: AuctionInfo) => {
+    // setAuctionArr({})
+  }
+
+  // TODO: push to database
+  // add it into top row array
+  const createNewTopRowItem = (auctionLotNum: number) => {
+    // null check on new top row item
+    if (newTopRowItem.lot === 0) return alert('Lot Number Invalid')
+    if (newTopRowItem.sku === 0) return alert('SKU Invalid')
+    if (newTopRowItem.shelfLocation === '') return alert('Shelf Location Missing')
+    if (newTopRowItem.lead === '') return alert('Lead Missing')
+    // check exist
+    // if (topRowArr.find((item) => item.lot === newTopRowItem.lot)) alert('Lot Number Existed')
+    // append to rec
+    // setTopRowRec(prev => {...prev})
+    appendItemToRecord(auctionLotNum, newTopRowItem)
+    clearNewTopRowItem()
+  }
+
+  const clearNewTopRowItem = () => setNewTopRowItem(initInstockItem)
+  const onLotChange = (event: React.ChangeEvent<HTMLInputElement>) => setNewTopRowItem({ ...newTopRowItem, lot: stringToNumber(event.target.value) })
+  const onSkuChange = (event: React.ChangeEvent<HTMLInputElement>) => setNewTopRowItem({ ...newTopRowItem, sku: stringToNumber(event.target.value) })
+  const onMsrpChange = (event: React.ChangeEvent<HTMLInputElement>) => setNewTopRowItem({ ...newTopRowItem, msrp: stringToNumber(event.target.value) })
+  const onShelfLocationChange = (event: React.ChangeEvent<HTMLInputElement>) => setNewTopRowItem({ ...newTopRowItem, shelfLocation: event.target.value })
+  const onLeadChange = (event: React.ChangeEvent<HTMLInputElement>) => setNewTopRowItem({ ...newTopRowItem, lead: event.target.value })
+  const onDescriptionChange = (event: React.ChangeEvent<HTMLInputElement>) => setNewTopRowItem({ ...newTopRowItem, description: event.target.value })
+  const onStartBidChange = (event: React.ChangeEvent<HTMLInputElement>) => setNewTopRowItem({ ...newTopRowItem, startBid: stringToNumber(event.target.value) })
+  const onReserveChange = (event: React.ChangeEvent<HTMLInputElement>) => setNewTopRowItem({ ...newTopRowItem, reserve: stringToNumber(event.target.value) })
+  // const onEditModeChange = (value: boolean) => setEditMode(value)
+  const renderTopRowsTable = (auctionLotNum: number) => (
     <Accordion>
       <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
-        📜 Inventories On Auction
+        ⚡ Inventories to Add Before
       </AccordionHeader>
       <AccordionBody className="leading-6 p-2">
         <Table>
           <TableHead>
             <TableRow>
-              <TableHeaderCell>SKU</TableHeaderCell>
-              <TableHeaderCell>Title</TableHeaderCell>
-              <TableHeaderCell>MSRP (CAD)</TableHeaderCell>
-              <TableHeaderCell>Amount</TableHeaderCell>
+              <TableHeaderCell className="w-16">Lot#</TableHeaderCell>
+              <TableHeaderCell className="w-20">SKU</TableHeaderCell>
+              <TableHeaderCell>Lead</TableHeaderCell>
+              <TableHeaderCell className="w-48">Desc</TableHeaderCell>
+              <TableHeaderCell className="w-30">MSRP<br />(CAD)</TableHeaderCell>
+              <TableHeaderCell className="w-30">Shelf</TableHeaderCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {topRowRec[auctionLotNum].map((item) => (
+              <TableRow key={item.sku}>
+                <TableCell>{item.lot}</TableCell>
+                <TableCell>{item.sku}</TableCell>
+                <TableCell className="text-wrap">{item.lead}</TableCell>
+                <TableCell className="text-wrap">{item.description}</TableCell>
+                <TableCell><Badge color='emerald'>{item.msrp}</Badge></TableCell>
+                <TableCell>
+                  <Badge color="indigo">{item.shelfLocation}</Badge>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+        <div className="grid gap-2 p-6 mt-6 border-slate-600 border-2 rounded pt-0">
+          <div className="flex">
+            <Button
+              className="m-auto flex mb-3 mt-3"
+              color="emerald"
+              onClick={() => createNewTopRowItem(auctionLotNum)}
+            >
+              🆕 Create New Item 🆕
+            </Button>
+          </div>
+          <InputGroup>
+            <InputGroup.Text>Lot#</InputGroup.Text>
+            <Form.Control
+              type='number'
+              min={0}
+              value={newTopRowItem.lot}
+              onChange={onLotChange}
+            />
+            <InputGroup.Text>SKU</InputGroup.Text>
+            <Form.Control
+              type='number'
+              min={0}
+              value={newTopRowItem.sku}
+              onChange={onSkuChange}
+            />
+            <InputGroup.Text>Shelf Location</InputGroup.Text>
+            <Form.Control
+              type='text'
+              value={newTopRowItem.shelfLocation}
+              onChange={onShelfLocationChange}
+            />
+          </InputGroup>
+          <InputGroup>
+            <InputGroup.Text>MSRP</InputGroup.Text>
+            <Form.Control
+              type='number'
+              min={0}
+              value={newTopRowItem.msrp}
+              onChange={onMsrpChange}
+              step={0.01}
+            />
+            <InputGroup.Text>Start Bid</InputGroup.Text>
+            <Form.Control
+              type='number'
+              min={0}
+              value={newTopRowItem.startBid}
+              onChange={onStartBidChange}
+            />
+            <InputGroup.Text>Reserve</InputGroup.Text>
+            <Form.Control
+              type='number'
+              min={0}
+              value={newTopRowItem.reserve}
+              onChange={onReserveChange}
+            />
+          </InputGroup>
+          <InputGroup>
+            <InputGroup.Text>Lead</InputGroup.Text>
+            <Form.Control
+              type='text'
+              value={newTopRowItem.lead}
+              onChange={onLeadChange}
+            />
+          </InputGroup>
+          <InputGroup>
+            <InputGroup.Text>Description</InputGroup.Text>
+            <Form.Control
+              className="resize-none"
+              type='text'
+              as='textarea'
+              rows={6}
+              value={newTopRowItem.description}
+              onChange={onDescriptionChange}
+            />
+          </InputGroup>
+        </div>
+      </AccordionBody>
+    </Accordion>
+  )
+
+  const renderInventoryTable = (val: AuctionInfo) => (
+    <Accordion>
+      <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
+        📜 Inventories on Auction
+      </AccordionHeader>
+      <AccordionBody className="leading-6 p-2">
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableHeaderCell className="w-18">Lot#</TableHeaderCell>
+              <TableHeaderCell className="w-20">SKU</TableHeaderCell>
+              <TableHeaderCell>Lead</TableHeaderCell>
+              <TableHeaderCell className="w-48">Description</TableHeaderCell>
+              <TableHeaderCell className="w-30">MSRP<br />(CAD)</TableHeaderCell>
+              <TableHeaderCell className="w-30">Shelf</TableHeaderCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {val.itemsArr.map((item) => (
               <TableRow key={item.sku}>
+                <TableCell>{item.lot}</TableCell>
                 <TableCell>{item.sku}</TableCell>
-                <TableCell>{item.title}</TableCell>
+                <TableCell className="text-wrap">{item.lead}</TableCell>
+                <TableCell className="text-wrap">{item.description}</TableCell>
                 <TableCell>{item.msrp}</TableCell>
                 <TableCell>
-                  <Badge color="emerald">{item.amount}</Badge>
+                  <Badge color="indigo">{item.shelfLocation}</Badge>
                 </TableCell>
               </TableRow>
             ))}
@@ -307,52 +427,75 @@ const AuctionHistory: React.FC = () => {
     </Accordion>
   )
 
-  const renderAuctionCard = () => auctionHistoryArr.map((val, index) => (
-    <Card key={index} className='!bg-[#223] !border-slate-500 border-2'>
-      <div className="flex gap-2">
-        <h4>Lot #{val.lot}</h4>
-        <Button
-          color="emerald"
-          className="absolute right-6"
-          onClick={getAuctionRecordCSV}
-        >
-          Download CSV
-        </Button>
-      </div>
-      <h6>{val.title}</h6>
-      <hr />
-      <div className="flex gap-6">
-        <Badge color="emerald">Min MSRP: {val.minMSRP ?? 'No minimum'}</Badge>
-        <Badge color="rose">Max MSRP: {val.maxMSRP ?? 'No maximum'}</Badge>
-      </div>
-      <div className="mt-3">
-        {renderInventoryTable(val)}
-      </div>
-      <hr />
-      <div className="flex p-4">
-        <div>
-          <p className="!text-slate-500">Open Time: {moment(val.openTime).format('LLL')}</p>
-          <p className="!text-slate-500">Close Time: {moment(val.closeTime).format('LLL')}</p>
-        </div>
-        <div className="absolute right-16 mt-1">
-          {renderCountDown(val.closeTime, val.openTime)}
-        </div>
-      </div>
-    </Card>
-  ))
+  const renderAuctionCard = () => {
+    if (auctionHistoryArr.map) {
+      return auctionHistoryArr.map((val, index) => (
+        <Card key={index} className='!bg-[#223] !border-slate-500 border-2'>
+          <div className="flex gap-2">
+            <h4>Lot #{val.lot}</h4>
+            <Button
+              color="emerald"
+              className="absolute right-6"
+              onClick={() => getAuctionRecordCSV(val.lot)}
+            >
+              Download Hibid Compatible CSV
+            </Button>
+          </div>
+          <p>Item Lot # Starts From {val.lot}</p>
+          <h6>{val.title}</h6>
+          <hr />
+          <div className="flex gap-6">
+            <Badge color="emerald">Min MSRP: {val.minMSRP ?? 'No minimum'}</Badge>
+            <Badge color="rose">Max MSRP: {val.maxMSRP ?? 'No maximum'}</Badge>
+          </div>
+          <div className="mt-3">
+            {renderTopRowsTable(val.lot)}
+          </div>
+          <div className="mt-3">
+            {renderInventoryTable(val)}
+          </div>
+          <hr />
+          <div className="flex p-4 pb-0">
+            <div>
+              <p className="!text-slate-500">Open Time: {moment(val.openTime).format('LLL')}</p>
+              <p className="!text-slate-500">Close Time: {moment(val.closeTime).format('LLL')}</p>
+            </div>
+            <div className="absolute right-16 mt-1">
+              {renderCountDown(val.closeTime, val.openTime)}
+            </div>
+          </div>
+        </Card>
+      ))
+    } else {
+      return <h2>No Auction Records Found</h2>
+    }
+  }
 
-  const renderremainingCard = () => remainingHistoryArr.map((val, index) => (
-    <Card key={index} className="!bg-[#223] border-2 !border-slate-500	">
-      <h4>Lot #{val.lot}</h4>
-      <h6>Total Items: {val.totalItems}</h6>
-      <h6>💵 Sold Items: {val.sold}</h6>
-      <p>Sold Over Reserve: 8</p>
-      <p>Under or Equal Reserve: 3</p>
-      <h6>📦 Unsold Items: {val.totalItems - val.sold}</h6>
-      {/* <h6>Irregular Items: 0</h6> */}
-      <small>Time Closed: {moment(val.timeClosed).format('LLL')}</small>
-    </Card>
-  ))
+  const renderremainingCard = () => {
+    if (remainingHistoryArr.map) {
+      return remainingHistoryArr.map((val, index) => (
+        <Card key={index} className="!bg-[#223] border-2 !border-slate-500	">
+          <h4>Lot #{val.lot}</h4>
+          <h6>Total Items: {val.totalItems}</h6>
+          <Card>
+            <Grid numItems={2}>
+              <Col>
+                <h6>💵 Sold Items: {val.sold}</h6>
+
+              </Col>
+              <Col>
+                <h6>📦 Unsold Items: {val.totalItems - val.sold}</h6>
+
+              </Col>
+            </Grid>
+          </Card>
+          <small>Time Closed: {moment(val.timeClosed).format('LLL')}</small>
+        </Card>
+      ))
+    } else {
+      return <h2>No Remaining History Found</h2>
+    }
+  }
 
   return (
     <div ref={topRef}>

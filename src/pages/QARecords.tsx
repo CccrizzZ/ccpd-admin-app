@@ -49,7 +49,8 @@ import {
   extractHttpsFromStr,
   toCad,
   getKwArr,
-  usdToCadRate
+  usdToCadRate,
+  stringToNumber
 } from '../utils/utils'
 import {
   Form,
@@ -499,7 +500,7 @@ const QARecords: React.FC = () => {
         // setLoading(false)
       }
 
-      const onMsrpChange = (event: React.ChangeEvent<HTMLInputElement>) => setScrapeData({ ...scrapeData, msrp: isNaN(Number(event.target.value)) ? 0 : Number(event.target.value) })
+      const onMsrpChange = (event: React.ChangeEvent<HTMLInputElement>) => setScrapeData({ ...scrapeData, msrp: stringToNumber(event.target.value) })
       const onTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => setScrapeData({ ...scrapeData, title: event.target.value })
       const onCurrencyChange = (event: React.ChangeEvent<HTMLInputElement>) => setScrapeData({ ...scrapeData, currency: event.target.value })
       // push image to azure blob storage
