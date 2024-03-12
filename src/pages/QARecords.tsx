@@ -33,7 +33,8 @@ import {
   FaArrowRightArrowLeft,
   FaArrowLeft,
   FaArrowRight,
-  FaUpload
+  FaUpload,
+  FaTrashCan
 } from 'react-icons/fa6'
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import {
@@ -808,15 +809,28 @@ const QARecords: React.FC = () => {
 
   }
 
-  const deleteQARecord = () => {
-    axios({
-
+  const deleteQARecord = async (sku: number) => {
+    await axios({
+      method: 'delete',
+      url: `${server}/adminController/deleteQARecordsBySku/${String(sku)}`,
+      responseType: 'text',
+      timeout: 8000,
+      withCredentials: true
+    }).then((res: AxiosResponse) => {
+      if (res.status === 200) {
+        alert(`${res.data} ${sku}`)
+        setSelectedRecord(initQARecord)
+        fetchQARecordsByPage(false)
+      }
+    }).catch((err: AxiosError) => {
+      setLoading(false)
+      alert('Cannot get page: ' + err.response?.data)
     })
   }
 
   const renderOperationButtons = () => (
     <div className='absolute right-16 flex top-6 gap-2'>
-      <Button color='rose' onClick={deleteQARecord}>Delete</Button>
+      <Button color='rose' onClick={() => deleteQARecord(selectedRecord.sku)}><FaTrashCan className='m-0' /></Button>
       <Button color='amber' onClick={updateQARecord}>Update</Button>
       <Button color='emerald' onClick={() => setSelectedRecord(originalSelectedRecord)}>Reset</Button>
     </div>

@@ -20,7 +20,7 @@ import {
   Switch,
 } from "@tremor/react"
 import moment from "moment"
-import { FaFileCirclePlus, FaRotate, FaUpload } from "react-icons/fa6"
+import { FaFileCirclePlus, FaFileCsv, FaRotate, FaUpload } from "react-icons/fa6"
 import {
   RemainingInfo,
   AuctionInfo,
@@ -98,27 +98,23 @@ const AuctionHistory: React.FC = () => {
   const topRef = useRef<HTMLDivElement>(null)
   // const [dragging, setDragging] = useState<boolean>(false)
   const [showremainingModal, setShowremainingModal] = useState<boolean>(false)
-  const [auctionHistoryArr, setAuctionArr] = useState<AuctionInfo[]>([])
+  const [auctionHistoryArr, setAuctionHistoryArr] = useState<AuctionInfo[]>([])
   const [remainingHistoryArr, setremainingHistoryArr] = useState<RemainingInfo[]>([])
-  const [topRowRec, setTopRowRec] = useState<Record<string, InstockItem[]>>({
-    '120': [],
-    '105': []
-  })
   const [newTopRowItem, setNewTopRowItem] = useState<InstockItem>(initInstockItem)
-  // const [editMode, setEditMode] = useState<boolean>(false)
+  const [editMode, setEditMode] = useState<boolean>(false)
   // const [countDown, setCountDown] = useState<number>(0)
 
   useEffect(() => {
     getAuctionAndRemainingArr()
   }, [])
 
-  // apend to top row record
-  const appendItemToRecord = (auctionLotNumber: string | number, newItem: InstockItem) => {
-    setTopRowRec(prevRecords => ({
-      ...prevRecords,
-      [auctionLotNumber]: [...(prevRecords[auctionLotNumber] || []), newItem],
-    }))
-  }
+  // // apend to top row record
+  // const appendItemToRecord = (auctionLotNumber: string | number, newItem: InstockItem) => {
+  //   setTopRowRec(prevRecords => ({
+  //     ...prevRecords,
+  //     [auctionLotNumber]: [...(prevRecords[auctionLotNumber] || []), newItem],
+  //   }))
+  // }
 
   const getAuctionAndRemainingArr = async () => {
     setLoading(true)
@@ -131,17 +127,15 @@ const AuctionHistory: React.FC = () => {
     }).then((res: AxiosResponse) => {
       if (res.status > 200) alert('Failed to Fetch Auction Record')
       const data = JSON.parse(res.data)
-      setAuctionArr(data['auctions'])
       if (data['auctions'].length > 0) {
-        const arr: AuctionInfo[] = data['auctions']
-        // TODO: add top row 
-        // populate every auction's top row record with empty array
-        arr.forEach(element => setTopRowRec({ ...topRowRec, [element.lot]: [] }))
+        setAuctionHistoryArr(data['auctions'])
+
+        // arr.forEach(auction => setTopRowRec({ ...topRowRec, [auction.lot]: auction.topRow }))
       }
       setremainingHistoryArr(data['remaining'])
     }).catch((err: AxiosError) => {
       setLoading(false)
-      alert('Failed Fetching QA Records: ' + err.message)
+      alert('Failed Fetching Auction & Remaining Records: ' + err.message)
     })
     setLoading(false)
   }
@@ -155,7 +149,7 @@ const AuctionHistory: React.FC = () => {
       timeout: 8000,
       data: {
         'lot': lot,
-        'topRow': topRowRec[lot]
+        // 'topRow': topRowRec[lot]
       },
       withCredentials: true
     }).then(async (res: AxiosResponse) => {
@@ -255,18 +249,32 @@ const AuctionHistory: React.FC = () => {
 
   // TODO: push to database
   // add it into top row array
-  const createNewTopRowItem = (auctionLotNum: number) => {
+  const createNewTopRowItem = async (auctionLotNum: number) => {
     // null check on new top row item
     if (newTopRowItem.lot === 0) return alert('Lot Number Invalid')
     if (newTopRowItem.sku === 0) return alert('SKU Invalid')
     if (newTopRowItem.shelfLocation === '') return alert('Shelf Location Missing')
     if (newTopRowItem.lead === '') return alert('Lead Missing')
-    // check exist
-    // if (topRowArr.find((item) => item.lot === newTopRowItem.lot)) alert('Lot Number Existed')
-    // append to rec
-    // setTopRowRec(prev => {...prev})
-    appendItemToRecord(auctionLotNum, newTopRowItem)
-    clearNewTopRowItem()
+
+    // addTopRowItem
+    setLoading(true)
+    await axios({
+      method: 'post',
+      url: `${server}/inventoryController/addTopRowItem`,
+      responseType: 'text',
+      timeout: 8000,
+      withCredentials: true,
+      data: JSON.stringify({ 'auctionLot': auctionLotNum, 'newItem': newTopRowItem })
+    }).then((res: AxiosResponse) => {
+      if (res.status === 200) {
+        getAuctionAndRemainingArr()
+        clearNewTopRowItem()
+      }
+    }).catch((err: AxiosError) => {
+      setLoading(false)
+      alert('Failed Adding Item to Top Row: ' + err.response?.data)
+    })
+    setLoading(false)
   }
 
   const clearNewTopRowItem = () => setNewTopRowItem(initInstockItem)
@@ -279,10 +287,33 @@ const AuctionHistory: React.FC = () => {
   const onStartBidChange = (event: React.ChangeEvent<HTMLInputElement>) => setNewTopRowItem({ ...newTopRowItem, startBid: stringToNumber(event.target.value) })
   const onReserveChange = (event: React.ChangeEvent<HTMLInputElement>) => setNewTopRowItem({ ...newTopRowItem, reserve: stringToNumber(event.target.value) })
   // const onEditModeChange = (value: boolean) => setEditMode(value)
-  const renderTopRowsTable = (auctionLotNum: number) => (
+
+  const deleteTopRowItem = async (item: InstockItem) => {
+    setLoading(true)
+    await axios({
+      method: 'get',
+      url: server + '/inventoryController/deleteTopRowItem',
+      responseType: 'text',
+      timeout: 8000,
+      withCredentials: true,
+      data: JSON.stringify({
+        'itemLotNumber': item.lot,
+        'sku': item.sku
+      })
+    }).then((res: AxiosResponse) => {
+      if (res.status > 200) alert('Failed to Delete')
+    }).catch((err: AxiosError) => {
+      setLoading(false)
+      alert('Failed to Delete Record From Top Row: ' + err.response?.data)
+    })
+    setLoading(false)
+  }
+
+  // top row items
+  const renderTopRowsTable = (val: AuctionInfo) => (
     <Accordion>
       <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
-        ⚡ Inventories to Add Before
+        ⚡ Top Row Inventories
       </AccordionHeader>
       <AccordionBody className="leading-6 p-2">
         <Table>
@@ -293,22 +324,35 @@ const AuctionHistory: React.FC = () => {
               <TableHeaderCell>Lead</TableHeaderCell>
               <TableHeaderCell className="w-48">Desc</TableHeaderCell>
               <TableHeaderCell className="w-30">MSRP<br />(CAD)</TableHeaderCell>
-              <TableHeaderCell className="w-30">Shelf</TableHeaderCell>
+              {/* <TableHeaderCell className="w-30">Shelf</TableHeaderCell> */}
+              {editMode ? <TableHeaderCell className="w-30">Edit</TableHeaderCell> : <TableHeaderCell className="w-30">Shelf</TableHeaderCell>}
             </TableRow>
           </TableHead>
           <TableBody>
-            {topRowRec[auctionLotNum].map((item) => (
+            {val.topRow ? val.topRow.slice(0).reverse().map((item: InstockItem) => (
               <TableRow key={item.sku}>
                 <TableCell>{item.lot}</TableCell>
                 <TableCell>{item.sku}</TableCell>
                 <TableCell className="text-wrap">{item.lead}</TableCell>
                 <TableCell className="text-wrap">{item.description}</TableCell>
                 <TableCell><Badge color='emerald'>{item.msrp}</Badge></TableCell>
-                <TableCell>
-                  <Badge color="indigo">{item.shelfLocation}</Badge>
-                </TableCell>
+                {
+                  editMode ?
+                    <TableCell>
+                      <Button
+                        color="rose"
+                        size="xs"
+                        onClick={() => deleteTopRowItem(item)}
+                      >
+                        Delete
+                      </Button>
+                    </TableCell> :
+                    <TableCell>
+                      <Badge color="indigo">{item.shelfLocation}</Badge>
+                    </TableCell>
+                }
               </TableRow>
-            ))}
+            )) : undefined}
           </TableBody>
         </Table>
         <div className="grid gap-2 p-6 mt-6 border-slate-600 border-2 rounded pt-0">
@@ -316,7 +360,7 @@ const AuctionHistory: React.FC = () => {
             <Button
               className="m-auto flex mb-3 mt-3"
               color="emerald"
-              onClick={() => createNewTopRowItem(auctionLotNum)}
+              onClick={() => createNewTopRowItem(val.lot)}
             >
               🆕 Create New Item 🆕
             </Button>
@@ -400,22 +444,22 @@ const AuctionHistory: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableHeaderCell className="w-18">Lot#</TableHeaderCell>
-              <TableHeaderCell className="w-20">SKU</TableHeaderCell>
-              <TableHeaderCell>Lead</TableHeaderCell>
+              <TableHeaderCell className="w-16">Lot#</TableHeaderCell>
+              <TableHeaderCell className="w-18">SKU</TableHeaderCell>
+              <TableHeaderCell className="w-32">Lead</TableHeaderCell>
               <TableHeaderCell className="w-48">Description</TableHeaderCell>
               <TableHeaderCell className="w-30">MSRP<br />(CAD)</TableHeaderCell>
               <TableHeaderCell className="w-30">Shelf</TableHeaderCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {val.itemsArr.map((item) => (
+            {val.itemsArr.map((item: InstockItem) => (
               <TableRow key={item.sku}>
                 <TableCell>{item.lot}</TableCell>
                 <TableCell>{item.sku}</TableCell>
                 <TableCell className="text-wrap">{item.lead}</TableCell>
                 <TableCell className="text-wrap">{item.description}</TableCell>
-                <TableCell>{item.msrp}</TableCell>
+                <TableCell><Badge color='emerald'>{item.msrp}</Badge></TableCell>
                 <TableCell>
                   <Badge color="indigo">{item.shelfLocation}</Badge>
                 </TableCell>
@@ -427,6 +471,18 @@ const AuctionHistory: React.FC = () => {
     </Accordion>
   )
 
+  const renderItemTable = (auctionInfo: AuctionInfo) => (
+    <>
+      <div className="mt-3">
+        {renderTopRowsTable(auctionInfo)}
+      </div>
+      <div className="mt-3">
+        {renderInventoryTable(auctionInfo)}
+      </div>
+    </>
+  )
+
+  const onEditModeChange = (value: boolean) => setEditMode(value)
   const renderAuctionCard = () => {
     if (auctionHistoryArr.map) {
       return auctionHistoryArr.map((val, index) => (
@@ -436,9 +492,10 @@ const AuctionHistory: React.FC = () => {
             <Button
               color="emerald"
               className="absolute right-6"
+              tooltip="Download Hibid Compatible CSV"
               onClick={() => getAuctionRecordCSV(val.lot)}
             >
-              Download Hibid Compatible CSV
+              <FaFileCsv className="mr-1" /> CSV
             </Button>
           </div>
           <p>Item Lot # Starts From {val.lot}</p>
@@ -448,12 +505,7 @@ const AuctionHistory: React.FC = () => {
             <Badge color="emerald">Min MSRP: {val.minMSRP ?? 'No minimum'}</Badge>
             <Badge color="rose">Max MSRP: {val.maxMSRP ?? 'No maximum'}</Badge>
           </div>
-          <div className="mt-3">
-            {renderTopRowsTable(val.lot)}
-          </div>
-          <div className="mt-3">
-            {renderInventoryTable(val)}
-          </div>
+          {renderItemTable(val)}
           <hr />
           <div className="flex p-4 pb-0">
             <div>
@@ -516,6 +568,16 @@ const AuctionHistory: React.FC = () => {
             </div>
             <hr />
             <div className="grid gap-3">
+              <div className="right-12 flex absolute">
+                <label>Edit Mode</label>
+                <Switch
+                  className=" ml-3"
+                  color='rose'
+                  checked={editMode}
+                  onChange={onEditModeChange}
+                />
+              </div>
+              <br />
               {renderAuctionCard()}
             </div>
           </Card>

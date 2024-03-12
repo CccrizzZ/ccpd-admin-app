@@ -170,13 +170,14 @@ export type AuctionInfo = {
   closeTime: string,
   closed: boolean,
   itemsArr: InstockItem[],
+  topRow: InstockItem[],
   title?: string,
   description?: string,
   minMSRP?: number,
   maxMSRP?: number,
   remainingResolved?: boolean,
-  minSku: number,
-  maxSku: number
+  minSku?: number,
+  maxSku?: number
 }
 
 export type RemainingInfo = {
