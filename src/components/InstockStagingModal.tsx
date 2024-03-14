@@ -45,7 +45,7 @@ const InstockStagingModal: React.FC<InstockStagingModalProps> = (props: InstockS
     setLoading(true)
     await axios({
       method: 'post',
-      url: server + '/inventoryController/createAuctionRecord',
+      url: `${server}/inventoryController/createAuctionRecord`,
       responseType: 'text',
       timeout: 8000,
       data: {
@@ -69,30 +69,31 @@ const InstockStagingModal: React.FC<InstockStagingModalProps> = (props: InstockS
     setLoading(false)
   }
 
+  // TODO: alerts in the staging window
   // instock records can possibly have no lead or description
-  const getAbnormalRecords = async () => {
-    await axios({
-      method: 'post',
-      url: server + '/inventoryController/getAbnormalInstockInventory',
-      responseType: 'text',
-      timeout: 8000,
-      data: {
-        filter: {
-          ...props.queryFilter,
-          keywordFilter: getKwArr(props.keywords, false)
-        }
-      },
-      withCredentials: true
-    }).then((res: AxiosResponse) => {
-      const data = JSON.parse(res.data)
-      if (data.length > 0) {
-        setAbnormalRecords(data)
-      }
-    }).catch((err: AxiosError) => {
-      setLoading(false)
-      alert('Failed Fetching Abnormal Record: ' + err.response?.data)
-    })
-  }
+  // const getAbnormalRecords = async () => {
+  //   await axios({
+  //     method: 'post',
+  //     url: server + '/inventoryController/getAbnormalInstockInventory',
+  //     responseType: 'text',
+  //     timeout: 8000,
+  //     data: {
+  //       filter: {
+  //         ...props.queryFilter,
+  //         keywordFilter: getKwArr(props.keywords, false)
+  //       }
+  //     },
+  //     withCredentials: true
+  //   }).then((res: AxiosResponse) => {
+  //     const data = JSON.parse(res.data)
+  //     if (data.length > 0) {
+  //       setAbnormalRecords(data)
+  //     }
+  //   }).catch((err: AxiosError) => {
+  //     setLoading(false)
+  //     alert('Failed Fetching Abnormal Record: ' + err.response?.data)
+  //   })
+  // }
 
   const renderSkuInfo = () => (
     <ListItem>

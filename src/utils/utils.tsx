@@ -401,3 +401,17 @@ export const getKwArr = (skey: string, refresh?: boolean) => {
 }
 
 export const stringToNumber = (input: string) => isNaN(Number(input)) ? 0 : Number(input)
+
+// download file with custom name
+export const downloadCustomNameFile = (
+  file: Blob,
+  fileName: string,
+  document: Document
+) => {
+  let link = document.createElement("a")
+  link.setAttribute("href", URL.createObjectURL(file))
+  link.setAttribute("download", fileName)
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}

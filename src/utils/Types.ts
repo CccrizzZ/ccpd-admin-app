@@ -158,9 +158,10 @@ export type InstockItem = {
   lead: string,
   msrp: number,
   shelfLocation: string,
-  description?: string
+  condition?: string,
+  description?: string,
   startBid?: number,
-  reserve?: number
+  reserve?: number,
 }
 
 export type AuctionInfo = {
@@ -183,11 +184,19 @@ export type AuctionInfo = {
 export type RemainingInfo = {
   lot: number,
   totalItems: number,
-  sold: number,
-  unsold: number,
-  soldItems: {
-    sku: number,
-    amt: number
-  }[],
+  soldCount: number,
+  unsoldCount: number,
+  soldItems: SoldItem[],
+  unsoldItems: InstockItem[],
   timeClosed: string,
+}
+
+export type SoldItem = {
+  bidAmount: number,
+  clotNumber: number,
+  soldStatus: boolean,
+  sku: number,
+  lead?: string,
+  reserve?: string,
+  shelfLocation?: string,
 }

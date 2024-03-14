@@ -7,6 +7,8 @@ type PopupToastProp = {
   setMsg: (msg: string) => void
 }
 
+
+// TODO: replace all alerts in project
 const PopupToast: React.FC<PopupToastProp> = (prop: PopupToastProp) => {
   return (
     <div>

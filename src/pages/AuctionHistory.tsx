@@ -25,64 +25,11 @@ import {
   RemainingInfo,
   AuctionInfo,
   InstockInventory,
-  InstockItem
+  InstockItem,
+  SoldItem
 } from "../utils/Types"
 import axios, { AxiosError, AxiosResponse } from "axios"
-import { server, stringToNumber } from "../utils/utils"
-
-const mockremainingInfo: RemainingInfo[] = [
-  {
-    lot: 111,
-    totalItems: 111,
-    sold: 11,
-    unsold: 100,
-    soldItems: [
-      { sku: 10020, amt: 1 },
-      { sku: 10021, amt: 1 },
-      { sku: 10022, amt: 1 },
-      { sku: 10023, amt: 2 },
-      { sku: 10024, amt: 1 },
-      { sku: 10025, amt: 1 },
-      { sku: 10026, amt: 4 },
-      { sku: 10027, amt: 1 },
-    ],
-    timeClosed: '2024-02-13'
-  },
-  {
-    lot: 112,
-    totalItems: 111,
-    sold: 11,
-    unsold: 100,
-    soldItems: [
-      { sku: 10020, amt: 1 },
-      { sku: 10021, amt: 1 },
-      { sku: 10022, amt: 1 },
-      { sku: 10023, amt: 2 },
-      { sku: 10024, amt: 1 },
-      { sku: 10025, amt: 1 },
-      { sku: 10026, amt: 4 },
-      { sku: 10027, amt: 1 },
-    ],
-    timeClosed: '2024-02-14'
-  },
-  {
-    lot: 113,
-    totalItems: 111,
-    sold: 11,
-    unsold: 100,
-    soldItems: [
-      { sku: 10020, amt: 1 },
-      { sku: 10021, amt: 1 },
-      { sku: 10022, amt: 1 },
-      { sku: 10023, amt: 2 },
-      { sku: 10024, amt: 1 },
-      { sku: 10025, amt: 1 },
-      { sku: 10026, amt: 4 },
-      { sku: 10027, amt: 1 },
-    ],
-    timeClosed: '2024-02-15'
-  },
-]
+import { server, stringToNumber, downloadCustomNameFile } from "../utils/utils"
 
 const initInstockItem: InstockItem = {
   lot: 0,
@@ -90,7 +37,10 @@ const initInstockItem: InstockItem = {
   shelfLocation: '',
   msrp: 0,
   lead: '',
-  description: ''
+  description: '',
+  reserve: 0,
+  startBid: 0,
+  condition: '',
 }
 
 const AuctionHistory: React.FC = () => {
@@ -99,22 +49,16 @@ const AuctionHistory: React.FC = () => {
   // const [dragging, setDragging] = useState<boolean>(false)
   const [showremainingModal, setShowremainingModal] = useState<boolean>(false)
   const [auctionHistoryArr, setAuctionHistoryArr] = useState<AuctionInfo[]>([])
-  const [remainingHistoryArr, setremainingHistoryArr] = useState<RemainingInfo[]>([])
+  const [remainingHistoryArr, setRemainingHistoryArr] = useState<RemainingInfo[]>([])
   const [newTopRowItem, setNewTopRowItem] = useState<InstockItem>(initInstockItem)
   const [editMode, setEditMode] = useState<boolean>(false)
   // const [countDown, setCountDown] = useState<number>(0)
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null)
+  const [lotToClose, setLotToClose] = useState<number>(0)
 
   useEffect(() => {
     getAuctionAndRemainingArr()
   }, [])
-
-  // // apend to top row record
-  // const appendItemToRecord = (auctionLotNumber: string | number, newItem: InstockItem) => {
-  //   setTopRowRec(prevRecords => ({
-  //     ...prevRecords,
-  //     [auctionLotNumber]: [...(prevRecords[auctionLotNumber] || []), newItem],
-  //   }))
-  // }
 
   const getAuctionAndRemainingArr = async () => {
     setLoading(true)
@@ -128,11 +72,13 @@ const AuctionHistory: React.FC = () => {
       if (res.status > 200) alert('Failed to Fetch Auction Record')
       const data = JSON.parse(res.data)
       if (data['auctions'].length > 0) {
-        setAuctionHistoryArr(data['auctions'])
-
-        // arr.forEach(auction => setTopRowRec({ ...topRowRec, [auction.lot]: auction.topRow }))
+        setAuctionHistoryArr(data['auctions'].reverse())
+      } else {
+        setAuctionHistoryArr([])
       }
-      setremainingHistoryArr(data['remaining'])
+      console.log(data['remaining'])
+      setRemainingHistoryArr(data['remaining'])
+
     }).catch((err: AxiosError) => {
       setLoading(false)
       alert('Failed Fetching Auction & Remaining Records: ' + err.message)
@@ -149,7 +95,6 @@ const AuctionHistory: React.FC = () => {
       timeout: 8000,
       data: {
         'lot': lot,
-        // 'topRow': topRowRec[lot]
       },
       withCredentials: true
     }).then(async (res: AxiosResponse) => {
@@ -160,13 +105,7 @@ const AuctionHistory: React.FC = () => {
       const csv = JSON.parse(await file.text())
       file = new Blob([csv], { type: 'text/csv' })
 
-      // way to get custom file name
-      let link = document.createElement("a")
-      link.setAttribute("href", URL.createObjectURL(file))
-      link.setAttribute("download", `${100}.csv`)
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
+      downloadCustomNameFile(file, `${lot}_AuctionRecord.csv`, document)
     }).catch((err: AxiosError) => {
       setLoading(false)
       alert('Failed Fetching Auction CSV: ' + err.message)
@@ -174,49 +113,83 @@ const AuctionHistory: React.FC = () => {
     setLoading(false)
   }
 
-  const executeremainingRecordToDB = () => {
-    // send remaining data to server
+  // closing function
+  const remainingRecordToDB = async () => {
+    if (uploadedFile) {
+      // append to form data
+      const formData = new FormData();
+      formData.append('xls', uploadedFile);
+      formData.append('lot', String(lotToClose))
+      setLoading(true)
+      await axios({
+        method: 'post',
+        url: `${server}/inventoryController/processRemaining`,
+        responseType: 'blob',
+        timeout: 8000,
+        // data: JSON.stringify({ 'lot': lotToClose, 'FILES': formData }),
+        data: formData,
+        headers: { 'Content-Type': 'multipart/form-data' },
+        withCredentials: true
+      }).then(async (res: AxiosResponse) => {
+        if (res.status > 200) return alert('Failed to Get CSV')
+
+        // JSON parse csv content
+        let file = new Blob([res.data], { type: 'text/csv' })
+        const csv = JSON.parse(await file.text())
+        file = new Blob([csv], { type: 'text/csv' })
+
+        downloadCustomNameFile(file, `${lotToClose}_AuctionRecord.csv`, document)
+      }).catch((err: AxiosError) => {
+        setLoading(false)
+        alert('Failed Fetching Auction CSV: ' + err.response?.data)
+      })
+      setLoading(false)
+      setShowremainingModal(false)
+      getAuctionAndRemainingArr()
+    }
   }
 
-  const handleFileChange = () => {
-
+  const handleLotChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setLotToClose(stringToNumber(event.target.value))
   }
 
-  const renderremainingRecordModal = () => (
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) setUploadedFile(event.target.files[0])
+  }
+
+  const renderRemainingRecordModal = () => (
     <Modal
       show={showremainingModal}
       onHide={() => setShowremainingModal(false)}
       backdrop="static"
       keyboard={false}
-      size="lg"
     >
       <div className="p-6">
         <h2>Import Remaining CSV</h2>
         <hr />
-        <Grid numItems={3}>
-          <Col numColSpan={2}>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptas velit aliquid itaque ex, doloribus alias dolore! Temporibus minima facilis harum quibusdam laborum, ducimus eligendi blanditiis saepe neque? Aspernatur, quam ipsum.
-          </Col>
-          <Col numColSpan={1}>
-            {/* csv upload box */}
-            <div className="rounded-lg h-64 w-64 border-dashed border-[#ffffff] border-2 items-center justify-center">
-              <div className="content-center">
-                <FaUpload size={50} />
-                <p>Drag and Drop CSV File Here</p>
-                <input
-                  className=""
-                  type='file'
-                  multiple={false}
-                  accept='.csv'
-                />
-              </div>
-            </div>
-          </Col>
-        </Grid>
+        {/* csv upload box */}
+        <div className="content-center">
+          <InputGroup className='mb-3'>
+            <InputGroup.Text>Lot to Close</InputGroup.Text>
+            <Form.Control
+              type="number"
+              value={lotToClose}
+              onChange={handleLotChange}
+            />
+          </InputGroup>
+          <Form.Group controlId="formFile" className="mb-3">
+            <Form.Label>Upload XLS Here</Form.Label>
+            <Form.Control
+              type="file"
+              accept=".xls"
+              onChange={handleFileChange}
+            />
+          </Form.Group>
+        </div>
         <hr />
         <div className="flex">
           <Button color="slate" onClick={() => setShowremainingModal(false)}>Close</Button>
-          <Button className="absolute right-6" color="emerald" onClick={executeremainingRecordToDB}>Submit</Button>
+          <Button className="absolute right-6" color="emerald" onClick={remainingRecordToDB}>Submit</Button>
         </div>
       </div>
     </Modal>
@@ -240,11 +213,6 @@ const AuctionHistory: React.FC = () => {
         </div>
       </Badge>
     )
-  }
-
-  // update inventory amount to auction info arr
-  const changeAmount = (direction: number, auc: AuctionInfo) => {
-    // setAuctionArr({})
   }
 
   // TODO: push to database
@@ -286,25 +254,46 @@ const AuctionHistory: React.FC = () => {
   const onDescriptionChange = (event: React.ChangeEvent<HTMLInputElement>) => setNewTopRowItem({ ...newTopRowItem, description: event.target.value })
   const onStartBidChange = (event: React.ChangeEvent<HTMLInputElement>) => setNewTopRowItem({ ...newTopRowItem, startBid: stringToNumber(event.target.value) })
   const onReserveChange = (event: React.ChangeEvent<HTMLInputElement>) => setNewTopRowItem({ ...newTopRowItem, reserve: stringToNumber(event.target.value) })
-  // const onEditModeChange = (value: boolean) => setEditMode(value)
 
-  const deleteTopRowItem = async (item: InstockItem) => {
+  const deleteTopRowItem = async (item: InstockItem, auctionLotNum: number) => {
     setLoading(true)
     await axios({
-      method: 'get',
-      url: server + '/inventoryController/deleteTopRowItem',
+      method: 'delete',
+      url: `${server}/inventoryController/deleteTopRowItem`,
       responseType: 'text',
       timeout: 8000,
       withCredentials: true,
       data: JSON.stringify({
+        'sku': item.sku,
         'itemLotNumber': item.lot,
-        'sku': item.sku
+        'auctionLotNumber': auctionLotNum
       })
     }).then((res: AxiosResponse) => {
-      if (res.status > 200) alert('Failed to Delete')
+      if (res.status > 200) return alert('Failed to Delete')
+      alert(`Deleted Item ${item.sku} from Auction ${auctionLotNum}`)
+      getAuctionAndRemainingArr()
     }).catch((err: AxiosError) => {
       setLoading(false)
       alert('Failed to Delete Record From Top Row: ' + err.response?.data)
+    })
+    setLoading(false)
+  }
+
+  const deleteAuctionRecord = async (auction: AuctionInfo) => {
+    setLoading(true)
+    await axios({
+      method: 'delete',
+      url: `${server}/inventoryController/deleteAuctionRecord`,
+      responseType: 'text',
+      timeout: 8000,
+      withCredentials: true,
+      data: JSON.stringify({ 'auctionLotNumber': auction.lot })
+    }).then((res: AxiosResponse) => {
+      if (res.status > 200) return alert('Failed to Delete Auction Record')
+      getAuctionAndRemainingArr()
+    }).catch((err: AxiosError) => {
+      setLoading(false)
+      alert('Failed to Delete Auction Record: ' + err.response?.data)
     })
     setLoading(false)
   }
@@ -314,6 +303,9 @@ const AuctionHistory: React.FC = () => {
     <Accordion>
       <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
         ⚡ Top Row Inventories
+        <Badge color="orange" className="absolute right-20">
+          Total Items: {val.topRow ? val.topRow.length : 0}
+        </Badge>
       </AccordionHeader>
       <AccordionBody className="leading-6 p-2">
         <Table>
@@ -323,8 +315,7 @@ const AuctionHistory: React.FC = () => {
               <TableHeaderCell className="w-20">SKU</TableHeaderCell>
               <TableHeaderCell>Lead</TableHeaderCell>
               <TableHeaderCell className="w-48">Desc</TableHeaderCell>
-              <TableHeaderCell className="w-30">MSRP<br />(CAD)</TableHeaderCell>
-              {/* <TableHeaderCell className="w-30">Shelf</TableHeaderCell> */}
+              <TableHeaderCell className="w-30">MSRP (CAD)<br />Reserve</TableHeaderCell>
               {editMode ? <TableHeaderCell className="w-30">Edit</TableHeaderCell> : <TableHeaderCell className="w-30">Shelf</TableHeaderCell>}
             </TableRow>
           </TableHead>
@@ -335,14 +326,20 @@ const AuctionHistory: React.FC = () => {
                 <TableCell>{item.sku}</TableCell>
                 <TableCell className="text-wrap">{item.lead}</TableCell>
                 <TableCell className="text-wrap">{item.description}</TableCell>
-                <TableCell><Badge color='emerald'>{item.msrp}</Badge></TableCell>
+                <TableCell className="justify-center">
+                  <div className='grid justify-items-center'>
+                    <Badge color='emerald'>{item.msrp}</Badge>
+                    <br />
+                    <Badge color='blue'>{item.reserve ?? 0}</Badge>
+                  </div>
+                </TableCell>
                 {
                   editMode ?
                     <TableCell>
                       <Button
                         color="rose"
                         size="xs"
-                        onClick={() => deleteTopRowItem(item)}
+                        onClick={() => deleteTopRowItem(item, val.lot)}
                       >
                         Delete
                       </Button>
@@ -439,6 +436,7 @@ const AuctionHistory: React.FC = () => {
     <Accordion>
       <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
         📜 Inventories on Auction
+        <Badge color="orange" className="absolute right-20">Total Items: {val.totalItems}</Badge>
       </AccordionHeader>
       <AccordionBody className="leading-6 p-2">
         <Table>
@@ -448,7 +446,7 @@ const AuctionHistory: React.FC = () => {
               <TableHeaderCell className="w-18">SKU</TableHeaderCell>
               <TableHeaderCell className="w-32">Lead</TableHeaderCell>
               <TableHeaderCell className="w-48">Description</TableHeaderCell>
-              <TableHeaderCell className="w-30">MSRP<br />(CAD)</TableHeaderCell>
+              <TableHeaderCell className="w-30">MSRP (CAD)<br />Reserve</TableHeaderCell>
               <TableHeaderCell className="w-30">Shelf</TableHeaderCell>
             </TableRow>
           </TableHead>
@@ -459,7 +457,13 @@ const AuctionHistory: React.FC = () => {
                 <TableCell>{item.sku}</TableCell>
                 <TableCell className="text-wrap">{item.lead}</TableCell>
                 <TableCell className="text-wrap">{item.description}</TableCell>
-                <TableCell><Badge color='emerald'>{item.msrp}</Badge></TableCell>
+                <TableCell>
+                  <div className='grid justify-items-center'>
+                    <Badge color='emerald'>{item.msrp}</Badge>
+                    <br />
+                    <Badge color='blue'>{item.reserve ?? 0}</Badge>
+                  </div>
+                </TableCell>
                 <TableCell>
                   <Badge color="indigo">{item.shelfLocation}</Badge>
                 </TableCell>
@@ -489,6 +493,13 @@ const AuctionHistory: React.FC = () => {
         <Card key={index} className='!bg-[#223] !border-slate-500 border-2'>
           <div className="flex gap-2">
             <h4>Lot #{val.lot}</h4>
+            {editMode ? <Button
+              color="rose"
+              className="absolute right-32"
+              onClick={() => deleteAuctionRecord(val)}
+            >
+              Delete
+            </Button> : undefined}
             <Button
               color="emerald"
               className="absolute right-6"
@@ -502,8 +513,11 @@ const AuctionHistory: React.FC = () => {
           <h6>{val.title}</h6>
           <hr />
           <div className="flex gap-6">
-            <Badge color="emerald">Min MSRP: {val.minMSRP ?? 'No minimum'}</Badge>
-            <Badge color="rose">Max MSRP: {val.maxMSRP ?? 'No maximum'}</Badge>
+            <Badge color="emerald">Min MSRP: {val.minMSRP ?? 0}</Badge>
+            <Badge color="rose">Max MSRP: {val.maxMSRP ?? 0}</Badge>
+            <Badge color="blue" className="absolute right-20">
+              Total Items: {val.topRow ? val.topRow.length + val.itemsArr.length : val.itemsArr.length}
+            </Badge>
           </div>
           {renderItemTable(val)}
           <hr />
@@ -523,25 +537,139 @@ const AuctionHistory: React.FC = () => {
     }
   }
 
-  const renderremainingCard = () => {
+  const renderSoldTable = (record: RemainingInfo) => {
+    return (
+      <Accordion>
+        <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
+          💵 Sold Items
+          <Badge color="orange" className="absolute right-20">Total Items: {record.soldItems.length ?? 0}</Badge>
+        </AccordionHeader>
+        <AccordionBody className="leading-6 p-2">
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableHeaderCell className="w-16">Lot#</TableHeaderCell>
+                <TableHeaderCell className="w-20">SKU</TableHeaderCell>
+                <TableHeaderCell className="w-36">Lead</TableHeaderCell>
+                <TableHeaderCell className="w-24 align-middle text-center">Bid Amount</TableHeaderCell>
+                <TableHeaderCell className="w-24 align-middle text-center">Reserve</TableHeaderCell>
+                <TableHeaderCell className="w-24 align-middle text-center">Shelf</TableHeaderCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {record.soldItems.map((sold: SoldItem) => (
+                <TableRow key={sold.sku}>
+                  <TableCell>{sold.clotNumber}</TableCell>
+                  <TableCell>{sold.sku}</TableCell>
+                  <TableCell className="text-wrap">
+                    {sold.lead}
+                  </TableCell>
+                  <TableCell className="align-middle text-center">
+                    <Badge color='green'>{sold.bidAmount}</Badge>
+                  </TableCell>
+                  <TableCell className="align-middle text-center">
+                    <Badge color='emerald' className='font-bold'>{sold.reserve}</Badge>
+                  </TableCell>
+                  <TableCell className="align-middle text-center">
+                    <Badge color="indigo" className='font-bold'>{sold.shelfLocation}</Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </AccordionBody>
+      </Accordion>
+    )
+  }
+
+  const renderUnsoldTable = (record: RemainingInfo) => {
+    return (
+      <Accordion>
+        <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
+          📦 Unsold Items
+          <Badge color="orange" className="absolute right-20">Total Items: {record.unsoldItems.length ?? 0}</Badge>
+        </AccordionHeader>
+        <AccordionBody className="leading-6 p-2">
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableHeaderCell className="w-16">Lot#</TableHeaderCell>
+                <TableHeaderCell className="w-18">SKU</TableHeaderCell>
+                <TableHeaderCell className="w-32">Lead</TableHeaderCell>
+                <TableHeaderCell className="w-48">Description</TableHeaderCell>
+                <TableHeaderCell className="w-32">MSRP<br />(CAD)<br />Reserve</TableHeaderCell>
+                <TableHeaderCell className="w-30">Shelf</TableHeaderCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {record.unsoldItems.map((unsold: InstockItem) => (
+                <TableRow key={unsold.sku}>
+                  <TableCell>{unsold.lot}</TableCell>
+                  <TableCell>{unsold.sku}</TableCell>
+                  <TableCell className="text-wrap">{unsold.lead}</TableCell>
+                  <TableCell className="text-wrap">{unsold.description}</TableCell>
+                  <TableCell>
+                    <div className='grid justify-items-center'>
+                      <Badge color='emerald'>${unsold.msrp}</Badge>
+                      <br />
+                      <Badge color='blue'>${unsold.reserve ?? 0}</Badge>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge color="indigo">{unsold.shelfLocation}</Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </AccordionBody>
+      </Accordion>
+    )
+  }
+
+  const deleteRemainingRecord = async (record: RemainingInfo) => {
+    setLoading(true)
+    await axios({
+      method: 'delete',
+      url: `${server}/inventoryController/deleteRemainingRecord`,
+      responseType: 'text',
+      timeout: 8000,
+      withCredentials: true,
+      data: JSON.stringify({ 'remainingLotNumber': record.lot })
+    }).then((res: AxiosResponse) => {
+      if (res.status > 200) return alert('Failed to Delete Remaining Record')
+      getAuctionAndRemainingArr()
+    }).catch((err: AxiosError) => {
+      setLoading(false)
+      alert('Failed to Delete Remaining Record: ' + err.response?.data)
+    })
+    setLoading(false)
+  }
+
+  const renderRemainingCard = () => {
     if (remainingHistoryArr.map) {
-      return remainingHistoryArr.map((val, index) => (
+      return remainingHistoryArr.map((remainingRecord, index) => (
         <Card key={index} className="!bg-[#223] border-2 !border-slate-500	">
-          <h4>Lot #{val.lot}</h4>
-          <h6>Total Items: {val.totalItems}</h6>
-          <Card>
-            <Grid numItems={2}>
-              <Col>
-                <h6>💵 Sold Items: {val.sold}</h6>
-
-              </Col>
-              <Col>
-                <h6>📦 Unsold Items: {val.totalItems - val.sold}</h6>
-
-              </Col>
-            </Grid>
-          </Card>
-          <small>Time Closed: {moment(val.timeClosed).format('LLL')}</small>
+          <h4>Lot #{remainingRecord.lot}</h4>
+          {editMode ? <Button
+            color="rose"
+            className="absolute right-12 top-6"
+            onClick={() => deleteRemainingRecord(remainingRecord)}
+          >
+            Delete
+          </Button> : undefined}
+          <hr />
+          <Badge color='blue'>
+            Total Items: {remainingRecord.totalItems}
+          </Badge>
+          <div className="mt-3">
+            {renderSoldTable(remainingRecord)}
+          </div>
+          <div className="mt-3">
+            {renderUnsoldTable(remainingRecord)}
+          </div>
+          <hr />
+          <p className="mt-3">Time Closed: {moment(remainingRecord.timeClosed).format('LLL')}</p>
         </Card>
       ))
     } else {
@@ -551,7 +679,7 @@ const AuctionHistory: React.FC = () => {
 
   return (
     <div ref={topRef}>
-      {renderremainingRecordModal()}
+      {renderRemainingRecordModal()}
       <Grid numItems={2} className="gap-3">
         <Col>
           <Card className="min-h-[90vh]">
@@ -597,7 +725,7 @@ const AuctionHistory: React.FC = () => {
             <hr />
             <Subtitle></Subtitle>
             <div className="grid gap-3">
-              {renderremainingCard()}
+              {renderRemainingCard()}
             </div>
           </Card>
         </Col>

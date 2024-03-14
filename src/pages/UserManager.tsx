@@ -287,10 +287,10 @@ const UserManager: React.FC = () => {
     return (
       <Card decoration="top" decorationColor='emerald'>
         <Title>Invitations Code</Title>
-        <Subtitle>
+        <Title>
           Issued code for user registration, available for the next 24 horus
           <Button className='right-6 absolute' size='xs' color='emerald' onClick={fetchAllInvitationCode}><FaRotate /></Button>
-        </Subtitle>
+        </Title>
         <hr />
         <div style={{ maxHeight: '180px', overflow: 'hidden', overflowY: 'scroll', textAlign: 'center' }}>
           {invitationArr.length > 0 ? invitationArr.map((invCode) => (

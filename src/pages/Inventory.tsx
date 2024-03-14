@@ -5,7 +5,6 @@ import {
   Card,
   Col,
   Grid,
-  Subtitle,
   Table,
   TableBody,
   TableCell,
@@ -360,11 +359,11 @@ const Inventory: React.FC = () => {
   }
 
   const renderOverviewChart = () => {
-    return (
-      <Card className='h-full'>
-        <Title>Inventory Recorded Last 10 Days</Title>
-        <Subtitle>{`${moment().subtract(10, 'days').format('L')} to ${moment().format('L')}`}</Subtitle>
-        {pastInventoryData.length !== 0 ?
+    if (pastInventoryData.length === 0) {
+      return (
+        <Card className='h-full'>
+          <Title>Inventory Recorded Last 10 Days</Title>
+          <Title>{`${moment().subtract(10, 'days').format('L')} to ${moment().format('L')}`}</Title>
           <BarChart
             animationDuration={2000}
             showAnimation={true}
@@ -375,9 +374,18 @@ const Inventory: React.FC = () => {
             categories={['Recorded Inventory']}
             colors={["emerald"]}
             valueFormatter={valueFormatter}
-          /> : <h2>No Data Available Last 10 Days</h2>}
-      </Card>
-    )
+          />
+        </Card>
+      )
+    } else {
+      return (
+        <Card className='h-full'>
+          <Title>Inventory Recorded Last 10 Days</Title>
+          <Title>{`${moment().subtract(10, 'days').format('L')} to ${moment().format('L')}`}</Title>
+          <h2>No Data Available Last 10 Days</h2>
+        </Card>
+      )
+    }
   }
 
   const showModal = (i: InstockInventory) => {
