@@ -20,7 +20,7 @@ import {
   Switch,
 } from "@tremor/react"
 import moment from "moment"
-import { FaFileCirclePlus, FaFileCsv, FaRotate, FaUpload } from "react-icons/fa6"
+import { FaFileCsv, FaRotate } from "react-icons/fa6"
 import {
   RemainingInfo,
   AuctionInfo,
@@ -29,7 +29,11 @@ import {
   SoldItem
 } from "../utils/Types"
 import axios, { AxiosError, AxiosResponse } from "axios"
-import { server, stringToNumber, downloadCustomNameFile } from "../utils/utils"
+import {
+  server,
+  stringToNumber,
+  downloadCustomNameFile
+} from "../utils/utils"
 
 const initInstockItem: InstockItem = {
   lot: 0,
@@ -71,14 +75,8 @@ const AuctionHistory: React.FC = () => {
     }).then((res: AxiosResponse) => {
       if (res.status > 200) alert('Failed to Fetch Auction Record')
       const data = JSON.parse(res.data)
-      if (data['auctions'].length > 0) {
-        setAuctionHistoryArr(data['auctions'].reverse())
-      } else {
-        setAuctionHistoryArr([])
-      }
-      console.log(data['remaining'])
+      setAuctionHistoryArr(data['auctions'])
       setRemainingHistoryArr(data['remaining'])
-
     }).catch((err: AxiosError) => {
       setLoading(false)
       alert('Failed Fetching Auction & Remaining Records: ' + err.message)
@@ -432,6 +430,17 @@ const AuctionHistory: React.FC = () => {
     </Accordion>
   )
 
+  const renderInventoryTableHead = () => (
+    <TableRow>
+      <TableHeaderCell className="w-16 align-middle text-center">Lot#</TableHeaderCell>
+      <TableHeaderCell className="w-18 align-middle text-center">SKU</TableHeaderCell>
+      <TableHeaderCell className="w-32">Lead</TableHeaderCell>
+      <TableHeaderCell className="w-48">Desc</TableHeaderCell>
+      <TableHeaderCell className="w-32 align-middle text-center">MSRP<br />(CAD)<br />Reserve</TableHeaderCell>
+      <TableHeaderCell className="w-30 align-middle text-center">Shelf</TableHeaderCell>
+    </TableRow>
+  )
+
   const renderInventoryTable = (val: AuctionInfo) => (
     <Accordion>
       <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
@@ -441,14 +450,7 @@ const AuctionHistory: React.FC = () => {
       <AccordionBody className="leading-6 p-2">
         <Table>
           <TableHead>
-            <TableRow>
-              <TableHeaderCell className="w-16">Lot#</TableHeaderCell>
-              <TableHeaderCell className="w-18">SKU</TableHeaderCell>
-              <TableHeaderCell className="w-32">Lead</TableHeaderCell>
-              <TableHeaderCell className="w-48">Description</TableHeaderCell>
-              <TableHeaderCell className="w-30">MSRP (CAD)<br />Reserve</TableHeaderCell>
-              <TableHeaderCell className="w-30">Shelf</TableHeaderCell>
-            </TableRow>
+            {renderInventoryTableHead()}
           </TableHead>
           <TableBody>
             {val.itemsArr.map((item: InstockItem) => (
@@ -540,18 +542,18 @@ const AuctionHistory: React.FC = () => {
   const renderSoldTable = (record: RemainingInfo) => {
     return (
       <Accordion>
-        <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
+        <AccordionHeader className="text-sm fontr-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
           💵 Sold Items
-          <Badge color="orange" className="absolute right-20">Total Items: {record.soldItems.length ?? 0}</Badge>
+          <Badge color="emerald" className="absolute right-20">Sold: {record.soldItems.length ?? 0}</Badge>
         </AccordionHeader>
         <AccordionBody className="leading-6 p-2">
           <Table>
             <TableHead>
               <TableRow>
-                <TableHeaderCell className="w-16">Lot#</TableHeaderCell>
-                <TableHeaderCell className="w-20">SKU</TableHeaderCell>
+                <TableHeaderCell className="w-16 align-middle text-center">Lot#</TableHeaderCell>
+                <TableHeaderCell className="w-20 align-middle text-center">SKU</TableHeaderCell>
                 <TableHeaderCell className="w-36">Lead</TableHeaderCell>
-                <TableHeaderCell className="w-24 align-middle text-center">Bid Amount</TableHeaderCell>
+                <TableHeaderCell className="w-24">Bid Amount</TableHeaderCell>
                 <TableHeaderCell className="w-24 align-middle text-center">Reserve</TableHeaderCell>
                 <TableHeaderCell className="w-24 align-middle text-center">Shelf</TableHeaderCell>
               </TableRow>
@@ -565,10 +567,10 @@ const AuctionHistory: React.FC = () => {
                     {sold.lead}
                   </TableCell>
                   <TableCell className="align-middle text-center">
-                    <Badge color='green'>{sold.bidAmount}</Badge>
+                    <Badge color='green'>${sold.bidAmount}</Badge>
                   </TableCell>
                   <TableCell className="align-middle text-center">
-                    <Badge color='emerald' className='font-bold'>{sold.reserve}</Badge>
+                    <Badge color='indigo' className='font-bold'>${sold.reserve}</Badge>
                   </TableCell>
                   <TableCell className="align-middle text-center">
                     <Badge color="indigo" className='font-bold'>{sold.shelfLocation}</Badge>
@@ -587,28 +589,21 @@ const AuctionHistory: React.FC = () => {
       <Accordion>
         <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
           📦 Unsold Items
-          <Badge color="orange" className="absolute right-20">Total Items: {record.unsoldItems.length ?? 0}</Badge>
+          <Badge color="rose" className="absolute right-20">Unsold: {record.unsoldItems.length ?? 0}</Badge>
         </AccordionHeader>
         <AccordionBody className="leading-6 p-2">
           <Table>
             <TableHead>
-              <TableRow>
-                <TableHeaderCell className="w-16">Lot#</TableHeaderCell>
-                <TableHeaderCell className="w-18">SKU</TableHeaderCell>
-                <TableHeaderCell className="w-32">Lead</TableHeaderCell>
-                <TableHeaderCell className="w-48">Description</TableHeaderCell>
-                <TableHeaderCell className="w-32">MSRP<br />(CAD)<br />Reserve</TableHeaderCell>
-                <TableHeaderCell className="w-30">Shelf</TableHeaderCell>
-              </TableRow>
+              {renderInventoryTableHead()}
             </TableHead>
             <TableBody>
               {record.unsoldItems.map((unsold: InstockItem) => (
                 <TableRow key={unsold.sku}>
-                  <TableCell>{unsold.lot}</TableCell>
-                  <TableCell>{unsold.sku}</TableCell>
+                  <TableCell className="align-middle text-center">{unsold.lot}</TableCell>
+                  <TableCell className="align-middle text-center">{unsold.sku}</TableCell>
                   <TableCell className="text-wrap">{unsold.lead}</TableCell>
                   <TableCell className="text-wrap">{unsold.description}</TableCell>
-                  <TableCell>
+                  <TableCell className="align-middle text-center">
                     <div className='grid justify-items-center'>
                       <Badge color='emerald'>${unsold.msrp}</Badge>
                       <br />
