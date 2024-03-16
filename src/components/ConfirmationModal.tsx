@@ -10,7 +10,9 @@ type ConfirmationModalProps = {
   msg: string
 }
 
-const ConfirmationModal: React.FC<ConfirmationModalProps> = (props: ConfirmationModalProps) => {
+const ConfirmationModal: React.FC<ConfirmationModalProps> = (
+  props: ConfirmationModalProps
+) => {
   return (
     <Modal
       className='z-[1550]'

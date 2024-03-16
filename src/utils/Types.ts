@@ -172,13 +172,14 @@ export type AuctionInfo = {
   closed: boolean,
   itemsArr: InstockItem[],
   topRow: InstockItem[],
+  previousUnsoldArr: Record<number, InstockItem[]>,  // { lot: [items...] }
   title?: string,
   description?: string,
   minMSRP?: number,
   maxMSRP?: number,
   remainingResolved?: boolean,
   minSku?: number,
-  maxSku?: number
+  maxSku?: number,
 }
 
 export type RemainingInfo = {
