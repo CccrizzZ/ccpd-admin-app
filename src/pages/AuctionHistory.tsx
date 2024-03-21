@@ -20,11 +20,10 @@ import {
   Switch,
 } from "@tremor/react"
 import moment from "moment"
-import { FaFileCsv, FaRotate } from "react-icons/fa6"
+import { FaAngleDown, FaFileCsv, FaRotate } from "react-icons/fa6"
 import {
   RemainingInfo,
   AuctionInfo,
-  InstockInventory,
   InstockItem,
   SoldItem
 } from "../utils/Types"
@@ -35,8 +34,8 @@ import {
   downloadCustomNameFile
 } from "../utils/utils"
 import { FaAngleUp } from 'react-icons/fa6'
-import ConfirmationModal from "../components/ConfirmationModal"
 import ImportUnsoldModal from "../components/ImportUnsoldModal"
+import RemainingAuditModal from "../components/RemainingAuditModal"
 
 const initInstockItem: InstockItem = {
   lot: 0,
@@ -51,7 +50,7 @@ const initInstockItem: InstockItem = {
 }
 
 const AuctionHistory: React.FC = () => {
-  const { setLoading, userInfo } = useContext(AppContext)
+  const { setLoading } = useContext(AppContext)
   const topRef = useRef<HTMLDivElement>(null)
   // const [dragging, setDragging] = useState<boolean>(false)
   const [showremainingModal, setShowremainingModal] = useState<boolean>(false)
@@ -62,8 +61,8 @@ const AuctionHistory: React.FC = () => {
   // const [countDown, setCountDown] = useState<number>(0)
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [lotToClose, setLotToClose] = useState<number>(0)
-  const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false)
   const [showImportUnsold, setShowImportUnsold] = useState<boolean>(false)
+  const [showAuditModal, setShowAuditModal] = useState<boolean>(false)
 
   useEffect(() => {
     getAuctionAndRemainingArr()
@@ -116,32 +115,23 @@ const AuctionHistory: React.FC = () => {
     setLoading(false)
   }
 
-  // closing function
-  const remainingRecordToDB = async () => {
+  const createRemainingRecord = async () => {
     if (uploadedFile) {
       // append to form data
-      const formData = new FormData();
-      formData.append('xls', uploadedFile);
+      const formData = new FormData()
+      formData.append('xls', uploadedFile)
       formData.append('lot', String(lotToClose))
       setLoading(true)
       await axios({
         method: 'post',
-        url: `${server}/inventoryController/processRemaining`,
+        url: `${server}/inventoryController/createRemainingRecord`,
         responseType: 'blob',
         timeout: 8000,
-        // data: JSON.stringify({ 'lot': lotToClose, 'FILES': formData }),
         data: formData,
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true
       }).then(async (res: AxiosResponse) => {
         if (res.status > 200) return alert('Failed to Get CSV')
-
-        // JSON parse csv content
-        let file = new Blob([res.data], { type: 'text/csv' })
-        const csv = JSON.parse(await file.text())
-        file = new Blob([csv], { type: 'text/csv' })
-
-        downloadCustomNameFile(file, `${lotToClose}_AuctionRecord.csv`, document)
       }).catch((err: AxiosError) => {
         setLoading(false)
         alert('Failed Fetching Auction CSV: ' + err.response?.data)
@@ -152,15 +142,15 @@ const AuctionHistory: React.FC = () => {
     }
   }
 
-  const handleLotChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setLotToClose(stringToNumber(event.target.value))
-  }
+  const handleLotChange = (event: React.ChangeEvent<HTMLInputElement>) => setLotToClose(stringToNumber(event.target.value))
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) setUploadedFile(event.target.files[0])
   }
 
-  const renderRemainingRecordModal = () => (
+  const getAuction = (auctionLot: number) => auctionHistoryArr.find((val) => val.lot === auctionLot)
+
+  const renderImportRemainingRecordModal = () => (
     <Modal
       show={showremainingModal}
       onHide={() => setShowremainingModal(false)}
@@ -192,7 +182,7 @@ const AuctionHistory: React.FC = () => {
         <hr />
         <div className="flex">
           <Button color="slate" onClick={() => setShowremainingModal(false)}>Close</Button>
-          <Button className="absolute right-6" color="emerald" onClick={remainingRecordToDB}>Submit</Button>
+          <Button className="absolute right-6" color="emerald" onClick={createRemainingRecord}>Submit</Button>
         </div>
       </div>
     </Modal>
@@ -205,13 +195,13 @@ const AuctionHistory: React.FC = () => {
     if (moment().unix() > close.unix()) {
       diff = 'Auction Closed ✅'
     } else {
-      diff = `⏱️ ${close.diff(open, 'days')} Days Until Closing` // ${close.diff(open, 'hours')} Hours ${close.diff(open, 'minutes')} Minutes
+      diff = `⏱️ ${Math.floor(close.diff(open, 'hours') / 24)} Days ${close.diff(open, 'hours') % 24} Hours Until Closing` // ${close.diff(open, 'hours')} Hours ${close.diff(open, 'minutes')} Minutes
     }
 
     return (
       <Badge color={diff.length > 17 ? 'blue' : 'emerald'}>
         <div className="pt-2">
-          <h4>{diff}</h4>
+          <h6>{diff}</h6>
         </div>
       </Badge>
     )
@@ -304,7 +294,7 @@ const AuctionHistory: React.FC = () => {
     <Accordion>
       <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
         ⚡ Top Row Inventories
-        <Badge color="orange" className="absolute right-20">
+        <Badge color="orange" className="absolute right-20 font-bold">
           Total Items: {auction.topRow ? auction.topRow.length : 0}
         </Badge>
       </AccordionHeader>
@@ -316,8 +306,10 @@ const AuctionHistory: React.FC = () => {
               <TableHeaderCell className="w-20">SKU</TableHeaderCell>
               <TableHeaderCell>Lead</TableHeaderCell>
               <TableHeaderCell className="w-48">Desc</TableHeaderCell>
-              <TableHeaderCell className="w-30">MSRP<br />Reserve<br />Start Bid</TableHeaderCell>
-              {editMode ? <TableHeaderCell className="w-30">Edit</TableHeaderCell> : <TableHeaderCell className="w-30">Shelf</TableHeaderCell>}
+              <TableHeaderCell className="w-30 align-middle text-center">MSRP<br />Reserve<br />Start Bid</TableHeaderCell>
+              {editMode ?
+                <TableHeaderCell className="w-30">Edit</TableHeaderCell>
+                : <TableHeaderCell className="w-30">Shelf</TableHeaderCell>}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -329,11 +321,11 @@ const AuctionHistory: React.FC = () => {
                 <TableCell className="text-wrap">{item.description}</TableCell>
                 <TableCell className="justify-center">
                   <div className='grid justify-items-center'>
-                    <Badge color='emerald'>{item.msrp}</Badge>
+                    <Badge color='emerald'>${item.msrp}</Badge>
                     <FaAngleUp className="m-0" />
-                    <Badge color='orange'>{item.reserve ?? 0}</Badge>
+                    <Badge color='orange'>${item.reserve ?? 0}</Badge>
                     <FaAngleUp className="m-0" />
-                    <Badge color='stone'>{item.startBid ?? 0}</Badge>
+                    <Badge color='stone'>${item.startBid ?? 0}</Badge>
                   </div>
                 </TableCell>
                 {
@@ -348,7 +340,7 @@ const AuctionHistory: React.FC = () => {
                       </Button>
                     </TableCell> :
                     <TableCell>
-                      <Badge color="purple">{item.shelfLocation}</Badge>
+                      <Badge color="purple" className="font-bold">{item.shelfLocation}</Badge>
                     </TableCell>
                 }
               </TableRow>
@@ -450,7 +442,9 @@ const AuctionHistory: React.FC = () => {
     <Accordion>
       <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
         📜 Inventories on Auction
-        <Badge color="orange" className="absolute right-20">Total Items: {auction.totalItems}</Badge>
+        <Badge color="orange" className="absolute right-20 font-bold">
+          Total Items: {auction.itemsArr.length}
+        </Badge>
       </AccordionHeader>
       <AccordionBody className="leading-6 p-2">
         <Table>
@@ -466,13 +460,13 @@ const AuctionHistory: React.FC = () => {
                 <TableCell className="text-wrap">{item.description}</TableCell>
                 <TableCell>
                   <div className='grid justify-items-center'>
-                    <Badge color='emerald'>{item.msrp}</Badge>
+                    <Badge color='emerald'>${item.msrp}</Badge>
                     <FaAngleUp className="m-0" />
                     <Badge color='blue'>{item.reserve ?? 0}</Badge>
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge color="purple">{item.shelfLocation}</Badge>
+                  <Badge color="purple" className="font-bold">{item.shelfLocation}</Badge>
                 </TableCell>
               </TableRow>
             ))}
@@ -482,51 +476,76 @@ const AuctionHistory: React.FC = () => {
     </Accordion>
   )
 
+  // remove unsold item array from auction by remaining lot number
+  const deleteUnsold = async (auctionLot: number, remainingLot: number) => {
+    setLoading(true)
+    await axios({
+      method: 'delete',
+      url: `${server}/inventoryController/deleteUnsoldItems`,
+      responseType: 'text',
+      timeout: 8000,
+      withCredentials: true,
+      data: JSON.stringify({
+        'auctionLotNumber': auctionLot,
+        'remainingLotNumber': remainingLot,
+      })
+    }).then((res: AxiosResponse) => {
+      if (res.status > 200) return alert('Failed to Delete')
+      alert(`Deleted Remaining Inventory Set: ${remainingLot} from Auction ${auctionLot}`)
+      getAuctionAndRemainingArr()
+    }).catch((err: AxiosError) => {
+      setLoading(false)
+      alert('Failed to Delete Remaining Inventory Set: ' + err.response?.data)
+    })
+    setLoading(false)
+  }
+
   const renderLastAuctionItemTable = (auction: AuctionInfo) => {
     if (!auction.previousUnsoldArr) return undefined
-    return Object.entries(auction.previousUnsoldArr).map(([key, item]) => (
-      <div key={key}>
-        {item.map((val, index) => (
-          <div key={index}>
-            <p>{val.lead}</p>
-          </div>
-        ))}
-      </div>
+    return Object.entries(auction.previousUnsoldArr).map(([key, item], index) => (
+      <Accordion key={index}>
+        <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
+          ⛔ Unsold From Auction {key} (Randomly Sorted)
+          <Badge color="orange" className="absolute right-20 font-bold">
+            Total Items: {item.length}
+          </Badge>
+        </AccordionHeader>
+        <AccordionBody className="leading-6 p-2">
+          <Button
+            className="ml-6"
+            color="rose"
+            onClick={() => deleteUnsold(auction.lot, Number(key))}
+          >
+            Delete
+          </Button>
+          <Table>
+            <TableHead>
+              {renderInventoryTableHead()}
+            </TableHead>
+            <TableBody>
+              {item.map((item: InstockItem) => (
+                <TableRow key={item.sku}>
+                  <TableCell>{item.lot}</TableCell>
+                  <TableCell>{item.sku}</TableCell>
+                  <TableCell className="text-wrap">{item.lead}</TableCell>
+                  <TableCell className="text-wrap">{item.description}</TableCell>
+                  <TableCell>
+                    <div className='grid justify-items-center'>
+                      <Badge color='emerald'>${item.msrp}</Badge>
+                      <FaAngleUp className="m-0" />
+                      <Badge color='blue'>{item.reserve ?? 0}</Badge>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge color="purple" className="font-bold">{item.shelfLocation}</Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </AccordionBody>
+      </Accordion>
     ))
-
-    // <Accordion>
-    //   <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
-    //     ⛔ Unsold Inventories From Auction { } (Randomly Sorted)
-    //     <Badge color="orange" className="absolute right-20">Total Items: {auction.totalItems}</Badge>
-    //   </AccordionHeader>
-    //   <AccordionBody className="leading-6 p-2">
-    //     <Table>
-    //       <TableHead>
-    //         {renderInventoryTableHead()}
-    //       </TableHead>
-    //       <TableBody>
-    //         {auction.itemsArr.map((item: InstockItem) => (
-    //           <TableRow key={item.sku}>
-    //             <TableCell>{item.lot}</TableCell>
-    //             <TableCell>{item.sku}</TableCell>
-    //             <TableCell className="text-wrap">{item.lead}</TableCell>
-    //             <TableCell className="text-wrap">{item.description}</TableCell>
-    //             <TableCell>
-    //               <div className='grid justify-items-center'>
-    //                 <Badge color='emerald'>{item.msrp}</Badge>
-    //                 <FaAngleUp className="m-0" />
-    //                 <Badge color='blue'>{item.reserve ?? 0}</Badge>
-    //               </div>
-    //             </TableCell>
-    //             <TableCell>
-    //               <Badge color="purple">{item.shelfLocation}</Badge>
-    //             </TableCell>
-    //           </TableRow>
-    //         ))}
-    //       </TableBody>
-    //     </Table>
-    //   </AccordionBody>
-    // </Accordion>
   }
 
   const renderItemTable = (auctionInfo: AuctionInfo) => (
@@ -572,18 +591,16 @@ const AuctionHistory: React.FC = () => {
               <FaFileCsv className="mr-1" /> CSV
             </Button>
           </div>
-          <p>Item Lot # Starts From {val.lot}</p>
+          <p>Item Lot # Starts From {val.itemLotStart}</p>
           <h6>{val.title}</h6>
           <hr />
           <div className="flex gap-6">
-            {/* <Badge color="emerald">Min MSRP: {val.minMSRP ?? 0}</Badge>
-            <Badge color="rose">Max MSRP: {val.maxMSRP ?? 0}</Badge> */}
             <Button color="emerald" onClick={() => setShowImportUnsold(true)}>
               Import Unsold Items
             </Button>
             <br />
-            <Badge color="blue" className="absolute right-20">
-              Total Items: {val.topRow ? val.topRow.length + val.itemsArr.length : val.itemsArr.length}
+            <Badge color="emerald" className="absolute right-20 font-bold">
+              Total Items: {val.totalItems}
             </Badge>
           </div>
           {renderItemTable(val)}
@@ -609,7 +626,9 @@ const AuctionHistory: React.FC = () => {
       <Accordion>
         <AccordionHeader className="text-sm fontr-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
           💵 Sold Items
-          <Badge color="emerald" className="absolute right-20">Sold: {record.soldItems.length ?? 0}</Badge>
+          <Badge color="emerald" className="absolute right-20 font-bold">
+            Sold: {record.soldItems.length ?? 0}
+          </Badge>
         </AccordionHeader>
         <AccordionBody className="leading-6 p-2">
           <Table>
@@ -620,7 +639,7 @@ const AuctionHistory: React.FC = () => {
                 <TableHeaderCell className="w-36">Lead</TableHeaderCell>
                 <TableHeaderCell className="w-24">Bid Amount</TableHeaderCell>
                 <TableHeaderCell className="w-24 align-middle text-center">Reserve</TableHeaderCell>
-                <TableHeaderCell className="w-24 align-middle text-center">Shelf</TableHeaderCell>
+                <TableHeaderCell className="w-24 align-middle text-center">Shelf<br />AMT</TableHeaderCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -635,10 +654,14 @@ const AuctionHistory: React.FC = () => {
                     <Badge color='green'>${sold.bidAmount}</Badge>
                   </TableCell>
                   <TableCell className="align-middle text-center">
-                    <Badge color='indigo' className='font-bold'>${sold.reserve}</Badge>
+                    <Badge color='blue' className='font-bold'>${sold.reserve}</Badge>
                   </TableCell>
                   <TableCell className="align-middle text-center">
-                    <Badge color="purple" className='font-bold'>{sold.shelfLocation}</Badge>
+                    <div className='grid justify-items-center'>
+                      <Badge color="purple" className='font-bold'>{sold.shelfLocation}</Badge>
+                      <FaAngleDown className="m-0" />
+                      <Badge color='emerald' className='font-bold'>{sold.quantityInstock}</Badge>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -649,43 +672,43 @@ const AuctionHistory: React.FC = () => {
     )
   }
 
-  const renderUnsoldTable = (record: RemainingInfo) => {
-    return (
-      <Accordion>
-        <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
-          📦 Unsold Items
-          <Badge color="rose" className="absolute right-20">Unsold: {record.unsoldItems.length ?? 0}</Badge>
-        </AccordionHeader>
-        <AccordionBody className="leading-6 p-2">
-          <Table>
-            <TableHead>
-              {renderInventoryTableHead()}
-            </TableHead>
-            <TableBody>
-              {record.unsoldItems.map((unsold: InstockItem) => (
-                <TableRow key={unsold.sku}>
-                  <TableCell className="align-middle text-center">{unsold.lot}</TableCell>
-                  <TableCell className="align-middle text-center">{unsold.sku}</TableCell>
-                  <TableCell className="text-wrap">{unsold.lead}</TableCell>
-                  <TableCell className="text-wrap">{unsold.description}</TableCell>
-                  <TableCell className="align-middle text-center">
-                    <div className='grid justify-items-center'>
-                      <Badge color='emerald'>${unsold.msrp}</Badge>
-                      <FaAngleUp className="m-0" />
-                      <Badge color='blue'>${unsold.reserve ?? 0}</Badge>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge color="purple">{unsold.shelfLocation}</Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </AccordionBody>
-      </Accordion>
-    )
-  }
+  const renderUnsoldTable = (record: RemainingInfo) => (
+    <Accordion>
+      <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
+        📦 Unsold Items
+        <Badge color="red" className="font-bold absolute right-20">
+          Unsold: {record.unsoldItems.length ?? 0}
+        </Badge>
+      </AccordionHeader>
+      <AccordionBody className="leading-6 p-2">
+        <Table>
+          <TableHead>
+            {renderInventoryTableHead()}
+          </TableHead>
+          <TableBody>
+            {record.unsoldItems.map((unsold: InstockItem) => (
+              <TableRow key={unsold.sku}>
+                <TableCell className="align-middle text-center">{unsold.lot}</TableCell>
+                <TableCell className="align-middle text-center">{unsold.sku}</TableCell>
+                <TableCell className="text-wrap">{unsold.lead}</TableCell>
+                <TableCell className="text-wrap">{unsold.description}</TableCell>
+                <TableCell className="align-middle text-center">
+                  <div className='grid justify-items-center'>
+                    <Badge color='emerald'>${unsold.msrp}</Badge>
+                    <FaAngleUp className="m-0" />
+                    <Badge color='blue'>${unsold.reserve ?? 0}</Badge>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge color="purple" className="font-bold">{unsold.shelfLocation}</Badge>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </AccordionBody>
+    </Accordion>
+  )
 
   const deleteRemainingRecord = async (record: RemainingInfo) => {
     setLoading(true)
@@ -706,20 +729,142 @@ const AuctionHistory: React.FC = () => {
     setLoading(false)
   }
 
+  const renderErrorItemsTable = (record: RemainingInfo) => (
+    <Accordion>
+      <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
+        🚩 Error Items (out-of-stock)
+        <Badge color="red" className="font-bold absolute right-20">
+          Error Items: {record.errorItems?.length ?? 0}
+        </Badge>
+      </AccordionHeader>
+      <AccordionBody className="leading-6 p-2">
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableHeaderCell className="w-16 align-middle text-center">Lot#</TableHeaderCell>
+              <TableHeaderCell className="w-18 align-middle text-center">SKU</TableHeaderCell>
+              <TableHeaderCell className="w-32">Lead</TableHeaderCell>
+              <TableHeaderCell className="w-32 align-middle text-center">Bid<br />Reserve</TableHeaderCell>
+              <TableHeaderCell className="w-30 align-middle text-center">Shelf</TableHeaderCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {record.errorItems?.map((unsold: SoldItem) => (
+              <TableRow key={unsold.sku}>
+                <TableCell className="align-middle text-center">{unsold.clotNumber}</TableCell>
+                <TableCell className="align-middle text-center">{unsold.sku}</TableCell>
+                <TableCell className="text-wrap">{unsold.lead}</TableCell>
+                <TableCell className="align-middle text-center">
+                  <div className='grid justify-items-center'>
+                    <Badge color='emerald'>${unsold.bidAmount}</Badge>
+                    <FaAngleUp className="m-0" />
+                    <Badge color='blue'>${unsold.reserve ?? 0}</Badge>
+                  </div>
+                </TableCell>
+                <TableCell className="align-middle text-center">
+                  <div className='grid justify-items-center'>
+                    <Badge color="purple" className="font-bold">{unsold.shelfLocation}</Badge>
+                    <FaAngleDown className="m-0" />
+                    <Badge color="emerald" className="font-bold">{unsold.quantityInstock}</Badge>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </AccordionBody>
+    </Accordion>
+  )
+
+  const renderDatabaseResultTable = (record: RemainingInfo) => (
+    <Accordion>
+      <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
+        🚩 Database Result
+        <Badge color="red" className="font-bold absolute right-20">
+          Error Items: {record.deducted?.length + record.outOfStock?.length ?? 0}
+        </Badge>
+      </AccordionHeader>
+      <AccordionBody className="leading-6 p-2">
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableHeaderCell className="w-16 align-middle text-center">Lot#</TableHeaderCell>
+              <TableHeaderCell className="w-18 align-middle text-center">SKU</TableHeaderCell>
+              <TableHeaderCell className="w-32">Lead</TableHeaderCell>
+              <TableHeaderCell className="w-32 align-middle text-center">Bid<br />Reserve</TableHeaderCell>
+              <TableHeaderCell className="w-30 align-middle text-center">Shelf</TableHeaderCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {record.deducted?.map((unsold: SoldItem) => (
+              <TableRow key={unsold.sku}>
+                <TableCell className="align-middle text-center">{unsold.clotNumber}</TableCell>
+                <TableCell className="align-middle text-center">{unsold.sku}</TableCell>
+                <TableCell className="text-wrap">{unsold.lead}</TableCell>
+                <TableCell className="align-middle text-center">
+                  <div className='grid justify-items-center'>
+                    <Badge color='emerald'>${unsold.bidAmount}</Badge>
+                    <FaAngleUp className="m-0" />
+                    <Badge color='blue'>${unsold.reserve ?? 0}</Badge>
+                  </div>
+                </TableCell>
+                <TableCell className="align-middle text-center">
+                  <div className='grid justify-items-center'>
+                    <Badge color="purple" className="font-bold">{unsold.shelfLocation}</Badge>
+                    <FaAngleDown className="m-0" />
+                    <Badge color="emerald" className="font-bold">{unsold.quantityInstock}</Badge>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+            {record.outOfStock?.map((unsold: SoldItem) => (
+              <TableRow key={unsold.sku}>
+                <TableCell className="align-middle text-center">{unsold.clotNumber}</TableCell>
+                <TableCell className="align-middle text-center">{unsold.sku}</TableCell>
+                <TableCell className="text-wrap">{unsold.lead}</TableCell>
+                <TableCell className="align-middle text-center">
+                  <div className='grid justify-items-center'>
+                    <Badge color='emerald'>${unsold.bidAmount}</Badge>
+                    <FaAngleUp className="m-0" />
+                    <Badge color='blue'>${unsold.reserve ?? 0}</Badge>
+                  </div>
+                </TableCell>
+                <TableCell className="align-middle text-center">
+                  <div className='grid justify-items-center'>
+                    <Badge color="purple" className="font-bold">{unsold.shelfLocation}</Badge>
+                    <FaAngleDown className="m-0" />
+                    <Badge color="emerald" className="font-bold">{unsold.quantityInstock}</Badge>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </AccordionBody>
+    </Accordion>
+  )
+
   const renderRemainingCard = () => {
     if (remainingHistoryArr.map) {
       return remainingHistoryArr.map((remainingRecord, index) => (
-        <Card key={index} className="!bg-[#223] border-2 !border-slate-500	">
+        <Card key={index} className={`!bg-[#223] border-2 ${remainingRecord.isProcessed ? '!border-emerald-600' : '!border-slate-500'}`}>
+          <RemainingAuditModal
+            show={showAuditModal}
+            close={() => setShowAuditModal(false)}
+            remainingRecord={remainingRecord}
+            auctionRecord={getAuction(remainingRecord.lot)}
+          />
           <h4>Lot #{remainingRecord.lot}</h4>
-          {editMode ? <Button
-            color="rose"
-            className="absolute right-12 top-6"
-            onClick={() => deleteRemainingRecord(remainingRecord)}
-          >
-            Delete
-          </Button> : undefined}
+          {editMode ?
+            <Button
+              color="rose"
+              className="absolute right-12 top-6"
+              onClick={() => deleteRemainingRecord(remainingRecord)}
+            >
+              Delete
+            </Button> : undefined}
           <hr />
-          <Badge color='blue'>
+          <Badge className="font-bold" color='emerald'>
             Total Items: {remainingRecord.totalItems}
           </Badge>
           <div className="mt-3">
@@ -728,8 +873,26 @@ const AuctionHistory: React.FC = () => {
           <div className="mt-3">
             {renderUnsoldTable(remainingRecord)}
           </div>
+          <div className="mt-3">
+            {renderErrorItemsTable(remainingRecord)}
+          </div>
+          <div className="mt-3">
+            {renderDatabaseResultTable(remainingRecord)}
+          </div>
           <hr />
-          <p className="mt-3">Time Closed: {moment(remainingRecord.timeClosed).format('LLL')}</p>
+          <div>
+            <Badge className="font-bold" color='rose'>
+              Time Closed: {moment(remainingRecord.timeClosed).format('LLL')}
+            </Badge>
+            <Button
+              className="absolute right-12"
+              color={remainingRecord.isProcessed ? 'emerald' : "orange"}
+              disabled={remainingRecord.isProcessed ? true : false}
+              onClick={() => setShowAuditModal(true)}
+            >
+              Audit
+            </Button>
+          </div>
         </Card>
       ))
     } else {
@@ -739,7 +902,7 @@ const AuctionHistory: React.FC = () => {
 
   return (
     <div ref={topRef}>
-      {renderRemainingRecordModal()}
+      {renderImportRemainingRecordModal()}
       <Grid numItems={2} className="gap-3">
         <Col>
           <Card className="min-h-[90vh]">

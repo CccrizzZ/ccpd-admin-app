@@ -5,7 +5,8 @@ import {
   DatePicker,
   List,
   ListItem,
-  DatePickerValue
+  DatePickerValue,
+  Switch
 } from '@tremor/react'
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import React, { useContext, useEffect, useState } from 'react'
@@ -27,10 +28,10 @@ const InstockStagingModal: React.FC<InstockStagingModalProps> = (props: InstockS
   const [lot, setLot] = useState<number>(0)
   const [itemLotStart, setItemLotStart] = useState<number>(0)
   const [endDate, setEndDate] = useState<DatePickerValue>(undefined)
-  const [abnormalRecords, setAbnormalRecords] = useState<InstockInventory[]>([])
+  // if true, duplicate items and push the same stuff x times
+  const [duplicate, setDuplicate] = useState<boolean>(false)
 
   useEffect(() => {
-    // getAbnormalRecords()
   }, [])
 
   const createAuctionRecord = async () => {
@@ -52,7 +53,8 @@ const InstockStagingModal: React.FC<InstockStagingModalProps> = (props: InstockS
         lot: lot,
         itemLotStart: itemLotStart,
         endDate: endDate,
-        filter: filter
+        filter: filter,
+        duplicate: duplicate
       },
       withCredentials: true
     }).then((res: AxiosResponse) => {
@@ -140,7 +142,7 @@ const InstockStagingModal: React.FC<InstockStagingModalProps> = (props: InstockS
       size='lg'
     >
       <div className='grid p-3 gap-2'>
-        <h2> Create Auction Record</h2>
+        <h2 className='mb-0'>✳️ Create Auction Record</h2>
         <hr />
         <Card>
           <InputGroup size='sm' className='mb-3'>
@@ -189,6 +191,15 @@ const InstockStagingModal: React.FC<InstockStagingModalProps> = (props: InstockS
           <Badge color='emerald'>
             <h4 className='m-0'>Total: {props.totalItems ?? 0} Items</h4>
           </Badge>
+          <div className='flex absolute right-12 bottom-6'>
+            <Switch
+              className='mr-3'
+              color='rose'
+              onChange={() => setDuplicate(!duplicate)}
+              checked={duplicate}
+            />
+            <span>Duplicate Row</span>
+          </div>
         </Card>
         <hr />
         <div className='flex'>

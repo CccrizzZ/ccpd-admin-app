@@ -64,7 +64,7 @@ const App = () => {
   // map all navigation items
   const renderNavItem = () => {
     const pages = [
-      'Dashboard',
+      // 'Dashboard',
       'Q&A Records',
       'Inventory',
       'Auction History',
@@ -74,7 +74,7 @@ const App = () => {
       // 'Pallet Manager'
     ]
     const icons = [
-      <FaHouseChimney />,
+      // <FaHouseChimney />,
       <FaTableList />,
       <FaBoxesStacked />,
       <FaGavel />,

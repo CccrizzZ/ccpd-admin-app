@@ -180,6 +180,7 @@ export type AuctionInfo = {
   remainingResolved?: boolean,
   minSku?: number,
   maxSku?: number,
+  itemLotStart?: number
 }
 
 export type RemainingInfo = {
@@ -190,6 +191,10 @@ export type RemainingInfo = {
   soldItems: SoldItem[],
   unsoldItems: InstockItem[],
   timeClosed: string,
+  isProcessed?: boolean, // weather if the record is processed into DB
+  errorItems?: SoldItem[],
+  deducted: SoldItem[],
+  outOfStock: SoldItem[],
 }
 
 export type SoldItem = {
@@ -200,4 +205,5 @@ export type SoldItem = {
   lead?: string,
   reserve?: string,
   shelfLocation?: string,
+  quantityInstock?: string
 }

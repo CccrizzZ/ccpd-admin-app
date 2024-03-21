@@ -8,6 +8,7 @@ import {
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import { server } from '../utils/utils';
 import { AppContext } from '../App';
+import { FaRotate } from 'react-icons/fa6';
 
 type ImportUnsoldModalProps = {
   hide: () => void,
@@ -16,6 +17,7 @@ type ImportUnsoldModalProps = {
   refreshAuction: () => Promise<void>,
 }
 
+// imports unsold items array into auction record past unsold record <lot:unsoldArr>
 const ImportUnsoldModal: React.FC<ImportUnsoldModalProps> = (
   props: ImportUnsoldModalProps
 ) => {
@@ -24,10 +26,10 @@ const ImportUnsoldModal: React.FC<ImportUnsoldModalProps> = (
   const [lotToImport, setLotToImport] = useState<string>('')
 
   useEffect(() => {
-    getAuctionLotNumbers()
+    getAuctionLotNumbers(false)
   }, [])
 
-  const getAuctionLotNumbers = async () => {
+  const getAuctionLotNumbers = async (closeModal: boolean) => {
     setLoading(true)
     await axios({
       method: 'get',
@@ -39,7 +41,7 @@ const ImportUnsoldModal: React.FC<ImportUnsoldModalProps> = (
       if (res.status > 200) return alert('Failed to Fetch Auction Lot Numbers')
       setRemainingLotNumbers(JSON.parse(res.data))
       props.refreshAuction()
-      props.hide()
+      closeModal ? props.hide() : undefined
     }).catch((err: AxiosError) => {
       setLoading(false)
       alert('Failed to Fetch Auction Lot Numbers ' + err.response?.data)
@@ -72,13 +74,17 @@ const ImportUnsoldModal: React.FC<ImportUnsoldModalProps> = (
   }
 
   const renderRemainingLotNumberSelection = () => {
-    if (remainingLotNumbers.length > 0) return (
-      <SearchSelect value={lotToImport} onValueChange={setLotToImport}>
-        {remainingLotNumbers.map((val, index) => (<SearchSelectItem key={index} value={String(val)}>
-          {String(val)}
-        </SearchSelectItem>))}
-      </SearchSelect>
-    )
+    if (remainingLotNumbers.length > 0) {
+      return (
+        <SearchSelect value={lotToImport} onValueChange={setLotToImport}>
+          {remainingLotNumbers.map((val, index) => (<SearchSelectItem key={index} value={String(val)}>
+            {String(val)}
+          </SearchSelectItem>))}
+        </SearchSelect>
+      )
+    } else {
+      return <p>No Remaining Records Found</p>
+    }
   }
 
   return (
@@ -94,6 +100,13 @@ const ImportUnsoldModal: React.FC<ImportUnsoldModalProps> = (
         <Modal.Title>Import Unsold Items</Modal.Title>
       </Modal.Header>
       <Modal.Body>
+        <Button
+          className='absolute right-6'
+          color='emerald'
+          onClick={() => getAuctionLotNumbers(false)}
+        >
+          <FaRotate />
+        </Button>
         <p>Select Remaining Lot for Unsold Items</p>
         {renderRemainingLotNumberSelection()}
       </Modal.Body>
