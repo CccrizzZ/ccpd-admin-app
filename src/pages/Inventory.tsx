@@ -48,7 +48,6 @@ import AdminNameSelection from '../components/AdminNameSelection'
 import QANameSelection from '../components/QANameSelection'
 import { FaAnglesDown } from 'react-icons/fa6'
 import InstockStagingModal from '../components/InstockStagingModal'
-import ConfirmationModalProps from '../components/ConfirmationModal'
 
 // mock data
 // TODO: add server graph information route

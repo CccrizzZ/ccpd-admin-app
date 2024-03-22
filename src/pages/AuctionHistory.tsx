@@ -64,6 +64,8 @@ const AuctionHistory: React.FC = () => {
   const [showImportUnsold, setShowImportUnsold] = useState<boolean>(false)
   const [showAuditModal, setShowAuditModal] = useState<boolean>(false)
 
+  const [targetAuctionLot, setTargetAuctionLot] = useState<number>(0)
+
   useEffect(() => {
     getAuctionAndRemainingArr()
   }, [])
@@ -148,7 +150,7 @@ const AuctionHistory: React.FC = () => {
     if (event.target.files) setUploadedFile(event.target.files[0])
   }
 
-  const getAuction = (auctionLot: number) => auctionHistoryArr.find((val) => val.lot === auctionLot)
+  const findAuction = (auctionLot: number) => auctionHistoryArr.find((val) => val.lot === auctionLot)
 
   const renderImportRemainingRecordModal = () => (
     <Modal
@@ -290,6 +292,36 @@ const AuctionHistory: React.FC = () => {
     setLoading(false)
   }
 
+  const duplicateTopRowItem = async (auc: AuctionInfo, lot: number) => {
+    // find that item in auction record
+    const auctionRecord = findAuction(auc.lot)
+    if (auctionRecord) {
+      const duplicateItem = auctionRecord.topRow.find((val) => val.lot === lot)
+      if (duplicateItem) {
+        duplicateItem.lot += 1
+      }
+
+      // send duplication request
+      setLoading(true)
+      await axios({
+        method: 'post',
+        url: `${server}/inventoryController/addTopRowItem`,
+        responseType: 'text',
+        timeout: 8000,
+        withCredentials: true,
+        data: JSON.stringify({ 'auctionLot': auc.lot, 'newItem': duplicateItem })
+      }).then((res: AxiosResponse) => {
+        if (res.status === 200) {
+          getAuctionAndRemainingArr()
+        }
+      }).catch((err: AxiosError) => {
+        setLoading(false)
+        alert('Failed Adding Item to Top Row: ' + err.response?.data)
+      })
+      setLoading(false)
+    }
+  }
+
   const renderTopRowsTable = (auction: AuctionInfo) => (
     <Accordion>
       <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
@@ -308,7 +340,7 @@ const AuctionHistory: React.FC = () => {
               <TableHeaderCell className="w-48">Desc</TableHeaderCell>
               <TableHeaderCell className="w-30 align-middle text-center">MSRP<br />Reserve<br />Start Bid</TableHeaderCell>
               {editMode ?
-                <TableHeaderCell className="w-30">Edit</TableHeaderCell>
+                <TableHeaderCell className="w-30 align-middle text-center">Edit</TableHeaderCell>
                 : <TableHeaderCell className="w-30">Shelf</TableHeaderCell>}
             </TableRow>
           </TableHead>
@@ -337,6 +369,14 @@ const AuctionHistory: React.FC = () => {
                         onClick={() => deleteTopRowItem(item, auction.lot)}
                       >
                         Delete
+                      </Button>
+                      <br />
+                      <Button
+                        color="blue"
+                        size="xs"
+                        onClick={() => duplicateTopRowItem(auction, item.lot)}
+                      >
+                        Duplicate
                       </Button>
                     </TableCell> :
                     <TableCell>
@@ -505,7 +545,7 @@ const AuctionHistory: React.FC = () => {
     return Object.entries(auction.previousUnsoldArr).map(([key, item], index) => (
       <Accordion key={index}>
         <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
-          ⛔ Unsold From Auction {key} (Randomly Sorted)
+          📦 Unsold From Auction {key} (Randomly Sorted)
           <Badge color="orange" className="absolute right-20 font-bold">
             Total Items: {item.length}
           </Badge>
@@ -562,6 +602,10 @@ const AuctionHistory: React.FC = () => {
     </>
   )
 
+  const showImportModal = (lot: number) => {
+    setTargetAuctionLot(lot)
+    setShowImportUnsold(true)
+  }
   const onEditModeChange = (value: boolean) => setEditMode(value)
   const renderAuctionCard = () => {
     if (auctionHistoryArr.map) {
@@ -570,7 +614,7 @@ const AuctionHistory: React.FC = () => {
           <ImportUnsoldModal
             show={showImportUnsold}
             hide={() => setShowImportUnsold(false)}
-            auctionLotNumber={val.lot}
+            auctionLotNumber={targetAuctionLot}
             refreshAuction={getAuctionAndRemainingArr}
           />
           <div className="flex gap-2">
@@ -595,7 +639,7 @@ const AuctionHistory: React.FC = () => {
           <h6>{val.title}</h6>
           <hr />
           <div className="flex gap-6">
-            <Button color="emerald" onClick={() => setShowImportUnsold(true)}>
+            <Button color="indigo" onClick={() => showImportModal(val.lot)}>
               Import Unsold Items
             </Button>
             <br />
@@ -733,7 +777,7 @@ const AuctionHistory: React.FC = () => {
     <Accordion>
       <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
         🚩 Error Items (out-of-stock)
-        <Badge color="red" className="font-bold absolute right-20">
+        <Badge color="gray" className="font-bold absolute right-20">
           Error Items: {record.errorItems?.length ?? 0}
         </Badge>
       </AccordionHeader>
@@ -776,73 +820,74 @@ const AuctionHistory: React.FC = () => {
     </Accordion>
   )
 
-  const renderDatabaseResultTable = (record: RemainingInfo) => (
-    <Accordion>
-      <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
-        🚩 Database Result
-        <Badge color="red" className="font-bold absolute right-20">
-          Error Items: {record.deducted?.length + record.outOfStock?.length ?? 0}
-        </Badge>
-      </AccordionHeader>
-      <AccordionBody className="leading-6 p-2">
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableHeaderCell className="w-16 align-middle text-center">Lot#</TableHeaderCell>
-              <TableHeaderCell className="w-18 align-middle text-center">SKU</TableHeaderCell>
-              <TableHeaderCell className="w-32">Lead</TableHeaderCell>
-              <TableHeaderCell className="w-32 align-middle text-center">Bid<br />Reserve</TableHeaderCell>
-              <TableHeaderCell className="w-30 align-middle text-center">Shelf</TableHeaderCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {record.deducted?.map((unsold: SoldItem) => (
-              <TableRow key={unsold.sku}>
-                <TableCell className="align-middle text-center">{unsold.clotNumber}</TableCell>
-                <TableCell className="align-middle text-center">{unsold.sku}</TableCell>
-                <TableCell className="text-wrap">{unsold.lead}</TableCell>
-                <TableCell className="align-middle text-center">
-                  <div className='grid justify-items-center'>
-                    <Badge color='emerald'>${unsold.bidAmount}</Badge>
-                    <FaAngleUp className="m-0" />
-                    <Badge color='blue'>${unsold.reserve ?? 0}</Badge>
-                  </div>
-                </TableCell>
-                <TableCell className="align-middle text-center">
-                  <div className='grid justify-items-center'>
-                    <Badge color="purple" className="font-bold">{unsold.shelfLocation}</Badge>
-                    <FaAngleDown className="m-0" />
-                    <Badge color="emerald" className="font-bold">{unsold.quantityInstock}</Badge>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-            {record.outOfStock?.map((unsold: SoldItem) => (
-              <TableRow key={unsold.sku}>
-                <TableCell className="align-middle text-center">{unsold.clotNumber}</TableCell>
-                <TableCell className="align-middle text-center">{unsold.sku}</TableCell>
-                <TableCell className="text-wrap">{unsold.lead}</TableCell>
-                <TableCell className="align-middle text-center">
-                  <div className='grid justify-items-center'>
-                    <Badge color='emerald'>${unsold.bidAmount}</Badge>
-                    <FaAngleUp className="m-0" />
-                    <Badge color='blue'>${unsold.reserve ?? 0}</Badge>
-                  </div>
-                </TableCell>
-                <TableCell className="align-middle text-center">
-                  <div className='grid justify-items-center'>
-                    <Badge color="purple" className="font-bold">{unsold.shelfLocation}</Badge>
-                    <FaAngleDown className="m-0" />
-                    <Badge color="emerald" className="font-bold">{unsold.quantityInstock}</Badge>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </AccordionBody>
-    </Accordion>
-  )
+  const renderDatabaseResultTable = (record: RemainingInfo) => {
+    if (!record.isProcessed) {
+      return (
+        <Button
+          className="w-32"
+          color='orange'
+          onClick={() => setShowAuditModal(true)}
+        >
+          Audit
+        </Button>
+      )
+    } else {
+      return (
+        <Accordion>
+          <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
+            🖍️ Database Changes Made
+            <Badge color="blue" className="font-bold absolute right-20">
+              Items Deducted: {record.deducted ? record.deducted.length : 0}
+            </Badge>
+          </AccordionHeader>
+          <AccordionBody className="leading-6 p-2">
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableHeaderCell className="w-16 align-middle text-center">Lot#</TableHeaderCell>
+                  <TableHeaderCell className="w-18 align-middle text-center">SKU</TableHeaderCell>
+                  <TableHeaderCell className="w-32">Lead</TableHeaderCell>
+                  <TableHeaderCell className="w-32 align-middle text-center">Bid<br />Reserve</TableHeaderCell>
+                  <TableHeaderCell className="w-30 align-middle text-center">
+                    Shelf
+                    <br />
+                    Before
+                    <br />
+                    After
+                  </TableHeaderCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {record.deducted?.map((deducted: SoldItem) => (
+                  <TableRow key={deducted.sku}>
+                    <TableCell className="align-middle text-center">{deducted.clotNumber}</TableCell>
+                    <TableCell className="align-middle text-center">{deducted.sku}</TableCell>
+                    <TableCell className="text-wrap">{deducted.lead}</TableCell>
+                    <TableCell className="align-middle text-center">
+                      <div className='grid justify-items-center'>
+                        <Badge color='emerald'>${deducted.bidAmount}</Badge>
+                        <FaAngleUp className="m-0" />
+                        <Badge color='blue'>${deducted.reserve ?? 0}</Badge>
+                      </div>
+                    </TableCell>
+                    <TableCell className="align-middle text-center">
+                      <div className='grid justify-items-center'>
+                        <Badge color="purple" className="font-bold">{deducted.shelfLocation}</Badge>
+                        <FaAngleDown className="m-0" />
+                        <Badge color="emerald" className="font-bold">{deducted.quantityInstock}</Badge>
+                        <FaAngleDown className="m-0" />
+                        <Badge color="rose" className="font-bold">{Number(deducted.quantityInstock) - 1}</Badge>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </AccordionBody>
+        </Accordion>
+      )
+    }
+  }
 
   const renderRemainingCard = () => {
     if (remainingHistoryArr.map) {
@@ -852,9 +897,11 @@ const AuctionHistory: React.FC = () => {
             show={showAuditModal}
             close={() => setShowAuditModal(false)}
             remainingRecord={remainingRecord}
-            auctionRecord={getAuction(remainingRecord.lot)}
+            auctionRecord={findAuction(remainingRecord.lot)}
           />
-          <h4>Lot #{remainingRecord.lot}</h4>
+          <h4>
+            {remainingRecord.isProcessed ? <>✅</> : undefined}Lot #{remainingRecord.lot}
+          </h4>
           {editMode ?
             <Button
               color="rose"
@@ -876,23 +923,14 @@ const AuctionHistory: React.FC = () => {
           <div className="mt-3">
             {renderErrorItemsTable(remainingRecord)}
           </div>
+          <hr />
           <div className="mt-3">
             {renderDatabaseResultTable(remainingRecord)}
           </div>
           <hr />
-          <div>
-            <Badge className="font-bold" color='rose'>
-              Time Closed: {moment(remainingRecord.timeClosed).format('LLL')}
-            </Badge>
-            <Button
-              className="absolute right-12"
-              color={remainingRecord.isProcessed ? 'emerald' : "orange"}
-              disabled={remainingRecord.isProcessed ? true : false}
-              onClick={() => setShowAuditModal(true)}
-            >
-              Audit
-            </Button>
-          </div>
+          <Badge className="font-bold" color='rose'>
+            Time Closed: {moment(remainingRecord.timeClosed).format('LLL')}
+          </Badge>
         </Card>
       ))
     } else {

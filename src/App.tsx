@@ -19,7 +19,7 @@ import {
   FaBoxesStacked,
   FaUsersGear,
   FaTableList,
-  FaHouseChimney,
+  // FaHouseChimney,
   // FaFileInvoiceDollar,
   FaDoorOpen,
   FaGear,

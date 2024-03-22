@@ -17,11 +17,9 @@ import {
   Grid,
   Col,
   Badge,
-  List,
-  ListItem,
 } from '@tremor/react'
 import { AuctionInfo, InstockItem, RemainingInfo, SoldItem } from '../utils/Types'
-import { FaRotate } from 'react-icons/fa6'
+import { FaAngleDown } from 'react-icons/fa6'
 
 type RemainigAuditModalProps = {
   close: () => void,
@@ -41,7 +39,7 @@ type ErrorItems = {
 // provide panel for database subtraction action
 const RemainingAuditModal: React.FC<RemainigAuditModalProps> = (props: RemainigAuditModalProps) => {
   const { setLoading } = useContext(AppContext)
-  const [errorItems, setErrorItems] = useState<ErrorItems[]>([])
+  const [errorItems] = useState<ErrorItems[]>([])
 
   useEffect(() => {
     getErrorItems()
@@ -59,14 +57,13 @@ const RemainingAuditModal: React.FC<RemainigAuditModalProps> = (props: RemainigA
     }).then((res: AxiosResponse) => {
       if (res.status > 200) return alert('Failed to Fetch Auction Lot Numbers')
       // set processed flag to true
-      props.remainingRecord.isProcessed = true
+      props.close()
       return alert('Pushed to Database')
     }).catch((err: AxiosError) => {
       setLoading(false)
       alert('Failed to Fetch Auction Lot Numbers ' + err.response?.data)
     })
     setLoading(false)
-
   }
 
   // get repetitive sku in auction record
@@ -200,9 +197,9 @@ const RemainingAuditModal: React.FC<RemainigAuditModalProps> = (props: RemainigA
     <Table>
       <TableHead>
         <TableRow>
-          <TableHeaderCell>Lot</TableHeaderCell>
+          <TableHeaderCell className='w-28'>Lot</TableHeaderCell>
           <TableHeaderCell>SKU</TableHeaderCell>
-          <TableHeaderCell>Reason</TableHeaderCell>
+          <TableHeaderCell className='w-64'>Reason</TableHeaderCell>
         </TableRow>
       </TableHead>
       <TableBody>
@@ -211,6 +208,52 @@ const RemainingAuditModal: React.FC<RemainigAuditModalProps> = (props: RemainigA
             <TableCell>{val.lot}</TableCell>
             <TableCell><Badge color='rose' className='font-bold'>{val.sku}</Badge></TableCell>
             <TableCell>{val.reason}</TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  )
+
+  const getTotalSoldAmount = () => {
+    let i = 0
+    props.remainingRecord.soldItems.map((val) => i += val.bidAmount)
+    return i
+  }
+
+  const renderDatabaseDeduction = () => (
+    <Table>
+      <TableHead>
+        <TableRow>
+          <TableHeaderCell>Lot</TableHeaderCell>
+          <TableHeaderCell>SKU</TableHeaderCell>
+          <TableHeaderCell>Bid</TableHeaderCell>
+          <TableHeaderCell className='w-30 align-middle text-center'>
+            <span className='text-emerald-500'>Instock</span>
+            <span className='text-rose-500'>After Deduct</span>
+          </TableHeaderCell>
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {props.remainingRecord.soldItems.map((val, index) => (
+          <TableRow key={index}>
+            <TableCell>{val.clotNumber}</TableCell>
+            <TableCell>
+              <Badge color='emerald' className='font-bold'>{val.sku}</Badge>
+            </TableCell>
+            <TableCell>
+              <Badge color='emerald' className='font-bold'>${val.bidAmount}</Badge>
+            </TableCell>
+            <TableCell>
+              <div className='grid justify-items-center'>
+                <Badge color="emerald" className="font-bold">
+                  {val.quantityInstock}
+                </Badge>
+                <FaAngleDown className="m-0" />
+                <Badge color="rose" className="font-bold">
+                  {Number(val.quantityInstock) - 1}
+                </Badge>
+              </div>
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>
@@ -239,10 +282,17 @@ const RemainingAuditModal: React.FC<RemainigAuditModalProps> = (props: RemainigA
             {renderRemainingTable()}
           </Card>
         </Col>
-        <Col numColSpan={2}>
+        <Col>
           <Card>
             <h2 className='text-rose-500'>Error Items</h2>
             {renderErrorItems()}
+          </Card>
+        </Col>
+        <Col>
+          <Card>
+            <h4 className='text-emerald-500'>Total Sold Amount: ${getTotalSoldAmount()}</h4>
+            <h4>Database Deduction: </h4>
+            {renderDatabaseDeduction()}
           </Card>
         </Col>
       </Grid>

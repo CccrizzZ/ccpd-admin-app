@@ -11,7 +11,7 @@ import {
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import React, { useContext, useEffect, useState } from 'react'
 import { Form, InputGroup, Modal } from 'react-bootstrap'
-import { InstockInventory, InstockQueryFilter } from '../utils/Types'
+import { InstockQueryFilter } from '../utils/Types'
 import { getKwArr, server, stringToNumber } from '../utils/utils'
 import { AppContext } from '../App'
 
@@ -23,6 +23,7 @@ type InstockStagingModalProps = {
   keywords: string
 }
 
+// for creating auction records
 const InstockStagingModal: React.FC<InstockStagingModalProps> = (props: InstockStagingModalProps) => {
   const { setLoading } = useContext(AppContext)
   const [lot, setLot] = useState<number>(0)

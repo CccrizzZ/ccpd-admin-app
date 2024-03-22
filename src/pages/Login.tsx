@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
+import axios, { AxiosError, AxiosResponse } from 'axios'
 import { UserInfo } from '../utils/Types'
 import { server, hashPass } from '../utils/utils'
 import { Form, Button } from 'react-bootstrap'

@@ -68,7 +68,7 @@ const ImportUnsoldModal: React.FC<ImportUnsoldModalProps> = (
       props.hide()
     }).catch((err: AxiosError) => {
       setLoading(false)
-      alert('Failed to Delete Remaining Record: ' + err.response?.data)
+      alert(`Failed to Import Unsold From Lot#${lotToImport}: ${err.response?.data}`)
     })
     setLoading(false)
   }
@@ -97,7 +97,7 @@ const ImportUnsoldModal: React.FC<ImportUnsoldModalProps> = (
       keyboard={false}
     >
       <Modal.Header closeButton>
-        <Modal.Title>Import Unsold Items</Modal.Title>
+        <Modal.Title>Import Unsold Items to Lot #{props.auctionLotNumber}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Button

@@ -169,7 +169,6 @@ export type AuctionInfo = {
   totalItems: number,
   openTime: string,
   closeTime: string,
-  closed: boolean,
   itemsArr: InstockItem[],
   topRow: InstockItem[],
   previousUnsoldArr: Record<number, InstockItem[]>,  // { lot: [items...] }
@@ -178,8 +177,6 @@ export type AuctionInfo = {
   minMSRP?: number,
   maxMSRP?: number,
   remainingResolved?: boolean,
-  minSku?: number,
-  maxSku?: number,
   itemLotStart?: number
 }
 
@@ -206,4 +203,5 @@ export type SoldItem = {
   reserve?: string,
   shelfLocation?: string,
   quantityInstock?: string
+  isPickedUp?: boolean
 }

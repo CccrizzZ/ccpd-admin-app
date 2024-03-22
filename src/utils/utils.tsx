@@ -42,7 +42,7 @@ export const bgDark = '#212332'
 export const bgLight = '#2A2D3E'
 
 // regex for http and https link in a string
-export const urlRegex = '/(http|https):\/\/(\S*)/'
+// export const urlRegex = '/(http|https)://(S*)/'
 
 // hashing password to send to server
 export const hashPass = (userPass: string) => SHA256(userPass).toString(enc.Base64)
@@ -408,7 +408,7 @@ export const downloadCustomNameFile = (
   fileName: string,
   document: Document
 ) => {
-  let link = document.createElement("a")
+  const link = document.createElement("a")
   link.setAttribute("href", URL.createObjectURL(file))
   link.setAttribute("download", fileName)
   document.body.appendChild(link)
