@@ -29,6 +29,7 @@ const DailyQAOverview = () => {
       const data = JSON.parse(res.data)
       setData(data['res'])
       setDatesArr(data['dates'].reverse())
+      console.log(data['res'])
     }).catch((res: AxiosError) => {
       alert('Cannot Get Daily QA Data: ' + res.message)
     })
@@ -77,6 +78,35 @@ const DailyQAOverview = () => {
     )
   })
 
+  const renderSumRow = () => {
+    let sum = [0, 0, 0, 0, 0, 0, 0]
+
+    data.map((val) => {
+      Object.entries(val).map((arr) => {
+        sum[0] += arr[1][0]
+        sum[1] += arr[1][1]
+        sum[2] += arr[1][2]
+        sum[3] += arr[1][3]
+        sum[4] += arr[1][4]
+        sum[5] += arr[1][5]
+        sum[6] += arr[1][6]
+      })
+    })
+    sum.reverse()
+    return (
+      <tr>
+        <td className="!text-green-500">SUM</td>
+        <td className="!text-green-500">{sum[0]}</td>
+        <td className="!text-green-500">{sum[1]}</td>
+        <td className="!text-green-500">{sum[2]}</td>
+        <td className="!text-green-500">{sum[3]}</td>
+        <td className="!text-green-500">{sum[4]}</td>
+        <td className="!text-green-500">{sum[5]}</td>
+        <td className="!text-green-500">{sum[6]}</td>
+      </tr>
+    )
+  }
+
   return (
     <>
       <div className="flex">
@@ -110,6 +140,7 @@ const DailyQAOverview = () => {
             </thead>
             <tbody>
               {renderTableBody()}
+              {renderSumRow()}
             </tbody>
           </Table>
       }

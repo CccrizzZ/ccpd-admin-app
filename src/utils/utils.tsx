@@ -326,7 +326,8 @@ export const initQAQueryFilter: QAQueryFilter = {
   sku: {
     gte: '',
     lte: ''
-  }
+  },
+  targetSku: '',
 }
 
 export const initInstockQueryFilter: InstockQueryFilter = {
@@ -346,7 +347,8 @@ export const initInstockQueryFilter: InstockQueryFilter = {
   sku: {
     gte: '',
     lte: ''
-  }
+  },
+  targetSku: '',
 }
 
 export const getInstockInventory = (qaRecord: QARecord, adminName: string): InstockInventory => {

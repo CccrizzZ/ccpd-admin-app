@@ -56,6 +56,10 @@ const TableFilter: React.FC<TableFilterProps> = (props: TableFilterProps) => {
     setSearchKeyword(event.target.value)
     props.setChanged(true)
   }
+  const onTargetSKUChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    props.setQueryFilter({ ...props.queryFilter, targetSku: event.target.value })
+    props.setChanged(true)
+  }
   const renderAdvFilters = () => {
     return (
       <Modal
@@ -71,6 +75,15 @@ const TableFilter: React.FC<TableFilterProps> = (props: TableFilterProps) => {
         </Modal.Header>
         <Modal.Body>
           <div className='grid gap-2 w-4/5 m-auto' style={{ minWidth: '80%' }}>
+            <InputGroup>
+              <InputGroup.Text>Target SKU</InputGroup.Text>
+              <Form.Control
+                type='number'
+                onChange={onTargetSKUChange}
+                value={props.queryFilter.targetSku}
+              />
+              <InputGroup.Text>To</InputGroup.Text>
+            </InputGroup>
             <InputGroup>
               <InputGroup.Text>Select SKU</InputGroup.Text>
               <InputGroup.Text>From</InputGroup.Text>

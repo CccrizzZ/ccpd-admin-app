@@ -134,6 +134,7 @@ export type QAQueryFilter = {
     gte?: string,
     lte?: string,
   }
+  targetSku?: string
 }
 
 export type InstockQueryFilter = {

@@ -251,6 +251,10 @@ const Inventory: React.FC = () => {
       setQueryFilter({ ...queryFilter, sku: { ...queryFilter.sku, lte: event.target.value } })
       setChanged(true)
     }
+    const onTargetSKUChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      setQueryFilter({ ...queryFilter, targetSku: event.target.value })
+      setChanged(true)
+    }
 
     const getInstockColor = (instock: string) => instock === 'in' ? '#10b981' : instock === 'out' ? '#f43f5e' : '#3b82f6'
     return (
@@ -258,6 +262,15 @@ const Inventory: React.FC = () => {
         <Title>📋 Record Filters</Title>
         <Grid className='gap-6' numItems={2}>
           <Col>
+            <InputGroup size='sm' className='mb-3'>
+              <InputGroup.Text>Target SKU</InputGroup.Text>
+              <Form.Control
+                type='number'
+                value={queryFilter.targetSku}
+                min={0}
+                onChange={onTargetSKUChange}
+              />
+            </InputGroup>
             <InputGroup size='sm' className='mb-3'>
               <InputGroup.Text>Min SKU</InputGroup.Text>
               <Form.Control

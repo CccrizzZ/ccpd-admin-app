@@ -176,7 +176,7 @@ const AuctionHistory: React.FC = () => {
             <Form.Label>Upload XLS Here</Form.Label>
             <Form.Control
               type="file"
-              accept=".xls"
+              accept=".xls, .xlsx"
               onChange={handleFileChange}
             />
           </Form.Group>
