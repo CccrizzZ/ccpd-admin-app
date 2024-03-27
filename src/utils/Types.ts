@@ -188,11 +188,14 @@ export type RemainingInfo = {
   unsoldCount: number,
   soldItems: SoldItem[],
   unsoldItems: InstockItem[],
+  soldTopRow: SoldItem[],     // sold item from top row
+  unsoldTopRow: InstockItem[] // unsold item from top row
   timeClosed: string,
-  isProcessed?: boolean, // weather if the record is processed into DB
-  errorItems?: SoldItem[],
-  deducted: SoldItem[],
-  outOfStock: SoldItem[],
+  isProcessed?: boolean,      // weather if the record is processed into DB
+  errorItems?: SoldItem[],    // sold but out of stock
+  deducted?: SoldItem[],      // all items caused database update
+  totalBidAmount?: number,    // top row bid sum + item arr bid sum
+  notInAuction?: NotInAuctionItem[],
 }
 
 export type SoldItem = {
@@ -203,6 +206,13 @@ export type SoldItem = {
   lead?: string,
   reserve?: string,
   shelfLocation?: string,
-  quantityInstock?: string
-  isPickedUp?: boolean
+  quantityInstock?: string,
+  isPickedUp?: boolean,
+}
+
+export type NotInAuctionItem = {
+  lot: number,
+  sold: boolean,
+  lead: string,
+  bid: number,
 }

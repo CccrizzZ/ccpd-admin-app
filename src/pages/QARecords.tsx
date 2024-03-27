@@ -730,24 +730,24 @@ const QARecords: React.FC = () => {
     </TableBody>
   )
 
-  const renderTopOverViewChart = () => {
-    return (
-      <>
-        <Title>Overview</Title>
-        <Subtitle>Last 7 Days (Dec 7 - Dec 14)</Subtitle>
-        <BarChart
-          className="h-64"
-          data={barChartData}
-          index="name"
-          categories={["Number of Items"]}
-          colors={["rose"]}
-          valueFormatter={valueFormatter}
-          yAxisWidth={32}
-          showAnimation={true}
-        />
-      </>
-    )
-  }
+  // const renderTopOverViewChart = () => {
+  //   return (
+  //     <>
+  //       <Title>Overview</Title>
+  //       <Subtitle>Last 7 Days (Dec 7 - Dec 14)</Subtitle>
+  //       <BarChart
+  //         className="h-64"
+  //         data={qaRecentData}
+  //         index="name"
+  //         categories={["Number of Items"]}
+  //         colors={["rose"]}
+  //         valueFormatter={valueFormatter}
+  //         yAxisWidth={32}
+  //         showAnimation={true}
+  //       />
+  //     </>
+  //   )
+  // }
 
   const scrollToTable = () => {
     if (tableRef.current) tableRef.current.scrollIntoView({
@@ -850,15 +850,16 @@ const QARecords: React.FC = () => {
         </Col>
         <Col numColSpan={1} className='h-full'>
           <Card className="h-96">
-            <Button
+            {/* <Button
               color='rose'
               className='right-6 absolute p-2'
               onClick={() => setDisplaySearchRecords(!displaySearchRecords)}
               tooltip='Flip Card'
             >
               <FaArrowRightArrowLeft />
-            </Button>
-            {displaySearchRecords ? <SearchPanel setSelectedRecord={setSelectedRecordByRecord} /> : renderTopOverViewChart()}
+            </Button> */}
+            <SearchPanel setSelectedRecord={setSelectedRecordByRecord} />
+            {/* {displaySearchRecords ?  : renderTopOverViewChart()} */}
           </Card>
           <Card className="min-h-96 mt-2">
             <Button

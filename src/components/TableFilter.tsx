@@ -82,7 +82,6 @@ const TableFilter: React.FC<TableFilterProps> = (props: TableFilterProps) => {
                 onChange={onTargetSKUChange}
                 value={props.queryFilter.targetSku}
               />
-              <InputGroup.Text>To</InputGroup.Text>
             </InputGroup>
             <InputGroup>
               <InputGroup.Text>Select SKU</InputGroup.Text>

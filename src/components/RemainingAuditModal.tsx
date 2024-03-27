@@ -68,7 +68,7 @@ const RemainingAuditModal: React.FC<RemainigAuditModalProps> = (props: RemainigA
 
   // get repetitive sku in auction record
   const getErrorItems = () => {
-    if (props.auctionRecord) {
+    if (props.auctionRecord && props.auctionRecord.topRow) {
       // construct an all item array
       let allItems = [...props.auctionRecord.itemsArr, ...props.auctionRecord.topRow]
       if (props.auctionRecord.previousUnsoldArr) {
@@ -92,26 +92,31 @@ const RemainingAuditModal: React.FC<RemainigAuditModalProps> = (props: RemainigA
       })
 
       // check for items exist in the remaining record but not in auction:
-      props.remainingRecord.soldItems.map((item: SoldItem) => {
-        const exist = allItems.find((val) => val.lot === item.clotNumber && val.sku === item.sku)
-        if (!exist) {
-          errorItems.push({
-            lot: item.clotNumber,
-            sku: item.sku,
-            reason: 'Found in Remaining Sold, Not in Auction Record'
-          })
-        }
-      })
-      props.remainingRecord.unsoldItems.map((item: InstockItem) => {
-        const exist = allItems.find((val) => val.lot === item.lot && val.sku === item.sku)
-        if (!exist) {
-          errorItems.push({
-            lot: item.lot,
-            sku: item.sku,
-            reason: 'Found in Remaining Unsold, Not in Auction Record'
-          })
-        }
-      })
+      if (props.remainingRecord.soldItems.map) {
+        props.remainingRecord.soldItems.map((item: SoldItem) => {
+          const exist = allItems.find((val) => val.lot === item.clotNumber && val.sku === item.sku)
+          if (!exist) {
+            errorItems.push({
+              lot: item.clotNumber,
+              sku: item.sku,
+              reason: 'Found in Remaining Sold, Not in Auction Record'
+            })
+          }
+        })
+      }
+
+      if (props.remainingRecord.unsoldItems.map) {
+        props.remainingRecord.unsoldItems.map((item: InstockItem) => {
+          const exist = allItems.find((val) => val.lot === item.lot && val.sku === item.sku)
+          if (!exist) {
+            errorItems.push({
+              lot: item.lot,
+              sku: item.sku,
+              reason: 'Found in Remaining Unsold, Not in Auction Record'
+            })
+          }
+        })
+      }
     }
   }
 
@@ -134,22 +139,22 @@ const RemainingAuditModal: React.FC<RemainigAuditModalProps> = (props: RemainigA
         </TableRow>
       </TableHead>
       <TableBody>
-        {props.auctionRecord?.topRow.map((val, index) => (
+        {props.auctionRecord && props.auctionRecord.topRow ? props.auctionRecord?.topRow.map((val, index) => (
           <TableRow key={index}>
             <TableCell>{val.lot}</TableCell>
             <TableCell><Badge color='blue'>{val.sku}</Badge></TableCell>
             <TableCell>{checkRemainingForItem(val)}</TableCell>
           </TableRow>
-        ))}
+        )) : <></>}
       </TableBody>
       <TableBody>
-        {props.auctionRecord?.itemsArr.map((val, index) => (
+        {props.auctionRecord && props.auctionRecord.topRow ? props.auctionRecord?.itemsArr.map((val, index) => (
           <TableRow key={index}>
             <TableCell>{val.lot}</TableCell>
             <TableCell><Badge color='blue'>{val.sku}</Badge></TableCell>
             <TableCell>{checkRemainingForItem(val)}</TableCell>
           </TableRow>
-        ))}
+        )) : <></>}
       </TableBody>
       <TableBody>
         {props.auctionRecord && props.auctionRecord.previousUnsoldArr ? Object.entries(props.auctionRecord.previousUnsoldArr).map(([lot, itemArr]) => (
@@ -165,54 +170,54 @@ const RemainingAuditModal: React.FC<RemainigAuditModalProps> = (props: RemainigA
     </Table>
   )
 
-  const renderRemainingTable = () => (
-    <Table>
-      <TableHead>
-        <TableRow>
-          <TableHeaderCell className='w-32'>Lot</TableHeaderCell>
-          <TableHeaderCell>SKU</TableHeaderCell>
-          <TableHeaderCell>Status</TableHeaderCell>
-        </TableRow>
-      </TableHead>
-      <TableBody>
-        {props.remainingRecord.soldItems.map((val, index) => (
-          <TableRow key={index}>
-            <TableCell>{val.clotNumber}</TableCell>
-            <TableCell><Badge color='emerald'>{val.sku}</Badge></TableCell>
-            <TableCell>{val.soldStatus}</TableCell>
-          </TableRow>
-        ))}
-        {props.remainingRecord.unsoldItems.map((val, index) => (
-          <TableRow key={index}>
-            <TableCell>{val.lot}</TableCell>
-            <TableCell><Badge color='rose'>{val.sku}</Badge></TableCell>
-            <TableCell>NS</TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  )
+  // const renderRemainingTable = () => (
+  //   <Table>
+  //     <TableHead>
+  //       <TableRow>
+  //         <TableHeaderCell className='w-32'>Lot</TableHeaderCell>
+  //         <TableHeaderCell>SKU</TableHeaderCell>
+  //         <TableHeaderCell>Status</TableHeaderCell>
+  //       </TableRow>
+  //     </TableHead>
+  //     <TableBody>
+  //       {props.remainingRecord.soldItems.map((val, index) => (
+  //         <TableRow key={index}>
+  //           <TableCell>{val.clotNumber}</TableCell>
+  //           <TableCell><Badge color='emerald'>{val.sku}</Badge></TableCell>
+  //           <TableCell>{val.soldStatus}</TableCell>
+  //         </TableRow>
+  //       ))}
+  //       {props.remainingRecord.unsoldItems.map((val, index) => (
+  //         <TableRow key={index}>
+  //           <TableCell>{val.lot}</TableCell>
+  //           <TableCell><Badge color='rose'>{val.sku}</Badge></TableCell>
+  //           <TableCell>NS</TableCell>
+  //         </TableRow>
+  //       ))}
+  //     </TableBody>
+  //   </Table>
+  // )
 
-  const renderErrorItems = () => (
-    <Table>
-      <TableHead>
-        <TableRow>
-          <TableHeaderCell className='w-28'>Lot</TableHeaderCell>
-          <TableHeaderCell>SKU</TableHeaderCell>
-          <TableHeaderCell className='w-64'>Reason</TableHeaderCell>
-        </TableRow>
-      </TableHead>
-      <TableBody>
-        {errorItems.map((val, index) => (
-          <TableRow key={index}>
-            <TableCell>{val.lot}</TableCell>
-            <TableCell><Badge color='rose' className='font-bold'>{val.sku}</Badge></TableCell>
-            <TableCell>{val.reason}</TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  )
+  // const renderErrorItems = () => (
+  //   <Table>
+  //     <TableHead>
+  //       <TableRow>
+  //         <TableHeaderCell className='w-28'>Lot</TableHeaderCell>
+  //         <TableHeaderCell>SKU</TableHeaderCell>
+  //         <TableHeaderCell className='w-64'>Reason</TableHeaderCell>
+  //       </TableRow>
+  //     </TableHead>
+  //     <TableBody>
+  //       {errorItems.map((val, index) => (
+  //         <TableRow key={index}>
+  //           <TableCell>{val.lot}</TableCell>
+  //           <TableCell><Badge color='rose' className='font-bold'>{val.sku}</Badge></TableCell>
+  //           <TableCell>{val.reason}</TableCell>
+  //         </TableRow>
+  //       ))}
+  //     </TableBody>
+  //   </Table>
+  // )
 
   const getTotalSoldAmount = () => {
     let i = 0
@@ -276,21 +281,23 @@ const RemainingAuditModal: React.FC<RemainigAuditModalProps> = (props: RemainigA
             {renderAuctionTable()}
           </Card>
         </Col>
-        <Col className='text-center'>
+        {/* <Col className='text-center'>
           <Card>
             <h2>Remaining #{props.remainingRecord.lot}</h2>
             {renderRemainingTable()}
           </Card>
-        </Col>
-        <Col>
+        </Col> */}
+        {/* <Col>
           <Card>
             <h2 className='text-rose-500'>Error Items</h2>
             {renderErrorItems()}
           </Card>
-        </Col>
+        </Col> */}
         <Col>
           <Card>
+            <h4 className='text-emerald-500'>Total Items: {props.remainingRecord.soldCount} </h4>
             <h4 className='text-emerald-500'>Total Sold Amount: ${getTotalSoldAmount()}</h4>
+
             <h4>Database Deduction: </h4>
             {renderDatabaseDeduction()}
           </Card>

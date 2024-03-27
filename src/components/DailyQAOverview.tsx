@@ -29,7 +29,6 @@ const DailyQAOverview = () => {
       const data = JSON.parse(res.data)
       setData(data['res'])
       setDatesArr(data['dates'].reverse())
-      console.log(data['res'])
     }).catch((res: AxiosError) => {
       alert('Cannot Get Daily QA Data: ' + res.message)
     })
