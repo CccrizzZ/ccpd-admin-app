@@ -12,6 +12,7 @@ import {
   UserDetail,
   InstockQueryFilter,
   Platform,
+  InstockItem,
 } from "./Types";
 import { DateRangePickerValue } from "@tremor/react";
 
@@ -416,4 +417,16 @@ export const downloadCustomNameFile = (
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
+}
+
+export const initInstockItem: InstockItem = {
+  lot: 0,
+  sku: 0,
+  lead: '',
+  msrp: 0,
+  shelfLocation: '',
+  condition: '',
+  description: '',
+  startBid: 0,
+  reserve: 0,
 }

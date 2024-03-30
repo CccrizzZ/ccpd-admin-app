@@ -48,6 +48,7 @@ import AdminNameSelection from '../components/AdminNameSelection'
 import QANameSelection from '../components/QANameSelection'
 import { FaAnglesDown } from 'react-icons/fa6'
 import InstockStagingModal from '../components/InstockStagingModal'
+import AddToAuctionModal from '../components/AddToAuctionModal'
 
 // mock data
 // TODO: add server graph information route
@@ -76,6 +77,7 @@ const Inventory: React.FC = () => {
   // flag
   const [changed, setChanged] = useState<boolean>(false)
   const [showStagePopup, setShowStagePopup] = useState<boolean>(false)
+  const [showAddToAuctionModal, setShowAddToAuctionModal] = useState<boolean>(false)
 
   useEffect(() => {
     fetchInstockByPage()
@@ -362,8 +364,25 @@ const Inventory: React.FC = () => {
             />
           </Col>
         </Grid>
-        <Button className='absolute bottom-3 w-48' color='rose' size='xs' onClick={resetFilters}>Reset Filters</Button>
-        {changed ? undefined : <Button className='absolute bottom-3 w-64 right-64' color='indigo' size='xs' onClick={() => setShowStagePopup(true)}>Create Auction Record</Button>}
+        <Button className='absolute bottom-3 w-32' color='rose' size='xs' onClick={resetFilters}>Reset Filters</Button>
+        {changed ? undefined :
+          <div className='absolute bottom-3 right-60 flex gap-3'>
+            <Button
+              color='blue'
+              size='xs'
+              onClick={() => setShowAddToAuctionModal(true)}
+            >
+              Add Selection To Auction
+            </Button>
+            <Button
+              color='indigo'
+              size='xs'
+              onClick={() => setShowStagePopup(true)}
+            >
+              Create Auction Record
+            </Button>
+          </div>
+        }
         <Button
           className='absolute bottom-3 w-48 right-6'
           color={changed ? 'amber' : 'emerald'}
@@ -542,6 +561,11 @@ const Inventory: React.FC = () => {
 
   return (
     <div>
+      <AddToAuctionModal
+        show={showAddToAuctionModal}
+        hide={() => setShowAddToAuctionModal(false)}
+        filter={queryFilter}
+      />
       <InstockStagingModal
         show={showStagePopup}
         handleClose={() => setShowStagePopup(false)}

@@ -43,7 +43,7 @@ const EditInstockModal: React.FC<EditInstockModalProps> = (props: EditInstockMod
 
   useEffect(() => {
     setInstockDetail(props.selectedInventory)
-    setOriginalDetail(props.selectedInventory)
+    setOriginalDetail({ ...initInstockInventory, ...props.selectedInventory })
     setInstockChartData([
       {
         name: 'sold',
@@ -158,7 +158,7 @@ const EditInstockModal: React.FC<EditInstockModalProps> = (props: EditInstockMod
         show={showDeleteConfirmation}
         hide={() => setShowDeleteConfirmation(false)}
         title={`Confirm to Delete ${instockDetail.sku}`}
-        msg='Deletion is Irreversible'
+        msg='You Cannot Undo Delete'
       />
       <Modal.Header>
         <h4>🏷️ Edit Instock Inventory Record #{instockDetail.sku}</h4>

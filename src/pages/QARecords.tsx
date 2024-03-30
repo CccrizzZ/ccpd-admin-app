@@ -66,6 +66,7 @@ import InventoryRecordingModal from '../components/InventoryRecordingModal'
 import { VscAzure } from "react-icons/vsc";
 import { PropagateLoader } from 'react-spinners'
 import DailyQAOverview from '../components/DailyQAOverview'
+import ConfirmationModal from '../components/ConfirmationModal'
 
 const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()}`
 const initScrapeData: ScrapedData = {
@@ -116,7 +117,6 @@ const QARecords: React.FC = () => {
   const [selectedRecordImagesArr, setSelectedRecordImagesArr] = useState<string[]>([])
   const [imagePopupUrl, setImagePopupUrl] = useState<string>('')
   // flags
-  const [displaySearchRecords, setDisplaySearchRecords] = useState<boolean>(true)
   const [displayProblemRecordsPanel, setDisplayProblemRecordsPanel] = useState<boolean>(false)
   const [showMarkConfirmPopup, setShowMarkConfirmPopup] = useState<boolean>(false)
   const [showImagePopup, setShowImagePopup] = useState<boolean>(false)
@@ -124,6 +124,7 @@ const QARecords: React.FC = () => {
   const [changed, setChanged] = useState<boolean>(false)
   const [showUploadImagePopup, setShowUploadImagePopup] = useState<boolean>(false)
   const [showRecordPopup, setShowRecordPopup] = useState<boolean>(false)
+  const [deleteConfirmation, showDeleteConfirmation] = useState<boolean>(false)
   // paging
   const [currPage, setCurrPage] = useState<number>(0)
   const [itemsPerPage, setItemsPerPage] = useState<number>(20)
@@ -575,7 +576,7 @@ const QARecords: React.FC = () => {
               type='number'
               step={0.01}
             />
-            <InputGroup.Text>{scrapeData.currency === 'USD' ? `${scrapeData.msrp / 1.3}USD x${usdToCadRate} = ${scrapeData.msrp} $CAD 🍁` : ''}</InputGroup.Text>
+            <InputGroup.Text>{scrapeData.currency === 'USD' ? `${(scrapeData.msrp / 1.3).toFixed(2)}USD x${usdToCadRate} = ${scrapeData.msrp} $CAD 🍁` : ''}</InputGroup.Text>
           </InputGroup>
           <hr />
           <p>First Stock Image:</p>
@@ -711,7 +712,7 @@ const QARecords: React.FC = () => {
             <p className='text-white-500'>{record.comment}</p>
           </TableCell>
           <TableCell>
-            <p><a className='cursor-pointer' onClick={() => openLink(record.link)}>{record.link.slice(0, 50)}</a></p>
+            <p><a className='cursor-pointer' onClick={() => openLink(record.link)}>{record.link ? record.link.slice(0, 50) : ''}</a></p>
           </TableCell>
           <TableCell>
             <Badge color={getPlatformBadgeColor(record.platform)}>{record.platform}</Badge>
@@ -730,6 +731,7 @@ const QARecords: React.FC = () => {
     </TableBody>
   )
 
+  // // chart that shows item condition percentage
   // const renderTopOverViewChart = () => {
   //   return (
   //     <>
@@ -830,7 +832,7 @@ const QARecords: React.FC = () => {
 
   const renderOperationButtons = () => (
     <div className='absolute right-16 flex top-6 gap-2'>
-      <Button color='rose' onClick={() => deleteQARecord(selectedRecord.sku)}><FaTrashCan className='m-0' /></Button>
+      <Button color='rose' onClick={() => showDeleteConfirmation(true)}><FaTrashCan className='m-0' /></Button>
       <Button color='amber' onClick={updateQARecord}>Update</Button>
       <Button color='emerald' onClick={() => setSelectedRecord(originalSelectedRecord)}>Reset</Button>
     </div>
@@ -838,6 +840,13 @@ const QARecords: React.FC = () => {
 
   return (
     <div ref={topRef}>
+      <ConfirmationModal
+        confirmAction={() => deleteQARecord(selectedRecord.sku)}
+        show={deleteConfirmation}
+        hide={() => showDeleteConfirmation(false)}
+        title={`Confirm to Delete ${selectedRecord.sku}`}
+        msg='You Cannot Undo Delete'
+      />
       {/* control panels */}
       <Grid className="gap-2" numItems={3}>
         <Col numColSpan={2}>

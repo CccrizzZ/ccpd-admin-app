@@ -27,7 +27,7 @@ type InstockStagingModalProps = {
 const InstockStagingModal: React.FC<InstockStagingModalProps> = (props: InstockStagingModalProps) => {
   const { setLoading } = useContext(AppContext)
   const [lot, setLot] = useState<number>(0)
-  const [itemLotStart, setItemLotStart] = useState<number>(0)
+  const [itemLotStart, setItemLotStart] = useState<number>(100)
   const [endDate, setEndDate] = useState<DatePickerValue>(undefined)
   // if true, duplicate items and push the same stuff x times
   const [duplicate, setDuplicate] = useState<boolean>(false)

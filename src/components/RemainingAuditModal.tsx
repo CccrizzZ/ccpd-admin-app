@@ -24,6 +24,7 @@ import { FaAngleDown } from 'react-icons/fa6'
 type RemainigAuditModalProps = {
   close: () => void,
   show: boolean,
+  refresh: () => void,
   remainingRecord: RemainingInfo,
   auctionRecord: AuctionInfo | undefined,
 }
@@ -222,9 +223,45 @@ const RemainingAuditModal: React.FC<RemainigAuditModalProps> = (props: RemainigA
   const getTotalSoldAmount = () => {
     let i = 0
     props.remainingRecord.soldItems.map((val) => i += val.bidAmount)
+    props.remainingRecord.soldTopRow.map((val) => i += val.bidAmount)
     return i
   }
 
+  const renderTopRowResult = () => (
+    <Table>
+      <TableHead>
+        <TableRow>
+          <TableHeaderCell>Lot</TableHeaderCell>
+          <TableHeaderCell>SKU</TableHeaderCell>
+          <TableHeaderCell>Bid</TableHeaderCell>
+          <TableHeaderCell className='w-30 align-middle text-center'>
+            <span className='text-purple-500'>Shelf</span>
+            {/* <span className='text-emerald-500'>Instock</span> */}
+          </TableHeaderCell>
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {props.remainingRecord.soldTopRow.map((val, index) => (
+          <TableRow key={index}>
+            <TableCell>{val.clotNumber}</TableCell>
+            <TableCell>
+              <Badge color='emerald' className='font-bold'>{val.sku}</Badge>
+            </TableCell>
+            <TableCell>
+              <Badge color='emerald' className='font-bold'>${val.bidAmount}</Badge>
+            </TableCell>
+            <TableCell>
+              {/* <div className='grid justify-items-center'> */}
+              <Badge color="purple" className="font-bold">
+                {val.shelfLocation}
+              </Badge>
+              {/* </div> */}
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  )
   const renderDatabaseDeduction = () => (
     <Table>
       <TableHead>
@@ -281,23 +318,13 @@ const RemainingAuditModal: React.FC<RemainigAuditModalProps> = (props: RemainigA
             {renderAuctionTable()}
           </Card>
         </Col>
-        {/* <Col className='text-center'>
-          <Card>
-            <h2>Remaining #{props.remainingRecord.lot}</h2>
-            {renderRemainingTable()}
-          </Card>
-        </Col> */}
-        {/* <Col>
-          <Card>
-            <h2 className='text-rose-500'>Error Items</h2>
-            {renderErrorItems()}
-          </Card>
-        </Col> */}
         <Col>
           <Card>
             <h4 className='text-emerald-500'>Total Items: {props.remainingRecord.soldCount} </h4>
             <h4 className='text-emerald-500'>Total Sold Amount: ${getTotalSoldAmount()}</h4>
-
+            <h4>No Database Deduction: (Top Row Sold)</h4>
+            {renderTopRowResult()}
+            <hr />
             <h4>Database Deduction: </h4>
             {renderDatabaseDeduction()}
           </Card>

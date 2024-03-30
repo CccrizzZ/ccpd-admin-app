@@ -196,6 +196,7 @@ export type RemainingInfo = {
   deducted?: SoldItem[],      // all items caused database update
   totalBidAmount?: number,    // top row bid sum + item arr bid sum
   notInAuction?: NotInAuctionItem[],
+  notInRemaining?: NotInAuctionItem[]
 }
 
 export type SoldItem = {
