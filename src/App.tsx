@@ -9,8 +9,15 @@ import './App.css'
 import axios from 'axios'
 import Dashboard from './pages/Dashboard'
 import Inventory from './pages/Inventory'
-import { UserInfo } from './utils/Types'
-import { bgDark, bgLight, server } from './utils/utils'
+import {
+  AdminSettings,
+  UserInfo
+} from './utils/Types'
+import {
+  bgDark,
+  bgLight,
+  server
+} from './utils/utils'
 import Login from './pages/Login'
 import QARecords from './pages/QARecords'
 import UserManager from './pages/UserManager';
@@ -27,6 +34,7 @@ import {
   FaGavel
 } from "react-icons/fa6";
 import AuctionHistory from './pages/AuctionHistory'
+import AdminSettingsModal from './components/AdminSettingsModal'
 // import RetailManager from './pages/RetailManager'
 
 // type for app context
@@ -44,6 +52,12 @@ const App = () => {
     name: ''
   })
   const [isLoading, setIsLoading] = useState<boolean>(false)
+  // admin settings
+  const [adminSettings, setAdminSettings] = useState<AdminSettings>({
+    daysQACanDeleteRecord: 0,
+    isQAPermittedAfterHours: false
+  })
+  const [showAdminSettingsModal, setShowAdminSettingsModal] = useState<boolean>(false)
 
   // logout user (delete http only cookies)
   const logout = async () => {
@@ -102,6 +116,12 @@ const App = () => {
     } else {
       return (
         <div className='wrapper'>
+          <AdminSettingsModal
+            settings={adminSettings}
+            setSettings={setAdminSettings}
+            show={showAdminSettingsModal}
+            hide={() => setShowAdminSettingsModal(false)}
+          />
           <TabContainer defaultActiveKey="Auction History" data-bs-theme="dark">
             {/* side navigation */}
             <div className='sideBar' style={{ backgroundColor: bgLight, userSelect: 'none' }}>
@@ -115,9 +135,12 @@ const App = () => {
                 <Button className='mr-3' variant='danger' onClick={logout}>
                   <FaDoorOpen className='m-auto' />
                 </Button>
-                <Button variant='secondary'>
-                  <FaGear className='m-auto' />
-                </Button>
+                {
+                  userInfo.role === 'Super Admin' ?
+                    <Button variant='secondary' onClick={() => setShowAdminSettingsModal(true)}>
+                      <FaGear className='m-auto' />
+                    </Button> : <></>
+                }
               </div>
             </div>
             {/* main content */}

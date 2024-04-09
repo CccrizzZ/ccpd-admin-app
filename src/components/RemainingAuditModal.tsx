@@ -75,6 +75,7 @@ const RemainingAuditModal: React.FC<RemainigAuditModalProps> = (props: RemainigA
       if (props.auctionRecord.previousUnsoldArr) {
         Object.entries(props.auctionRecord.previousUnsoldArr).map(([lot, itemArr]) => {
           allItems = [...allItems, ...itemArr]
+          console.log(lot)
         })
       }
 

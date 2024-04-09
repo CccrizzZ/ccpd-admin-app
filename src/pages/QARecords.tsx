@@ -13,7 +13,7 @@ import {
   TableRow,
   TableCell,
   Button,
-  BarChart,
+  // BarChart,
   Subtitle,
 } from '@tremor/react'
 import {
@@ -68,7 +68,7 @@ import { PropagateLoader } from 'react-spinners'
 import DailyQAOverview from '../components/DailyQAOverview'
 import ConfirmationModal from '../components/ConfirmationModal'
 
-const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()}`
+// const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()}`
 const initScrapeData: ScrapedData = {
   title: '',
   msrp: 0,
@@ -77,32 +77,32 @@ const initScrapeData: ScrapedData = {
 }
 
 // mock data
-const barChartData = [
-  {
-    name: "New",
-    "Number of Items": 546,
-  },
-  {
-    name: "Sealed",
-    "Number of Items": 120,
-  },
-  {
-    name: "Used Like New",
-    "Number of Items": 25,
-  },
-  {
-    name: "Used",
-    "Number of Items": 13,
-  },
-  {
-    name: "Damaged",
-    "Number of Items": 8,
-  },
-  {
-    name: "As Is",
-    "Number of Items": 2,
-  }
-]
+// const barChartData = [
+//   {
+//     name: "New",
+//     "Number of Items": 546,
+//   },
+//   {
+//     name: "Sealed",
+//     "Number of Items": 120,
+//   },
+//   {
+//     name: "Used Like New",
+//     "Number of Items": 25,
+//   },
+//   {
+//     name: "Used",
+//     "Number of Items": 13,
+//   },
+//   {
+//     name: "Damaged",
+//     "Number of Items": 8,
+//   },
+//   {
+//     name: "As Is",
+//     "Number of Items": 2,
+//   }
+// ]
 
 const QARecords: React.FC = () => {
   const { setLoading, userInfo } = useContext(AppContext)

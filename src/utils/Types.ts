@@ -217,3 +217,8 @@ export type NotInAuctionItem = {
   lead: string,
   bid: number,
 }
+
+export type AdminSettings = {
+  daysQACanDeleteRecord: number,
+  isQAPermittedAfterHours: boolean
+}
