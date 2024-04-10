@@ -692,7 +692,7 @@ const QARecords: React.FC = () => {
             <p className={'absolute left-3 text-lg ' + (record.sku === selectedRecord.sku ? 'visible' : 'invisible')}>👉</p>
             <Button
               className={'text-white'}
-              color={record.problem ? 'rose' : record.recorded ? 'emerald' : 'zinc'}
+              color={record.recorded ? 'emerald' : 'zinc'}
               tooltip={record.problem ? 'This Record Have Problem' : record.recorded ? 'Already Recorded' : 'Not Recorded'}
               onClick={() => { setSelectedRecordByRecord(record); clearScrape() }}
             >
@@ -788,6 +788,9 @@ const QARecords: React.FC = () => {
           resetFilters={resetFilters}
           refresh={(searchKeyword: string) => { fetchQARecordsByPage(false, undefined, searchKeyword); setCurrPage(0) }}
         />
+        <br />
+        <br />
+        <br />
         <PageItemStatsBox
           totalItems={itemCount}
           itemsPerPage={itemsPerPage}

@@ -10,7 +10,7 @@ type PageItemStatsBoxProps = {
 
 const PageItemStatsBox: React.FC<PageItemStatsBoxProps> = (props: PageItemStatsBoxProps) => {
   return (
-    <div className="flex">
+    <div className="flex absolute right-10">
       <div>
         <label className='text-gray-500'>Items Per Page</label>
         <Form.Select className='mr-2' value={String(props.itemsPerPage)} onChange={props.onItemsPerPageChange}>
