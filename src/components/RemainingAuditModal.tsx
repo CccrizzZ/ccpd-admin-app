@@ -52,7 +52,7 @@ const RemainingAuditModal: React.FC<RemainigAuditModalProps> = (props: RemainigA
       method: 'post',
       url: `${server}/inventoryController/auditRemainingRecord`,
       responseType: 'text',
-      timeout: 8000,
+      timeout: 25000,
       withCredentials: true,
       data: JSON.stringify({ 'remainingLotNumber': props.remainingRecord.lot })
     }).then((res: AxiosResponse) => {

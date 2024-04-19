@@ -122,7 +122,7 @@ const App = () => {
             show={showAdminSettingsModal}
             hide={() => setShowAdminSettingsModal(false)}
           />
-          <TabContainer defaultActiveKey="Auction History" data-bs-theme="dark">
+          <TabContainer defaultActiveKey="Q&A Records" data-bs-theme="dark">
             {/* side navigation */}
             <div className='sideBar' style={{ backgroundColor: bgLight, userSelect: 'none' }}>
               <Nav variant="pills" className="flex-column mt-4 p-3">

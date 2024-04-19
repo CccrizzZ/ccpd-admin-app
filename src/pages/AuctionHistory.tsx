@@ -68,7 +68,7 @@ const AuctionHistory: React.FC = () => {
       method: 'get',
       url: server + '/inventoryController/getAuctionRemainingRecord',
       responseType: 'text',
-      timeout: 8000,
+      timeout: 25000,
       withCredentials: true
     }).then((res: AxiosResponse) => {
       if (res.status > 200) alert('Failed to Fetch Auction Record')
@@ -88,7 +88,7 @@ const AuctionHistory: React.FC = () => {
       method: 'post',
       url: server + '/inventoryController/getAuctionCsv',
       responseType: 'blob',
-      timeout: 8000,
+      timeout: 25000,
       data: {
         'lot': lot,
       },
@@ -120,7 +120,7 @@ const AuctionHistory: React.FC = () => {
         method: 'post',
         url: `${server}/inventoryController/createRemainingRecord`,
         responseType: 'blob',
-        timeout: 8000,
+        timeout: 25000,
         data: formData,
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true

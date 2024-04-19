@@ -32,6 +32,29 @@ export type PaymentMethod =
   'Check' |
   'Store Credit'
 
+export const AmazonCategory = [
+  'Pellet',
+  'Monster',
+  'HC',
+  'E-HC',
+  'MB',
+  'E-MB',
+  'Food',
+  'Beauty',
+  'Shoes',
+  'Cleaning',
+  'Pet Food'
+]
+
+export const AliExpressCategory = [
+  'Watch',
+  'Auto',
+  'Jewelry',
+  'Electronics',
+  'MB',
+  'Pallet'
+]
+
 export interface RetailRecord {
   sku: number;
   time: string;

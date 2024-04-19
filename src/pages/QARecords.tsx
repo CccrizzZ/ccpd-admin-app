@@ -15,6 +15,9 @@ import {
   Button,
   // BarChart,
   Subtitle,
+  // Select,
+  // SelectItem,
+
 } from '@tremor/react'
 import {
   Condition,
@@ -34,7 +37,9 @@ import {
   FaArrowLeft,
   FaArrowRight,
   FaUpload,
-  FaTrashCan
+  FaTrashCan,
+  // FaSquareCaretDown,
+  // FaSquareCaretUp
 } from 'react-icons/fa6'
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import {
@@ -76,34 +81,6 @@ const initScrapeData: ScrapedData = {
   currency: ''
 }
 
-// mock data
-// const barChartData = [
-//   {
-//     name: "New",
-//     "Number of Items": 546,
-//   },
-//   {
-//     name: "Sealed",
-//     "Number of Items": 120,
-//   },
-//   {
-//     name: "Used Like New",
-//     "Number of Items": 25,
-//   },
-//   {
-//     name: "Used",
-//     "Number of Items": 13,
-//   },
-//   {
-//     name: "Damaged",
-//     "Number of Items": 8,
-//   },
-//   {
-//     name: "As Is",
-//     "Number of Items": 2,
-//   }
-// ]
-
 const QARecords: React.FC = () => {
   const { setLoading, userInfo } = useContext(AppContext)
   // reference to components
@@ -131,6 +108,9 @@ const QARecords: React.FC = () => {
   const [itemCount, setItemCount] = useState<number>(0)
   // filtering
   const [queryFilter, setQueryFilter] = useState<QAQueryFilter>(initQAQueryFilter)
+  // const [sortBySku, setSortBySku] = useState<number>(-1) // same as mongo db
+  // const [sortingOption, setSortingOption] = useState<string>('')
+
   // scraping and chat gpt
   const [scrapeData, setScrapeData] = useState<ScrapedData>(initScrapeData)
   const [isScraping, setIsScraping] = useState<boolean>(false)
@@ -143,7 +123,7 @@ const QARecords: React.FC = () => {
   const getTotalPage = () => Math.ceil(itemCount / itemsPerPage) - 1
 
   // called on component mount
-  const fetchQARecordsByPage = async (isInit?: boolean, newItemsPerPage?: number, skeyword?: string,) => {
+  const fetchQARecordsByPage = async (isInit?: boolean, newItemsPerPage?: number, skeyword?: string, sortingOption?: string) => {
     setLoading(true)
     await axios({
       method: 'post',
@@ -153,7 +133,8 @@ const QARecords: React.FC = () => {
       data: JSON.stringify({
         page: isInit ? 0 : currPage,
         itemsPerPage: newItemsPerPage ?? itemsPerPage,
-        filter: isInit ? initQAQueryFilter : { ...queryFilter, keywordFilter: skeyword ? getKwArr(skeyword) : [] }
+        filter: isInit ? initQAQueryFilter : { ...queryFilter, keywordFilter: skeyword ? getKwArr(skeyword) : [] },
+        sortingOption: sortingOption ?? 'Time DESC'
       }),
       withCredentials: true
     }).then((res: AxiosResponse) => {
@@ -576,7 +557,7 @@ const QARecords: React.FC = () => {
               type='number'
               step={0.01}
             />
-            <InputGroup.Text>{scrapeData.currency === 'USD' ? `${(scrapeData.msrp / 1.3).toFixed(2)}USD x${usdToCadRate} = ${scrapeData.msrp} $CAD 🍁` : ''}</InputGroup.Text>
+            <InputGroup.Text>{scrapeData.currency === 'USD' ? `${(scrapeData.msrp / 1.3).toFixed(2)}USD x ${usdToCadRate ?? 0} = ${scrapeData.msrp ?? 0} $CAD 🍁` : ''}</InputGroup.Text>
           </InputGroup>
           <hr />
           <p>First Stock Image:</p>
@@ -771,6 +752,34 @@ const QARecords: React.FC = () => {
       fetchQARecordsByPage(true)
     }
 
+    // const onSortClick = () => {
+    //   setSortBySku(-(sortBySku))
+    //   fetchQARecordsByPage(false, undefined, undefined, -(sortBySku))
+    // }
+
+    // const onSortingOptionChange = (value: string) => {
+    //   setSortingOption(value)
+    //   fetchQARecordsByPage(false, undefined, undefined, sortingOption)
+
+    // }
+
+    // const renderSortingOption = () => (
+    //   <Select value={sortingOption} onValueChange={onSortingOptionChange} className="absolute mt-24">
+    //     <SelectItem value="Time DESC" icon={FaSquareCaretDown}>
+    //       Time DESC
+    //     </SelectItem>
+    //     <SelectItem value="Time ASC" icon={FaSquareCaretUp}>
+    //       Time ASC
+    //     </SelectItem>
+    //     <SelectItem value="SKU DESC" icon={FaSquareCaretDown}>
+    //       SKU DESC
+    //     </SelectItem>
+    //     <SelectItem value="SKU ASC" icon={FaSquareCaretUp}>
+    //       SKU ASC
+    //     </SelectItem>
+    //   </Select>
+    // )
+
     return (
       <div className='flex mb-4'>
         <Button
@@ -781,6 +790,15 @@ const QARecords: React.FC = () => {
         >
           <FaRotate />
         </Button>
+        {/* <Button
+          className=' absolute mt-24'
+          color={sortBySku < 0 ? 'rose' : 'emerald'}
+          onClick={onSortClick}
+          tooltip='Sort By SKU'
+        >
+          {sortBySku < 0 ? <FaSquareCaretDown /> : <FaSquareCaretUp />}
+        </Button> */}
+        {/* {renderSortingOption()} */}
         <TableFilter
           queryFilter={queryFilter}
           setQueryFilter={setQueryFilter}
