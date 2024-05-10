@@ -56,7 +56,8 @@ import {
   toCad,
   getKwArr,
   usdToCadRate,
-  stringToNumber
+  stringToNumber,
+  isObjectsEqual
 } from '../utils/utils'
 import {
   Form,
@@ -93,6 +94,7 @@ const QARecords: React.FC = () => {
   const [originalSelectedRecord, setOriginalSelectedRecord] = useState<QARecord>(initQARecord)
   const [selectedRecordImagesArr, setSelectedRecordImagesArr] = useState<string[]>([])
   const [imagePopupUrl, setImagePopupUrl] = useState<string>('')
+
   // flags
   const [displayProblemRecordsPanel, setDisplayProblemRecordsPanel] = useState<boolean>(false)
   const [showMarkConfirmPopup, setShowMarkConfirmPopup] = useState<boolean>(false)
@@ -100,8 +102,10 @@ const QARecords: React.FC = () => {
   const [flipQACard, setFlipQACard] = useState<boolean>(false)
   const [changed, setChanged] = useState<boolean>(false)
   const [showUploadImagePopup, setShowUploadImagePopup] = useState<boolean>(false)
-  const [showRecordPopup, setShowRecordPopup] = useState<boolean>(false)
-  const [deleteConfirmation, showDeleteConfirmation] = useState<boolean>(false)
+  // const [showRecordPopup, setShowRecordPopup] = useState<boolean>(false)
+  const [deleteConfirmation, setDeleteConfirmation] = useState<boolean>(false)
+  const [updateConfirmation, setUpdateConfirmation] = useState<boolean>(false)
+
   // paging
   const [currPage, setCurrPage] = useState<number>(0)
   const [itemsPerPage, setItemsPerPage] = useState<number>(20)
@@ -257,14 +261,38 @@ const QARecords: React.FC = () => {
     if (isScraping) return
     const next = QARecordArr[QARecordArr.indexOf(selectedRecord) + 1]
     fetchImageUrlArr(String(next.sku))
-    if (next !== undefined) setSelectedRecord(next); setOriginalSelectedRecord(next); clearScrape()
+    if (next !== undefined) setSelectedRecord(next); setOriginalSelectedRecord(next); clearScrape(); scrapeRequest(next.sku);
   }
 
   const prevRecord = () => {
     if (isScraping) return
     const prev = QARecordArr[QARecordArr.indexOf(selectedRecord) - 1]
     fetchImageUrlArr(String(prev.sku))
-    if (prev !== undefined) setSelectedRecord(prev); setOriginalSelectedRecord(prev); clearScrape()
+    if (prev !== undefined) setSelectedRecord(prev); setOriginalSelectedRecord(prev); clearScrape(); scrapeRequest(prev.sku);
+  }
+
+  const scrapeRequest = async (sku: number) => {
+    // setLoading(true)
+    if (isScraping) return
+    if (selectedRecord.platform !== 'Amazon') return
+    setIsScraping(true)
+    await axios({
+      method: 'post',
+      url: server + '/inventoryController/scrapeInfoBySkuAmazon',
+      responseType: 'text',
+      timeout: 12000,   // scraping takes longer time
+      data: { 'sku': String(sku) },
+      withCredentials: true
+    }).then((res: AxiosResponse) => {
+      const data: ScrapedData = JSON.parse(res.data)
+      // if not CAD, convert to CAD
+      if (data.currency !== 'CAD') data.msrp = toCad(data.msrp, data.currency) ?? data.msrp
+      setScrapeData(data)
+    }).catch((res: AxiosError) => {
+      alert('Failed Scraping: ' + res.response?.data)
+    })
+    setIsScraping(false)
+    // setLoading(false)
   }
 
   // take QA record scrape and generate info, then push data into instock inventory db
@@ -460,29 +488,6 @@ const QARecords: React.FC = () => {
         </div>
       )
 
-      const scrapeRequest = async () => {
-        // setLoading(true)
-        if (isScraping) return
-        setIsScraping(true)
-        await axios({
-          method: 'post',
-          url: server + '/inventoryController/scrapeInfoBySkuAmazon',
-          responseType: 'text',
-          timeout: 12000,   // scraping takes longer time
-          data: { 'sku': String(selectedRecord.sku) },
-          withCredentials: true
-        }).then((res: AxiosResponse) => {
-          const data: ScrapedData = JSON.parse(res.data)
-          // if not CAD, convert to CAD
-          if (data.currency !== 'CAD') data.msrp = toCad(data.msrp, data.currency) ?? data.msrp
-          setScrapeData(data)
-        }).catch((res: AxiosError) => {
-          alert('Failed Scraping: ' + res.response?.data)
-        })
-        setIsScraping(false)
-        // setLoading(false)
-      }
-
       const onMsrpChange = (event: React.ChangeEvent<HTMLInputElement>) => setScrapeData({ ...scrapeData, msrp: stringToNumber(event.target.value) })
       const onTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => setScrapeData({ ...scrapeData, title: event.target.value })
       const onCurrencyChange = (event: React.ChangeEvent<HTMLInputElement>) => setScrapeData({ ...scrapeData, currency: event.target.value })
@@ -546,7 +551,7 @@ const QARecords: React.FC = () => {
               </InputGroup>
             </Col>
             <Col numColSpan={1}>
-              <Button className='ml-2' color='emerald' onClick={scrapeRequest}>Scrape</Button>
+              <Button className='ml-2' color='emerald' onClick={() => scrapeRequest(selectedRecord.sku)}>Scrape</Button>
             </Col>
           </Grid>
           <InputGroup size="sm" className="mb-3">
@@ -629,22 +634,22 @@ const QARecords: React.FC = () => {
               handleClose={() => setShowUploadImagePopup(false)}
               userInfo={userInfo}
             />
-            <InventoryRecordingModal
-              show={showRecordPopup}
-              handleClose={() => setShowRecordPopup(false)}
-              record={selectedRecord}
-              scrapeData={scrapeData}
-            />
           </div>
+        </div>
+        <div className='w-full'>
+          <InventoryRecordingModal
+            record={selectedRecord}
+            scrapeData={scrapeData}
+          />
         </div>
         <div className='absolute bottom-3 w-full'>
           <Button color='indigo' onClick={prevRecord}>Prev</Button>
           <Button className='ml-12' color={selectedRecord.problem ? 'lime' : 'rose'} onClick={() => setShowMarkConfirmPopup(true)}>{selectedRecord.problem ? 'Mark Resolved' : 'Mark Problem'}</Button>
           {
-            (!selectedRecord.recorded && !selectedRecord.problem) ?
-              <Button className='absolute mr-auto ml-96' color='emerald' onClick={() => setShowRecordPopup(true)}>
-                Stage QA Record
-              </Button> : undefined
+            // !selectedRecord.problem ?
+            //   <Button className='absolute mr-auto ml-96' color='emerald' onClick={() => setShowRecordPopup(true)}>
+            //     Stage QA Record
+            //   </Button> : undefined
           }
           <Button className='absolute right-12' color='indigo' onClick={nextRecord}>Next</Button>
         </div>
@@ -675,7 +680,7 @@ const QARecords: React.FC = () => {
               className={'text-white'}
               color={record.recorded ? 'emerald' : 'zinc'}
               tooltip={record.problem ? 'This Record Have Problem' : record.recorded ? 'Already Recorded' : 'Not Recorded'}
-              onClick={() => { setSelectedRecordByRecord(record); clearScrape() }}
+              onClick={() => { setSelectedRecordByRecord(record); clearScrape(); scrapeRequest(record.sku); }}
             >
               {record.sku}
             </Button>
@@ -828,8 +833,27 @@ const QARecords: React.FC = () => {
     fetchQARecordsByPage(false, Number(event.target.value))
   }
 
-  const updateQARecord = () => {
-
+  const updateQARecord = async (sku: number) => {
+    setLoading(true)
+    if (isObjectsEqual(selectedRecord, originalSelectedRecord)) return alert('Cannot Submit Unchanged Record')
+    await axios({
+      method: 'put',
+      url: `${server}/inventoryController/updateInventoryBySku/${String(sku)}`,
+      responseType: 'text',
+      timeout: 12000,
+      withCredentials: true,
+      data: JSON.stringify({ newInventoryInfo: selectedRecord }),
+    }).then((res: AxiosResponse) => {
+      if (res.status === 200) {
+        alert(`${res.data} ${sku}`)
+        setSelectedRecord(initQARecord)
+        fetchQARecordsByPage(false)
+      }
+    }).catch((err: AxiosError) => {
+      setLoading(false)
+      alert('Cannot get page: ' + err.response?.data)
+    })
+    setLoading(false)
   }
 
   const deleteQARecord = async (sku: number) => {
@@ -853,8 +877,8 @@ const QARecords: React.FC = () => {
 
   const renderOperationButtons = () => (
     <div className='absolute right-16 flex top-6 gap-2'>
-      <Button color='rose' onClick={() => showDeleteConfirmation(true)}><FaTrashCan className='m-0' /></Button>
-      <Button color='amber' onClick={updateQARecord}>Update</Button>
+      <Button color='rose' onClick={() => setDeleteConfirmation(true)}><FaTrashCan className='m-0' /></Button>
+      <Button color='amber' onClick={() => setUpdateConfirmation(true)}>Update</Button>
       <Button color='emerald' onClick={() => setSelectedRecord(originalSelectedRecord)}>Reset</Button>
     </div>
   )
@@ -864,9 +888,16 @@ const QARecords: React.FC = () => {
       <ConfirmationModal
         confirmAction={() => deleteQARecord(selectedRecord.sku)}
         show={deleteConfirmation}
-        hide={() => showDeleteConfirmation(false)}
+        hide={() => setDeleteConfirmation(false)}
         title={`Confirm to Delete ${selectedRecord.sku}`}
         msg='You Cannot Undo Delete'
+      />
+      <ConfirmationModal
+        confirmAction={() => updateQARecord(selectedRecord.sku)}
+        show={updateConfirmation}
+        hide={() => setUpdateConfirmation(false)}
+        title={`Confirm to Update ${selectedRecord.sku}`}
+        msg='You Could Reverse Updation Immediatley by Clicking "Reset" Button and "Update" Button Again'
       />
       {/* control panels */}
       <Grid className="gap-2" numItems={3}>

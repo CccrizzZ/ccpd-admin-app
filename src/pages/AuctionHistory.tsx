@@ -59,7 +59,7 @@ const AuctionHistory: React.FC = () => {
   const [targetEditingAuction, setTargetEditingAuction] = useState<number>(0)
 
   useEffect(() => {
-    getAuctionAndRemainingArr()
+    // getAuctionAndRemainingArr()
   }, [])
 
   const getAuctionAndRemainingArr = async () => {
@@ -1268,7 +1268,7 @@ const AuctionHistory: React.FC = () => {
                 color='emerald'
                 className="absolute right-12"
                 tooltip="Refresh Both Column"
-                onClick={getAuctionAndRemainingArr}
+                onClick={() => getAuctionAndRemainingArr()}
               >
                 <FaRotate />
               </Button>

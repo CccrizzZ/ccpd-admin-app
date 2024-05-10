@@ -3,6 +3,8 @@ import axios, { AxiosError, AxiosResponse } from 'axios'
 import { UserInfo } from '../utils/Types'
 import { server, hashPass } from '../utils/utils'
 import { Form, Button } from 'react-bootstrap'
+// import { signInWithEmailAndPassword } from "firebase/auth";
+// import { auth } from '../utils/firebase'
 
 type LoginProp = {
   setLogin: React.Dispatch<React.SetStateAction<boolean>>,
@@ -64,6 +66,13 @@ const Login: React.FC<LoginProp> = (prop: LoginProp) => {
 
     // send login request
     prop.setLoading(true)
+    // const res = await signInWithEmailAndPassword(auth, userEmail, userPass).catch(
+    //   (err): void => {
+    //     alert(err);
+    //   },
+    // );
+    // console.log(res)
+
     await axios({
       method: 'post',
       url: server + '/adminController/adminLogin',

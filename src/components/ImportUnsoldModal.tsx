@@ -26,7 +26,7 @@ const ImportUnsoldModal: React.FC<ImportUnsoldModalProps> = (
   const [lotToImport, setLotToImport] = useState<string>('')
 
   useEffect(() => {
-    getAuctionLotNumbers(false)
+    // getAuctionLotNumbers(false)
   }, [])
 
   const getAuctionLotNumbers = async (closeModal: boolean) => {
