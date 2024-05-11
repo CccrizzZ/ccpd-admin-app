@@ -59,7 +59,7 @@ const AuctionHistory: React.FC = () => {
   const [targetEditingAuction, setTargetEditingAuction] = useState<number>(0)
 
   useEffect(() => {
-    // getAuctionAndRemainingArr()
+    getAuctionAndRemainingArr()
   }, [])
 
   const getAuctionAndRemainingArr = async () => {

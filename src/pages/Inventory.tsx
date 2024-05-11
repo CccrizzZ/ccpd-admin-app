@@ -479,7 +479,7 @@ const Inventory: React.FC = () => {
           </div>
         </TableCell>
         <TableCell>
-          <Text>{moment(instock.time).format('LLL')}</Text>
+          <Text>{instock.time ? moment(instock.time).format('LLL') : undefined}</Text>
         </TableCell>
       </TableRow>
     ))

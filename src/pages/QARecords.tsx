@@ -15,9 +15,6 @@ import {
   Button,
   // BarChart,
   Subtitle,
-  // Select,
-  // SelectItem,
-
 } from '@tremor/react'
 import {
   Condition,
@@ -38,8 +35,8 @@ import {
   FaArrowRight,
   FaUpload,
   FaTrashCan,
-  // FaSquareCaretDown,
-  // FaSquareCaretUp
+  FaRotateLeft,
+  FaRotateRight,
 } from 'react-icons/fa6'
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import {
@@ -74,7 +71,6 @@ import { PropagateLoader } from 'react-spinners'
 import DailyQAOverview from '../components/DailyQAOverview'
 import ConfirmationModal from '../components/ConfirmationModal'
 
-// const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()}`
 const initScrapeData: ScrapedData = {
   title: '',
   msrp: 0,
@@ -93,7 +89,16 @@ const QARecords: React.FC = () => {
   const [selectedRecord, setSelectedRecord] = useState<QARecord>(initQARecord)
   const [originalSelectedRecord, setOriginalSelectedRecord] = useState<QARecord>(initQARecord)
   const [selectedRecordImagesArr, setSelectedRecordImagesArr] = useState<string[]>([])
+
+  // image
   const [imagePopupUrl, setImagePopupUrl] = useState<string>('')
+  const [imageRotationIndex, setImageRotationIndex] = useState<number>(0)
+  const possibleRotations = [
+    '',
+    'rotate-90',
+    'rotate-180',
+    '-rotate-90',
+  ]
 
   // flags
   const [displayProblemRecordsPanel, setDisplayProblemRecordsPanel] = useState<boolean>(false)
@@ -102,7 +107,6 @@ const QARecords: React.FC = () => {
   const [flipQACard, setFlipQACard] = useState<boolean>(false)
   const [changed, setChanged] = useState<boolean>(false)
   const [showUploadImagePopup, setShowUploadImagePopup] = useState<boolean>(false)
-  // const [showRecordPopup, setShowRecordPopup] = useState<boolean>(false)
   const [deleteConfirmation, setDeleteConfirmation] = useState<boolean>(false)
   const [updateConfirmation, setUpdateConfirmation] = useState<boolean>(false)
 
@@ -110,10 +114,9 @@ const QARecords: React.FC = () => {
   const [currPage, setCurrPage] = useState<number>(0)
   const [itemsPerPage, setItemsPerPage] = useState<number>(20)
   const [itemCount, setItemCount] = useState<number>(0)
+
   // filtering
   const [queryFilter, setQueryFilter] = useState<QAQueryFilter>(initQAQueryFilter)
-  // const [sortBySku, setSortBySku] = useState<number>(-1) // same as mongo db
-  // const [sortingOption, setSortingOption] = useState<string>('')
 
   // scraping and chat gpt
   const [scrapeData, setScrapeData] = useState<ScrapedData>(initScrapeData)
@@ -188,10 +191,12 @@ const QARecords: React.FC = () => {
       responseType: 'text',
       timeout: 8000,
       data: { 'sku': sku ?? String(selectedRecord.sku) },
-      withCredentials: true
+      withCredentials: true,
     }).then((res: AxiosResponse) => {
       setSelectedRecordImagesArr(JSON.parse(res.data))
-    }).catch(() => {
+    }).catch((err: AxiosError) => {
+      alert(err.response?.data)
+      alert(err.message)
       setLoading(false)
     })
     setLoading(false)
@@ -256,7 +261,6 @@ const QARecords: React.FC = () => {
     setLoading(false)
   }
 
-  // control panel cursor jump to record
   const nextRecord = () => {
     if (isScraping) return
     const next = QARecordArr[QARecordArr.indexOf(selectedRecord) + 1]
@@ -317,10 +321,12 @@ const QARecords: React.FC = () => {
     const clearImagePopup = () => {
       setImagePopupUrl('')
       setShowImagePopup(false)
+      setImageRotationIndex(0)
     }
 
     // full size image popup
     const renderImageModal = () => {
+      // go to prev or next image
       const gotoImage = (pos: number) => {
         if (pos > 0) {
           const next = selectedRecordImagesArr[selectedRecordImagesArr.indexOf(imagePopupUrl) + 1]
@@ -333,6 +339,7 @@ const QARecords: React.FC = () => {
         }
       }
 
+      // send delete requet to server
       const deleteImage = async () => {
         await axios({
           method: 'delete',
@@ -355,11 +362,52 @@ const QARecords: React.FC = () => {
         fetchImageUrlArr()
       }
 
+      // move rotation index according to direction
+      const rotateImage = async (direction: number) => {
+        if (direction > 0) {
+          if (imageRotationIndex === 3) {
+            setImageRotationIndex(0)
+          } else {
+            setImageRotationIndex(imageRotationIndex + 1)
+          }
+        } else {
+          if (imageRotationIndex === 0) {
+            setImageRotationIndex(3)
+          } else {
+            setImageRotationIndex(imageRotationIndex - 1)
+          }
+        }
+      }
+
+      // send rotate image request to server
+      const updateRotation = async () => {
+        await axios({
+          method: 'post',
+          url: server + '/imageController/rotateImage',
+          responseType: 'text',
+          timeout: 8000,
+          data: JSON.stringify({
+            sku: selectedRecord.sku,
+            name: imagePopupUrl.replace(/^.*[\\/]/, ''),
+            rotationIndex: imageRotationIndex
+          }),
+          withCredentials: true
+        }).then((res: AxiosResponse) => {
+          if (res.status === 200) {
+            alert('Image Rotation Updated')
+          }
+        }).catch((res: AxiosError) => {
+          alert(`Cannot Rotate Image ${res.response?.data}`)
+        })
+        clearImagePopup()
+        fetchImageUrlArr()
+      }
+
       return (
         <Modal
           show={showImagePopup}
           onHide={clearImagePopup}
-          size='lg'
+          size='xl'
           keyboard={false}
         >
           <Modal.Header closeButton>
@@ -367,18 +415,35 @@ const QARecords: React.FC = () => {
             <p className='absolute text-rose-500 top-12 left-3'>{imagePopupUrl.replace(/^.*[\\/]/, '')}</p>
           </Modal.Header>
           <Modal.Body>
-            <div className='flex min-h-96'>
+            <div className='min-h-96'>
               <Button className='absolute h-48 left-6 top-1/2 opacity-30 rounded-full' color='gray' onClick={() => gotoImage(-1)}>
                 <FaArrowLeft />
               </Button>
-              <img className='m-auto mr-6 ml-6' src={imagePopupUrl} />
+              <img className={'m-auto mr-6 ml-6 ' + `${possibleRotations[imageRotationIndex]}`} src={imagePopupUrl} />
               <Button className='absolute h-48 right-6 top-1/2 opacity-30 rounded-full' color='gray' onClick={() => gotoImage(1)}>
                 <FaArrowRight />
               </Button>
             </div>
           </Modal.Body>
           <Modal.Footer>
-            <Button className='absolute left-12' color='rose' onClick={deleteImage}>Delete Image</Button>
+            <Button className='absolute left-12' color='rose' onClick={deleteImage}>
+              Delete Image
+            </Button>
+            {
+              imageRotationIndex !== 0 ?
+                <Button color='amber' className='absolute left-64' onClick={updateRotation}>
+                  Update Image Rotation to Cloud
+                </Button>
+                : undefined
+            }
+            <div className='absolute right-64'>
+              <Button color='indigo' onClick={() => rotateImage(-1)}>
+                <FaRotateLeft />
+              </Button>
+              <Button color='indigo' onClick={() => rotateImage(1)}>
+                <FaRotateRight />
+              </Button>
+            </div>
             <Button color='slate' onClick={clearImagePopup}>
               Close
             </Button>
@@ -491,6 +556,7 @@ const QARecords: React.FC = () => {
       const onMsrpChange = (event: React.ChangeEvent<HTMLInputElement>) => setScrapeData({ ...scrapeData, msrp: stringToNumber(event.target.value) })
       const onTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => setScrapeData({ ...scrapeData, title: event.target.value })
       const onCurrencyChange = (event: React.ChangeEvent<HTMLInputElement>) => setScrapeData({ ...scrapeData, currency: event.target.value })
+
       // push image to azure blob storage
       const pushImage = async () => {
         // send image url to server
@@ -645,12 +711,6 @@ const QARecords: React.FC = () => {
         <div className='absolute bottom-3 w-full'>
           <Button color='indigo' onClick={prevRecord}>Prev</Button>
           <Button className='ml-12' color={selectedRecord.problem ? 'lime' : 'rose'} onClick={() => setShowMarkConfirmPopup(true)}>{selectedRecord.problem ? 'Mark Resolved' : 'Mark Problem'}</Button>
-          {
-            // !selectedRecord.problem ?
-            //   <Button className='absolute mr-auto ml-96' color='emerald' onClick={() => setShowRecordPopup(true)}>
-            //     Stage QA Record
-            //   </Button> : undefined
-          }
           <Button className='absolute right-12' color='indigo' onClick={nextRecord}>Next</Button>
         </div>
       </div>
@@ -757,34 +817,6 @@ const QARecords: React.FC = () => {
       fetchQARecordsByPage(true)
     }
 
-    // const onSortClick = () => {
-    //   setSortBySku(-(sortBySku))
-    //   fetchQARecordsByPage(false, undefined, undefined, -(sortBySku))
-    // }
-
-    // const onSortingOptionChange = (value: string) => {
-    //   setSortingOption(value)
-    //   fetchQARecordsByPage(false, undefined, undefined, sortingOption)
-
-    // }
-
-    // const renderSortingOption = () => (
-    //   <Select value={sortingOption} onValueChange={onSortingOptionChange} className="absolute mt-24">
-    //     <SelectItem value="Time DESC" icon={FaSquareCaretDown}>
-    //       Time DESC
-    //     </SelectItem>
-    //     <SelectItem value="Time ASC" icon={FaSquareCaretUp}>
-    //       Time ASC
-    //     </SelectItem>
-    //     <SelectItem value="SKU DESC" icon={FaSquareCaretDown}>
-    //       SKU DESC
-    //     </SelectItem>
-    //     <SelectItem value="SKU ASC" icon={FaSquareCaretUp}>
-    //       SKU ASC
-    //     </SelectItem>
-    //   </Select>
-    // )
-
     return (
       <div className='flex mb-4'>
         <Button
@@ -795,15 +827,6 @@ const QARecords: React.FC = () => {
         >
           <FaRotate />
         </Button>
-        {/* <Button
-          className=' absolute mt-24'
-          color={sortBySku < 0 ? 'rose' : 'emerald'}
-          onClick={onSortClick}
-          tooltip='Sort By SKU'
-        >
-          {sortBySku < 0 ? <FaSquareCaretDown /> : <FaSquareCaretUp />}
-        </Button> */}
-        {/* {renderSortingOption()} */}
         <TableFilter
           queryFilter={queryFilter}
           setQueryFilter={setQueryFilter}

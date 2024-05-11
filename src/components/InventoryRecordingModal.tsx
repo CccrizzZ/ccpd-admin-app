@@ -34,6 +34,7 @@ type InventoryRecordingModalProps = {
   scrapeData: ScrapedData
 }
 
+// Chat GPT generation panel
 const descriptionCharLimit = 250
 const leadCharLimit = 50
 const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: InventoryRecordingModalProps) => {
