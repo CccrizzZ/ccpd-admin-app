@@ -110,10 +110,11 @@ const QARecords: React.FC = () => {
   const [deleteConfirmation, setDeleteConfirmation] = useState<boolean>(false)
   const [updateConfirmation, setUpdateConfirmation] = useState<boolean>(false)
 
-  // paging
+  // paging and count
   const [currPage, setCurrPage] = useState<number>(0)
   const [itemsPerPage, setItemsPerPage] = useState<number>(20)
   const [itemCount, setItemCount] = useState<number>(0)
+  const [recordedCount, setRecordedCount] = useState<number>(0)
 
   // filtering
   const [queryFilter, setQueryFilter] = useState<QAQueryFilter>(initQAQueryFilter)
@@ -148,6 +149,7 @@ const QARecords: React.FC = () => {
       const data = JSON.parse(res.data)
       setQARecordArr(data['arr'])
       setItemCount(data['count'])
+      setRecordedCount(data['recorded'])
       if (changed) setChanged(false)
     }).catch((err: AxiosError) => {
       setQARecordArr([])
@@ -195,8 +197,7 @@ const QARecords: React.FC = () => {
     }).then((res: AxiosResponse) => {
       setSelectedRecordImagesArr(JSON.parse(res.data))
     }).catch((err: AxiosError) => {
-      alert(err.response?.data)
-      alert(err.message)
+      console.log(err.response?.data)
       setLoading(false)
     })
     setLoading(false)
@@ -276,7 +277,6 @@ const QARecords: React.FC = () => {
   }
 
   const scrapeRequest = async (sku: number) => {
-    // setLoading(true)
     if (isScraping) return
     if (selectedRecord.platform !== 'Amazon') return
     setIsScraping(true)
@@ -293,10 +293,9 @@ const QARecords: React.FC = () => {
       if (data.currency !== 'CAD') data.msrp = toCad(data.msrp, data.currency) ?? data.msrp
       setScrapeData(data)
     }).catch((res: AxiosError) => {
-      alert('Failed Scraping: ' + res.response?.data)
+      console.log('Failed Scraping: ' + res.response?.data)
     })
     setIsScraping(false)
-    // setLoading(false)
   }
 
   // take QA record scrape and generate info, then push data into instock inventory db
@@ -842,6 +841,10 @@ const QARecords: React.FC = () => {
           itemsPerPage={itemsPerPage}
           onItemsPerPageChange={onItemsPerPageChange}
         />
+        <div className='absolute right-10 top-24 text-center'>
+          <label className='text-gray-500 mb-1'>Recorded</label>
+          <h4 className='text-emerald-500'>{recordedCount}</h4>
+        </div>
       </div>
     )
   }
@@ -873,8 +876,8 @@ const QARecords: React.FC = () => {
         fetchQARecordsByPage(false)
       }
     }).catch((err: AxiosError) => {
+      alert('Cannot update: ' + err.response?.data)
       setLoading(false)
-      alert('Cannot get page: ' + err.response?.data)
     })
     setLoading(false)
   }
