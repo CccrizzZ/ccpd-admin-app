@@ -33,3 +33,7 @@ button > .tremor-Button-text {
 #recordingPanel {
     background-color: #282f3c !important;
 }
+
+div[role="tooltip"] {
+    background-color: #666 !important;
+}

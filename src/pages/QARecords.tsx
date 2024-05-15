@@ -70,6 +70,7 @@ import { VscAzure } from "react-icons/vsc";
 import { PropagateLoader } from 'react-spinners'
 import DailyQAOverview from '../components/DailyQAOverview'
 import ConfirmationModal from '../components/ConfirmationModal'
+import KeyboardAlert from '../components/KeyboardAlert'
 
 const initScrapeData: ScrapedData = {
   title: '',
@@ -115,6 +116,8 @@ const QARecords: React.FC = () => {
   const [itemsPerPage, setItemsPerPage] = useState<number>(20)
   const [itemCount, setItemCount] = useState<number>(0)
   const [recordedCount, setRecordedCount] = useState<number>(0)
+  const prevItemButtonRef = useRef<HTMLButtonElement>(null);
+  const nextItemButtonRef = useRef<HTMLButtonElement>(null);
 
   // filtering
   const [queryFilter, setQueryFilter] = useState<QAQueryFilter>(initQAQueryFilter)
@@ -125,7 +128,24 @@ const QARecords: React.FC = () => {
 
   useEffect(() => {
     fetchQARecordsByPage()
+
+    // keyboard event
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
   }, [])
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    console.log(e.key)
+    if (e.key === ']') {
+      console.log('Go right')
+      nextItemButtonRef.current?.click()
+    } else if (e.key === '[') {
+      console.log('Go left')
+      prevItemButtonRef.current?.click()
+    }
+  }
 
   const clearScrape = () => setScrapeData(initScrapeData)
   const getTotalPage = () => Math.ceil(itemCount / itemsPerPage) - 1
@@ -627,7 +647,7 @@ const QARecords: React.FC = () => {
               type='number'
               step={0.01}
             />
-            <InputGroup.Text>{scrapeData.currency === 'USD' ? `${(scrapeData.msrp / 1.3).toFixed(2)}USD x ${usdToCadRate ?? 0} = ${scrapeData.msrp ?? 0} $CAD 🍁` : ''}</InputGroup.Text>
+            <InputGroup.Text>{scrapeData.currency === 'USD' ? `${(Number(scrapeData.msrp) / 1.3).toFixed(2)}USD x ${usdToCadRate ?? 0} = ${Number(scrapeData.msrp) ?? 0} $CAD 🍁` : ''}</InputGroup.Text>
           </InputGroup>
           <hr />
           <p>First Stock Image:</p>
@@ -696,7 +716,7 @@ const QARecords: React.FC = () => {
             <ImageUploadModal
               sku={selectedRecord.sku}
               show={showUploadImagePopup}
-              handleClose={() => setShowUploadImagePopup(false)}
+              handleClose={() => { setShowUploadImagePopup(false); fetchImageUrlArr() }}
               userInfo={userInfo}
             />
           </div>
@@ -705,12 +725,13 @@ const QARecords: React.FC = () => {
           <InventoryRecordingModal
             record={selectedRecord}
             scrapeData={scrapeData}
+            nextItem={nextRecord}
           />
         </div>
         <div className='absolute bottom-3 w-full'>
-          <Button color='indigo' onClick={prevRecord}>Prev</Button>
+          <Button ref={prevItemButtonRef} color='indigo' onClick={prevRecord}>Prev</Button>
           <Button className='ml-12' color={selectedRecord.problem ? 'lime' : 'rose'} onClick={() => setShowMarkConfirmPopup(true)}>{selectedRecord.problem ? 'Mark Resolved' : 'Mark Problem'}</Button>
-          <Button className='absolute right-12' color='indigo' onClick={nextRecord}>Next</Button>
+          <Button ref={nextItemButtonRef} className='absolute right-12' color='indigo' onClick={nextRecord}>Next</Button>
         </div>
       </div>
     )

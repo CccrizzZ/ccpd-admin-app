@@ -1,4 +1,4 @@
-import { createContext, useState } from 'react'
+import { createContext, useEffect, useState } from 'react'
 import {
   Tab,
   Nav,
@@ -35,6 +35,7 @@ import {
 } from "react-icons/fa6";
 import AuctionHistory from './pages/AuctionHistory'
 import AdminSettingsModal from './components/AdminSettingsModal'
+import { auth } from './utils/firebase'
 // import RetailManager from './pages/RetailManager'
 
 // type for app context
@@ -58,6 +59,20 @@ const App = () => {
     isQAPermittedAfterHours: false
   })
   const [showAdminSettingsModal, setShowAdminSettingsModal] = useState<boolean>(false)
+
+  useEffect(() => {
+    // add firebase token with interceptors
+    axios.interceptors.request.use(
+      async (config) => {
+        config.headers.Authorization = await auth.currentUser?.getIdToken();
+        return config;
+      },
+      (error) => {
+        return Promise.reject(error);
+      },
+    );
+
+  })
 
   // logout user (delete http only cookies)
   const logout = async () => {

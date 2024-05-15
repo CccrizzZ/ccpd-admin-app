@@ -28,10 +28,9 @@ import {
 } from '@tremor/react';
 
 type InventoryRecordingModalProps = {
-  // show: boolean,
-  // handleClose: () => void
   record: QARecord,
-  scrapeData: ScrapedData
+  scrapeData: ScrapedData,
+  nextItem: () => void,
 }
 
 // Chat GPT generation panel
@@ -42,9 +41,14 @@ const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: 
   const [newInv, setNewInv] = useState<InstockInventory>(initInstockInventory)
   const [lead, setLead] = useState<string>('')
   const [description, setDescription] = useState<string>('')
-  // chat gpt
-  const [titleTemplate, setTitleTemplate] = useState<string>("You are an Auctioneer, based on the information, create a short product title. The character limit for product title is 50 characters.")
-  const [descTemplate, setDescTemplate] = useState<string>("Please generate a product description in the format '[Item Condition] - [Item information]', The character limit for Item information is 250 characters.")
+
+  // chat gpt template
+  const [titleTemplate, setTitleTemplate] = useState<string>(
+    "You are an Auctioneer, based on the information, create a short product title. The character limit for product the title is 50 characters."
+  )
+  const [descTemplate, setDescTemplate] = useState<string>(
+    "Please generate a product description in the format '[Item Condition] - [Item information]', The character limit for Item information is 250 characters."
+  )
 
 
   useEffect(() => {
@@ -78,6 +82,7 @@ const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: 
       if (res.status === 200) {
         alert(`Instock Inventory Created: ${props.record.sku}`)
         // props.handleClose()
+        props.nextItem()
       }
     }).catch((res: AxiosError) => {
       alert('Cannot Push to Database: ' + res.response?.data)
@@ -235,7 +240,12 @@ const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: 
       </Card>
       <div className='flex mt-3'>
         {/* <Button color='slate' onClick={props.handleClose}>Close</Button> */}
-        {(lead.length > 0 && description.length > 0) ? <Button className='absolute right-6' color='emerald' onClick={recordInventory}>👌 Submit Into Inventory</Button> : undefined}
+        {
+          (lead.length > 0 && description.length > 0) ?
+            <Button className='absolute right-6' color='emerald' onClick={recordInventory}>
+              👌 Submit Into Inventory
+            </Button> : undefined
+        }
       </div>
     </div>
     // </Modal>
