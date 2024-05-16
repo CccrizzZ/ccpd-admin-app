@@ -137,7 +137,7 @@ const UserManager: React.FC = () => {
       setUserArr(parsedData)
       getPieData(parsedData)
     }).catch((err) => {
-      alert('Failed Getting All User info: ' + err.message)
+      console.warn('Failed Getting All User info: ' + err.message)
     })
     setLoading(false)
   }
@@ -154,7 +154,7 @@ const UserManager: React.FC = () => {
     }).then((res) => {
       setInvitationArr(JSON.parse(res.data))
     }).catch((err) => {
-      alert('Failed Getting All Invitation Code: ' + err.message)
+      console.warn('Failed Getting All Invitation Code: ' + err.message)
     })
     setLoading(false)
   }
@@ -172,7 +172,7 @@ const UserManager: React.FC = () => {
       fetchAllInvitationCode()
     }).catch((err: AxiosError) => {
       if (err.response?.status === 403) {
-        alert('Failed Getting All Invitation Code: Only Super Admin Allowed')
+        console.warn('Failed Getting All Invitation Code: Only Super Admin Allowed')
       }
     })
     setLoading(false)
@@ -191,7 +191,7 @@ const UserManager: React.FC = () => {
       fetchAllInvitationCode()
     }).catch((err) => {
       if (err.response?.status === 403) {
-        alert('Failed Deleting Invitation Code: Only Super Admin Allowed')
+        console.warn('Failed Deleting Invitation Code: Only Super Admin Allowed')
       }
     })
     setLoading(false)
@@ -210,7 +210,7 @@ const UserManager: React.FC = () => {
       fetchAllUserInfo()
     }).catch((err) => {
       if (err.response?.status === 403) {
-        alert('Failed Deleting User: Only Super Admin Allowed')
+        console.warn('Failed Deleting User: Only Super Admin Allowed')
       }
     })
     setLoading(false)

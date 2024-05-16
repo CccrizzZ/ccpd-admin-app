@@ -175,7 +175,7 @@ const RetailManager: React.FC = () => {
     }).then(() => {
       // setRetailArr(JSON.parse(res.data))
     }).catch((err) => {
-      alert('Cannot Fetch Retail Record: ' + err.message)
+      console.warn('Cannot Fetch Retail Record: ' + err.message)
     })
     setLoading(false)
   }
@@ -194,7 +194,7 @@ const RetailManager: React.FC = () => {
   //   }).then((res) => {
   //     setReturnArr(JSON.parse(res.data))
   //   }).catch((err) => {
-  //     alert('Cannot Fetch Return Record: ' + err.message)
+  //     console.warn('Cannot Fetch Return Record: ' + err.message)
   //   })
   //   setLoading(false)
   // }

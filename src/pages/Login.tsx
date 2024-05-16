@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import { UserInfo } from '../utils/Types'
-import { server, hashPass } from '../utils/utils'
+// import { server, hashPass } from '../utils/utils'
 import { Form, Button } from 'react-bootstrap'
 import { auth } from '../utils/firebase'
 import { signInWithEmailAndPassword } from 'firebase/auth'
+import { server } from '../utils/utils'
 // import { signInWithEmailAndPassword } from "firebase/auth";
 
 type LoginProp = {
@@ -18,44 +19,31 @@ const Login: React.FC<LoginProp> = (prop: LoginProp) => {
   const [userPass, setUserPass] = useState<string>('')
 
   // checks if jwt token is in http only cookie
-  const checkToken = async () => {
-    prop.setLoading(true)
-    await axios({
-      method: 'post',
-      url: server + '/adminController/checkAdminToken',
-      timeout: 3000,
-      responseType: 'text',
-      data: '',
-      withCredentials: true
-    }).then((res: AxiosResponse) => {
-      if (res.status === 200) {
-        prop.setLogin(true)
-        prop.setUserInfo(JSON.parse(res.data))
-      }
-    }).catch((err: AxiosError) => {
-      if (err.response) {
-        console.log('Please Login: ' + err.message)
-      }
-    })
-    prop.setLoading(false)
-  }
+  // const checkToken = async () => {
+  //   prop.setLoading(true)
+  //   await axios({
+  //     method: 'post',
+  //     url: server + '/adminController/checkAdminToken',
+  //     timeout: 3000,
+  //     responseType: 'text',
+  //     data: '',
+  //     withCredentials: true
+  //   }).then((res: AxiosResponse) => {
+  //     if (res.status === 200) {
+  //       prop.setLogin(true)
+  //       prop.setUserInfo(JSON.parse(res.data))
+  //     }
+  //   }).catch((err: AxiosError) => {
+  //     if (err.response) {
+  //       console.log('Please Login: ' + err.message)
+  //     }
+  //   })
+  //   prop.setLoading(false)
+  // }
 
   useEffect(() => {
     // // check token
     // checkToken()
-
-    // firebase auth detechtion
-    auth.onAuthStateChanged((user) => {
-      if (user) {
-        console.log("User is logged in");
-        prop.setLogin(true)
-      } else {
-        console.log("No user is logged in");
-        return;
-      }
-    });
-
-
   }, [])
 
   const onEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,6 +56,7 @@ const Login: React.FC<LoginProp> = (prop: LoginProp) => {
 
   const onEnterKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === 'Enter') {
+      firebaseLogin()
       // login()
     }
   }
@@ -107,14 +96,20 @@ const Login: React.FC<LoginProp> = (prop: LoginProp) => {
   //   prop.setLoading(false)
   // }
 
-
   const firebaseLogin = async () => {
-    if (userEmail === "" || userPass === "") return
-    await signInWithEmailAndPassword(auth, userEmail, userPass).catch(
-      (err): void => {
-        alert(err)
-      },
-    )
+    if (userEmail === '' || userPass === '') return alert('Please Enter Both Username and Password')
+    prop.setLoading(true)
+    await signInWithEmailAndPassword(auth, userEmail, userPass).then(async (val) => {
+      console.log(val)
+
+      // get user role and name info from db
+
+    }).catch((err): void => {
+      console.warn(err)
+      prop.setLoading(false)
+      alert('Incorrect Credentials')
+    })
+    prop.setLoading(false)
   }
 
   return (

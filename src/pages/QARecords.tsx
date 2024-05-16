@@ -70,7 +70,7 @@ import { VscAzure } from "react-icons/vsc";
 import { PropagateLoader } from 'react-spinners'
 import DailyQAOverview from '../components/DailyQAOverview'
 import ConfirmationModal from '../components/ConfirmationModal'
-import KeyboardAlert from '../components/KeyboardAlert'
+// import KeyboardAlert from '../components/KeyboardAlert'
 
 const initScrapeData: ScrapedData = {
   title: '',
@@ -137,7 +137,6 @@ const QARecords: React.FC = () => {
   }, [])
 
   const handleKeyDown = (e: KeyboardEvent) => {
-    console.log(e.key)
     if (e.key === ']') {
       console.log('Go right')
       nextItemButtonRef.current?.click()
@@ -175,7 +174,7 @@ const QARecords: React.FC = () => {
       setQARecordArr([])
       setItemCount(0)
       setLoading(false)
-      alert('Failed Fetching QA Records: ' + err.message)
+      console.warn('Failed Fetching QA Records: ' + err.message)
     })
     setLoading(false)
   }
@@ -195,7 +194,7 @@ const QARecords: React.FC = () => {
       // refresh
     }).catch((err) => {
       setLoading(false)
-      alert('Failed Fetching QA Records: ' + err.message)
+      console.warn('Failed Fetching QA Records: ' + err.message)
     })
     setLoading(false)
     fetchQARecordsByPage()
@@ -244,7 +243,7 @@ const QARecords: React.FC = () => {
       }
     }).catch((res: AxiosError) => {
       setLoading(false)
-      alert('Cannot get page: ' + res.message)
+      console.warn('Cannot get page: ' + res.message)
     })
   }
 
@@ -375,7 +374,7 @@ const QARecords: React.FC = () => {
             alert('Image Deleted')
           }
         }).catch((res: AxiosError) => {
-          alert(`Cannot Delete Image ${res.message}`)
+          console.warn(`Cannot Delete Image ${res.message}`)
         })
         setShowImagePopup(false)
         fetchImageUrlArr()
@@ -416,7 +415,7 @@ const QARecords: React.FC = () => {
             alert('Image Rotation Updated')
           }
         }).catch((res: AxiosError) => {
-          alert(`Cannot Rotate Image ${res.response?.data}`)
+          console.warn(`Cannot Rotate Image ${res.response?.data}`)
         })
         clearImagePopup()
         fetchImageUrlArr()
@@ -918,7 +917,7 @@ const QARecords: React.FC = () => {
       }
     }).catch((err: AxiosError) => {
       setLoading(false)
-      alert('Cannot get page: ' + err.response?.data)
+      console.warn('Cannot get page: ' + err.response?.data)
     })
   }
 

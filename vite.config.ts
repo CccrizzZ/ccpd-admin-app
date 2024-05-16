@@ -7,7 +7,7 @@ export default defineConfig({
   base: '/',
   plugins: [
     react(),
-    legacy()
+    legacy(),
   ],
   preview: {
     port: 8080,

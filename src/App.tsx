@@ -16,7 +16,8 @@ import {
 import {
   bgDark,
   bgLight,
-  server
+  server,
+  // server
 } from './utils/utils'
 import Login from './pages/Login'
 import QARecords from './pages/QARecords'
@@ -47,20 +48,35 @@ type ContextType = {
 // loading spinner context
 export const AppContext = createContext({} as ContextType)
 const App = () => {
+  // user login
+  const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isLogin, setIsLogin] = useState<boolean>(false)
   const [userInfo, setUserInfo] = useState<UserInfo>({
     id: '',
     name: ''
   })
-  const [isLoading, setIsLoading] = useState<boolean>(false)
+
   // admin settings
+  const [showAdminSettingsModal, setShowAdminSettingsModal] = useState<boolean>(false)
   const [adminSettings, setAdminSettings] = useState<AdminSettings>({
     daysQACanDeleteRecord: 0,
     isQAPermittedAfterHours: false
   })
-  const [showAdminSettingsModal, setShowAdminSettingsModal] = useState<boolean>(false)
 
   useEffect(() => {
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        // received "Token used too early" error because system time
+        console.log("User is logged in")
+        setIsLogin(true)
+        return
+      } else {
+        console.log("No user is logged in")
+        setIsLogin(false)
+        return
+      }
+    });
+
     // add firebase token with interceptors
     axios.interceptors.request.use(
       async (config) => {
@@ -71,23 +87,46 @@ const App = () => {
         return Promise.reject(error);
       },
     );
-
   })
+
+  const getUserInfo = async () => {
+    await axios({
+      method: 'post',
+      url: server + '/userController/getUserRBACInfo',
+      responseType: 'text',
+      timeout: 3000,
+      data: JSON.stringify({
+        email: auth.currentUser?.email,
+      }),
+      withCredentials: true
+    }).then((res) => {
+      setUserInfo(JSON.parse(res.data))
+    }).catch((err) => {
+      setIsLoading(false)
+      console.warn('Failed to Get User Info' + err.code)
+    })
+  }
+
 
   // logout user (delete http only cookies)
   const logout = async () => {
-    await axios({
-      method: 'post',
-      url: server + '/userController/logout',
-      responseType: 'text',
-      withCredentials: true
-    }).then(() => {
-      alert('Logout Success!!!')
-      setIsLogin(false)
-    }).catch((err) => {
-      setIsLogin(false)
-      throw err
-    })
+    if (auth.currentUser?.email) {
+      auth.signOut().then(() => {
+        alert("Logged Out")
+      })
+    }
+    // await axios({
+    //   method: 'post',
+    //   url: server + '/userController/logout',
+    //   responseType: 'text',
+    //   withCredentials: true
+    // }).then(() => {
+    //   alert('Logout Success!!!')
+    //   setIsLogin(false)
+    // }).catch((err) => {
+    //   setIsLogin(false)
+    //   throw err
+    // })
   }
 
   // map all navigation items
@@ -102,6 +141,7 @@ const App = () => {
       // 'Procurement'
       // 'Pallet Manager'
     ]
+
     const icons = [
       // <FaHouseChimney />,
       <FaTableList />,
@@ -111,7 +151,9 @@ const App = () => {
       <FaUsersGear />,
       <FaCommentDollar />
     ]
+
     return pages.map((item, index) => {
+      // if not super admin, hide user management
       if (userInfo.role !== 'Super Admin' && item === 'User Management') return
       return (
         <Nav.Item className='mb-3' key={item}>
@@ -123,7 +165,6 @@ const App = () => {
     })
   }
 
-  // render main content
   const renderHome = () => {
     // if not login prompt login else show app
     if (!isLogin) {
@@ -181,7 +222,6 @@ const App = () => {
       {renderHome()}
     </AppContext.Provider>
   )
-
 }
 
 export default App
