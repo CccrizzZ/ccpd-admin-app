@@ -20,7 +20,7 @@ import {
   Switch,
 } from "@tremor/react"
 import moment from "moment"
-import { FaAngleDown, FaFileCsv, FaPencil, FaRotate } from "react-icons/fa6"
+import { FaAngleDown, FaFileCsv, FaHashtag, FaPencil, FaRotate } from "react-icons/fa6"
 import {
   RemainingInfo,
   AuctionInfo,
@@ -687,7 +687,10 @@ const AuctionHistory: React.FC = () => {
             refreshAuction={getAuctionAndRemainingArr}
           />
           <div className="flex gap-2">
-            <h4>Lot #{val.lot}</h4>
+            <Badge className="m-3">
+              <FaHashtag className="m-auto" />
+              <h4 className="m-auto pl-1"> Lot {val.lot}</h4>
+            </Badge>
             {editMode ? <Button
               color="rose"
               className="absolute right-32"
@@ -1175,83 +1178,84 @@ const AuctionHistory: React.FC = () => {
     const onStartBidChange = (event: React.ChangeEvent<HTMLInputElement>) => setTargetEditingItem({ ...targetEditingItem, startBid: stringToNumber(event.target.value) })
     const onReserveChange = (event: React.ChangeEvent<HTMLInputElement>) => setTargetEditingItem({ ...targetEditingItem, reserve: stringToNumber(event.target.value) })
 
-    return (<Modal
-      size="lg"
-      show={showEditAuctionItemModal}
-      onHide={() => setShowEditAuctionItemModal(false)}
-    >
-      <div className="p-6">
-        <InputGroup>
-          <InputGroup.Text>Lot#</InputGroup.Text>
-          <Form.Control
-            type='number'
-            min={0}
-            value={targetEditingItem.lot}
-            onChange={onLotChange}
-          />
-          <InputGroup.Text>SKU</InputGroup.Text>
-          <Form.Control
-            type='number'
-            min={0}
-            value={targetEditingItem.sku}
-            onChange={onSkuChange}
-          />
-          <InputGroup.Text>Shelf Location</InputGroup.Text>
-          <Form.Control
-            type='text'
-            value={targetEditingItem.shelfLocation}
-            onChange={onShelfLocationChange}
-          />
-        </InputGroup>
-        <InputGroup>
-          <InputGroup.Text>MSRP</InputGroup.Text>
-          <Form.Control
-            type='number'
-            min={0}
-            value={targetEditingItem.msrp}
-            onChange={onMsrpChange}
-            step={0.01}
-          />
-          <InputGroup.Text>Start Bid</InputGroup.Text>
-          <Form.Control
-            type='number'
-            min={0}
-            value={targetEditingItem.startBid}
-            onChange={onStartBidChange}
-          />
-          <InputGroup.Text>Reserve</InputGroup.Text>
-          <Form.Control
-            type='number'
-            min={0}
-            value={targetEditingItem.reserve}
-            onChange={onReserveChange}
-          />
-        </InputGroup>
-        <InputGroup>
-          <InputGroup.Text>Lead</InputGroup.Text>
-          <Form.Control
-            type='text'
-            value={targetEditingItem.lead}
-            onChange={onLeadChange}
-          />
-        </InputGroup>
-        <InputGroup>
-          <InputGroup.Text>Description</InputGroup.Text>
-          <Form.Control
-            className="resize-none"
-            type='text'
-            as='textarea'
-            rows={6}
-            value={targetEditingItem.description}
-            onChange={onDescriptionChange}
-          />
-        </InputGroup>
-      </div>
-      <div className="flex p-4">
-        <Button color='slate' onClick={() => setShowEditAuctionItemModal(false)}>Close</Button>
-        <Button className="absolute right-6" color='amber' onClick={updateInstockItem}>Submit</Button>
-      </div>
-    </Modal>
+    return (
+      <Modal
+        size="lg"
+        show={showEditAuctionItemModal}
+        onHide={() => setShowEditAuctionItemModal(false)}
+      >
+        <div className="p-6">
+          <InputGroup>
+            <InputGroup.Text>Lot#</InputGroup.Text>
+            <Form.Control
+              type='number'
+              min={0}
+              value={targetEditingItem.lot}
+              onChange={onLotChange}
+            />
+            <InputGroup.Text>SKU</InputGroup.Text>
+            <Form.Control
+              type='number'
+              min={0}
+              value={targetEditingItem.sku}
+              onChange={onSkuChange}
+            />
+            <InputGroup.Text>Shelf Location</InputGroup.Text>
+            <Form.Control
+              type='text'
+              value={targetEditingItem.shelfLocation}
+              onChange={onShelfLocationChange}
+            />
+          </InputGroup>
+          <InputGroup>
+            <InputGroup.Text>MSRP</InputGroup.Text>
+            <Form.Control
+              type='number'
+              min={0}
+              value={targetEditingItem.msrp}
+              onChange={onMsrpChange}
+              step={0.01}
+            />
+            <InputGroup.Text>Start Bid</InputGroup.Text>
+            <Form.Control
+              type='number'
+              min={0}
+              value={targetEditingItem.startBid}
+              onChange={onStartBidChange}
+            />
+            <InputGroup.Text>Reserve</InputGroup.Text>
+            <Form.Control
+              type='number'
+              min={0}
+              value={targetEditingItem.reserve}
+              onChange={onReserveChange}
+            />
+          </InputGroup>
+          <InputGroup>
+            <InputGroup.Text>Lead</InputGroup.Text>
+            <Form.Control
+              type='text'
+              value={targetEditingItem.lead}
+              onChange={onLeadChange}
+            />
+          </InputGroup>
+          <InputGroup>
+            <InputGroup.Text>Description</InputGroup.Text>
+            <Form.Control
+              className="resize-none"
+              type='text'
+              as='textarea'
+              rows={6}
+              value={targetEditingItem.description}
+              onChange={onDescriptionChange}
+            />
+          </InputGroup>
+        </div>
+        <div className="flex p-4">
+          <Button color='slate' onClick={() => setShowEditAuctionItemModal(false)}>Close</Button>
+          <Button className="absolute right-6" color='amber' onClick={updateInstockItem}>Submit</Button>
+        </div>
+      </Modal>
     )
   }
 

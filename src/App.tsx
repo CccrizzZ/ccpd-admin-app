@@ -6,7 +6,7 @@ import {
   Button,
 } from 'react-bootstrap'
 import './App.css'
-import axios from 'axios'
+import axios, { AxiosError, AxiosResponse } from 'axios'
 import Dashboard from './pages/Dashboard'
 import Inventory from './pages/Inventory'
 import {
@@ -17,6 +17,7 @@ import {
   bgDark,
   bgLight,
   server,
+  sleep,
   // server
 } from './utils/utils'
 import Login from './pages/Login'
@@ -37,9 +38,8 @@ import {
 import AuctionHistory from './pages/AuctionHistory'
 import AdminSettingsModal from './components/AdminSettingsModal'
 import { auth } from './utils/firebase'
-// import RetailManager from './pages/RetailManager'
 
-// type for app context
+// context passed to all child component
 type ContextType = {
   setLoading: (l: boolean) => void
   userInfo: UserInfo
@@ -63,12 +63,21 @@ const App = () => {
     isQAPermittedAfterHours: false
   })
 
+  // wait a moment before fetching all datas
+  // received "Token used too early" error because system time
+  const waitLogin = async (email: string | null) => {
+    setIsLoading(true)
+    await sleep(2000)
+    if (email) {
+      await getAdminRBACInfo(email)
+    }
+  }
+
   useEffect(() => {
-    auth.onAuthStateChanged((user) => {
+    auth.onAuthStateChanged(async (user) => {
       if (user) {
-        // received "Token used too early" error because system time
+        await waitLogin(user.email)
         console.log("User is logged in")
-        setIsLogin(true)
         return
       } else {
         console.log("No user is logged in")
@@ -87,26 +96,42 @@ const App = () => {
         return Promise.reject(error);
       },
     );
-  })
 
-  const getUserInfo = async () => {
+    // axios.interceptors.response.use(
+    //   error => {
+    //     console.log(error.status)
+    //     if (error.status === 403) {
+    //       auth.signOut()
+    //     }
+    //     return Promise.reject(null)
+    //   }
+    // )
+  }, [])
+
+
+  // get user role and name info
+  const getAdminRBACInfo = async (email: string): Promise<boolean> => {
     await axios({
       method: 'post',
-      url: server + '/userController/getUserRBACInfo',
+      url: server + '/userController/getAdminRBACInfo',
       responseType: 'text',
       timeout: 3000,
       data: JSON.stringify({
-        email: auth.currentUser?.email,
+        email: email,
       }),
       withCredentials: true
-    }).then((res) => {
+    }).then((res: AxiosResponse) => {
       setUserInfo(JSON.parse(res.data))
-    }).catch((err) => {
+      setIsLogin(true)
+      return true
+    }).catch((err: AxiosError) => {
       setIsLoading(false)
-      console.warn('Failed to Get User Info' + err.code)
+      auth.signOut()
+      alert('Failed to Login' + err.response?.data)
+      return false
     })
+    return false
   }
-
 
   // logout user (delete http only cookies)
   const logout = async () => {
@@ -115,18 +140,6 @@ const App = () => {
         alert("Logged Out")
       })
     }
-    // await axios({
-    //   method: 'post',
-    //   url: server + '/userController/logout',
-    //   responseType: 'text',
-    //   withCredentials: true
-    // }).then(() => {
-    //   alert('Logout Success!!!')
-    //   setIsLogin(false)
-    // }).catch((err) => {
-    //   setIsLogin(false)
-    //   throw err
-    // })
   }
 
   // map all navigation items

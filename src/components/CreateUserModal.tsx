@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react'
 import { AppContext } from '../App'
 import axios from 'axios'
-import { server, initCreateUser, deSpace, renderUserRoleOptions, hashPass } from '../utils/utils'
+import { server, initCreateUser, deSpace, renderUserRoleOptions } from '../utils/utils'
 import { CreateUser } from '../utils/Types'
 import {
   Form,
@@ -36,7 +36,7 @@ const CreateUserModal: React.FC<CreateUserModalProps> = (props: CreateUserModalP
       data: {
         ...newUser,
         name: newUser.name.trim(),
-        password: hashPass(newUser.password),
+        password: newUser.password,
         email: deSpace(newUser.email.trim())
       },
       withCredentials: true

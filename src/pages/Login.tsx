@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from 'react'
-import axios, { AxiosError, AxiosResponse } from 'axios'
+import React, { useState } from 'react'
+// import axios, { AxiosError, AxiosResponse } from 'axios'
 import { UserInfo } from '../utils/Types'
 // import { server, hashPass } from '../utils/utils'
-import { Form, Button } from 'react-bootstrap'
+import { Form } from 'react-bootstrap'
 import { auth } from '../utils/firebase'
 import { signInWithEmailAndPassword } from 'firebase/auth'
-import { server } from '../utils/utils'
-// import { signInWithEmailAndPassword } from "firebase/auth";
+import { Button } from '@tremor/react'
 
 type LoginProp = {
   setLogin: React.Dispatch<React.SetStateAction<boolean>>,
@@ -17,34 +16,7 @@ type LoginProp = {
 const Login: React.FC<LoginProp> = (prop: LoginProp) => {
   const [userEmail, setUserEmail] = useState<string>('')
   const [userPass, setUserPass] = useState<string>('')
-
-  // checks if jwt token is in http only cookie
-  // const checkToken = async () => {
-  //   prop.setLoading(true)
-  //   await axios({
-  //     method: 'post',
-  //     url: server + '/adminController/checkAdminToken',
-  //     timeout: 3000,
-  //     responseType: 'text',
-  //     data: '',
-  //     withCredentials: true
-  //   }).then((res: AxiosResponse) => {
-  //     if (res.status === 200) {
-  //       prop.setLogin(true)
-  //       prop.setUserInfo(JSON.parse(res.data))
-  //     }
-  //   }).catch((err: AxiosError) => {
-  //     if (err.response) {
-  //       console.log('Please Login: ' + err.message)
-  //     }
-  //   })
-  //   prop.setLoading(false)
-  // }
-
-  useEffect(() => {
-    // // check token
-    // checkToken()
-  }, [])
+  const [isLogging, setIsLogging] = useState<boolean>(false)
 
   const onEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setUserEmail(event.target.value)
@@ -57,59 +29,27 @@ const Login: React.FC<LoginProp> = (prop: LoginProp) => {
   const onEnterKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === 'Enter') {
       firebaseLogin()
-      // login()
     }
   }
 
-  // const login = async () => {
-  //   if (!userEmail || !userPass) return alert('Please Enter Both Username and Password')
-
-  //   // encode password to sha256 Base 64 string
-  //   const passwordHash = hashPass(userPass)
-
-  //   // send login request
-  //   prop.setLoading(true)
-  //   // const res = await signInWithEmailAndPassword(auth, userEmail, userPass).catch(
-  //   //   (err): void => {
-  //   //     alert(err);
-  //   //   },
-  //   // );
-  //   // console.log(res)
-
-  //   await axios({
-  //     method: 'post',
-  //     url: server + '/adminController/adminLogin',
-  //     responseType: 'text',
-  //     timeout: 3000,
-  //     data: JSON.stringify({
-  //       email: userEmail,
-  //       password: passwordHash,
-  //     }),
-  //     withCredentials: true
-  //   }).then((res) => {
-  //     prop.setLogin(true)
-  //     prop.setUserInfo(JSON.parse(res.data))
-  //   }).catch((err) => {
-  //     prop.setLoading(false)
-  //     alert('Login Failed ' + err.code)
-  //   })
-  //   prop.setLoading(false)
-  // }
-
   const firebaseLogin = async () => {
+    if (isLogging) return
     if (userEmail === '' || userPass === '') return alert('Please Enter Both Username and Password')
+    setIsLogging(true)
     prop.setLoading(true)
-    await signInWithEmailAndPassword(auth, userEmail, userPass).then(async (val) => {
-      console.log(val)
-
-      // get user role and name info from db
-
-    }).catch((err): void => {
+    // if role correct sign into firebase
+    await signInWithEmailAndPassword(
+      auth,
+      userEmail,
+      userPass
+    ).catch((err): void => {
       console.warn(err)
       prop.setLoading(false)
+      setIsLogging(false)
       alert('Incorrect Credentials')
     })
-    prop.setLoading(false)
+    setIsLogging(false)
+    // left loading on true, it will be reset later after login
   }
 
   return (
@@ -125,7 +65,13 @@ const Login: React.FC<LoginProp> = (prop: LoginProp) => {
             <Form.Control type="password" placeholder="Enter your password..." value={userPass} onChange={onPasswordChange} onKeyDown={onEnterKeyDown} />
           </Form.Group>
           <div className="d-grid gap-2">
-            <Button variant="primary" size='lg' onClick={firebaseLogin}>Login</Button>
+            <Button
+              size='lg'
+              onClick={firebaseLogin}
+              loading={isLogging}
+            >
+              Login
+            </Button>
           </div>
         </Form>
       </div>
