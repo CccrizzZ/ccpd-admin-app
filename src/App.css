@@ -49,7 +49,7 @@ a {
 .gradient-background {
     /* background: linear-gradient(125deg,rgb(0, 143, 119),rgb(52, 0, 75),rgb(0, 73, 116));
     background-size: 180% 180%;  */
-    background-image: url('src/assets/bg2.jpg');
+    background-image: url('@/assets/bg2.jpg');
     background-repeat: repeat;
     background-size: contain;
 }

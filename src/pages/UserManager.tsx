@@ -371,8 +371,8 @@ const UserManager: React.FC = () => {
       <Grid>
         {/* top 2 panel */}
         <Col className='gap-6 flex'>
-          {renderInvitationPanel()}
           {renderPieChart()}
+          {renderInvitationPanel()}
         </Col>
         {/* user table */}
         <Card className='mt-6 max-w-full'>
