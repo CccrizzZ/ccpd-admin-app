@@ -96,16 +96,6 @@ const App = () => {
         return Promise.reject(error);
       },
     );
-
-    // axios.interceptors.response.use(
-    //   error => {
-    //     console.log(error.status)
-    //     if (error.status === 403) {
-    //       auth.signOut()
-    //     }
-    //     return Promise.reject(null)
-    //   }
-    // )
   }, [])
 
 
@@ -199,8 +189,9 @@ const App = () => {
               </Nav>
               {/* side panel footer */}
               <div className='bottom-2.5 absolute'>
-                <p className='mt-3' style={{ color: '#6B7280' }}>Signed in As: {userInfo.name}</p>
-                <p className='mt-3' style={{ color: '#6B7280' }}>Role: {userInfo.role}</p>
+                <p className='mt-3 text-[#6B7280]'>Signed in As: {userInfo.name}</p>
+                {/* <p className='mt-3 text-[#6B7280]'>ID: {userInfo.id}</p> */}
+                <p className='mt-3 text-[#6B7280]'>Role: {userInfo.role}</p>
                 <Button className='mr-3' variant='danger' onClick={logout}>
                   <FaDoorOpen className='m-auto' />
                 </Button>

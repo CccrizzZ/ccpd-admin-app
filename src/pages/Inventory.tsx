@@ -61,15 +61,18 @@ type ChartData = {
 const Inventory: React.FC = () => {
   const { setLoading } = useContext(AppContext)
   const tableRef = useRef<HTMLDivElement>(null)
+
   // instock info
   const [instockArr, setInstockArr] = useState<InstockInventory[]>([])
   const [selectedInstock, setSelectedInstock] = useState<InstockInventory>(initInstockInventory)
   const [showInstockModal, setShowInstockModal] = useState<boolean>(false)
   const [pastInventoryData, setPastInventoryData] = useState<ChartData[]>([])
+
   // paging
   const [currPage, setCurrPage] = useState<number>(0)
   const [itemsPerPage, setItemsPerPage] = useState<number>(20)
   const [itemCount, setItemCount] = useState<number>(0)
+
   // search keyword
   const [searchKeyword, setSearchKeyword] = useState<string>('')
   // query filters
@@ -83,7 +86,10 @@ const Inventory: React.FC = () => {
     fetchInstockByPage()
   }, [])
 
+  // make charts for inventory recorded in last 10 days
   const populateChartData = (newItemArr: ChartData[]) => {
+    // if (newItemArr.length < 1) return
+    setPastInventoryData([])
     const arr: ChartData[] = []
     for (let i = 0; i < 10; i++) {
       arr.push({
@@ -123,7 +129,6 @@ const Inventory: React.FC = () => {
       const data = JSON.parse(res.data)
       setInstockArr(data['arr'])
       setItemCount(data['count'])
-      if (!data['chartData']) return
       populateChartData(data['chartData'])
     }).catch((err: AxiosError) => {
       setLoading(false)
@@ -152,6 +157,7 @@ const Inventory: React.FC = () => {
         setInstockArr(data['arr'])
         setChanged(false)
         setCurrPage(newPage)
+        populateChartData(data['chartData'])
       }
     }).catch((res: AxiosError) => {
       setLoading(false)
@@ -395,12 +401,19 @@ const Inventory: React.FC = () => {
     )
   }
 
+  const haveData = (): boolean => {
+    const count = pastInventoryData.reduce((sum, value) => sum + value['Recorded Invenotry'], 0)
+    if (count === 0) return false
+    return true
+  }
+
+  // shows howmany inventories sold in 10 days
   const renderOverviewChart = () => {
-    if (pastInventoryData.length === 0) {
-      return (
-        <Card className='h-full'>
-          <Title>Inventory Recorded Last 10 Days</Title>
-          <Title>{`${moment().subtract(10, 'days').format('L')} to ${moment().format('L')}`}</Title>
+    return (
+      <Card className='h-full'>
+        <Title>Inventory Recorded Last 10 Days</Title>
+        <Title>{`${moment().subtract(10, 'days').format('L')} to ${moment().format('L')}`}</Title>
+        {haveData() ?
           <BarChart
             animationDuration={2000}
             showAnimation={true}
@@ -412,17 +425,10 @@ const Inventory: React.FC = () => {
             colors={["emerald"]}
             valueFormatter={valueFormatter}
           />
-        </Card>
-      )
-    } else {
-      return (
-        <Card className='h-full'>
-          <Title>Inventory Recorded Last 10 Days</Title>
-          <Title>{`${moment().subtract(10, 'days').format('L')} to ${moment().format('L')}`}</Title>
-          <h2>No Data Available Last 10 Days</h2>
-        </Card>
-      )
-    }
+          : <></>
+        }
+      </Card>
+    )
   }
 
   const showModal = (i: InstockInventory) => {

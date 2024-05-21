@@ -329,6 +329,7 @@ export const initQAQueryFilter: QAQueryFilter = {
     lte: ''
   },
   targetSku: '',
+  showRecordedOnly: false
 }
 
 export const initInstockQueryFilter: InstockQueryFilter = {
@@ -350,6 +351,7 @@ export const initInstockQueryFilter: InstockQueryFilter = {
     lte: ''
   },
   targetSku: '',
+  showRecordedOnly: false
 }
 
 export const getInstockInventory = (qaRecord: QARecord, adminName: string): InstockInventory => {

@@ -157,7 +157,8 @@ export type QAQueryFilter = {
     gte?: string,
     lte?: string,
   }
-  targetSku?: string
+  targetSku?: string,
+  showRecordedOnly: boolean
 }
 
 export type InstockQueryFilter = {

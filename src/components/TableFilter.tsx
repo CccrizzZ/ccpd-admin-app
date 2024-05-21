@@ -106,6 +106,16 @@ const TableFilter: React.FC<TableFilterProps> = (props: TableFilterProps) => {
               onShelfLocationChange={onShelfLocationsChange}
               shelfLocationSelection={props.queryFilter.shelfLocationFilter}
             />
+            <div className='flex text-center'>
+              <Form.Check
+                className='m-auto'
+                inline
+                label="Show Recorded Only"
+                type="checkbox"
+                checked={props.queryFilter.showRecordedOnly}
+                onChange={() => props.setQueryFilter({ ...props.queryFilter, showRecordedOnly: !props.queryFilter.showRecordedOnly })}
+              />
+            </div>
             <InputGroup>
               <InputGroup.Text>Keyword / Tags<br />(Separate By Space)<br />(Case Sensitive)<br />(Or Operator)</InputGroup.Text>
               <Form.Control

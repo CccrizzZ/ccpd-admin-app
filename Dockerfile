@@ -1,5 +1,5 @@
 # use official node base image
-FROM node:18-bookworm AS build
+FROM node:22-alpine
 
 # set work directory
 WORKDIR /app
