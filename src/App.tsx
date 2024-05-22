@@ -204,7 +204,7 @@ const App = () => {
               </div>
             </div>
             {/* main content */}
-            <div className='mainView gradient-background' style={{ backgroundColor: bgDark, color: '#fff', minWidth: '1250px' }}>
+            <div className="mainView gradient-background bg-[url('/assets/bg2.jpg')]" style={{ backgroundColor: bgDark, color: '#fff', minWidth: '1250px' }}>
               <Tab.Content>
                 <Tab.Pane eventKey="Dashboard"><Dashboard /></Tab.Pane>
                 <Tab.Pane eventKey="Q&A Records"><QARecords /></Tab.Pane>

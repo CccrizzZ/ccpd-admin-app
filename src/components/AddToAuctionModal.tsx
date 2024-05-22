@@ -34,7 +34,7 @@ const AddToAuctionModal: React.FC<AddToAuctionModalProps> = (props: AddToAuction
       responseType: 'text',
       timeout: 8000,
       data: JSON.stringify({
-        fil: props.filter,
+        filter: props.filter,
         auctionLot: targetAuction,
         duplicate: isDuplicate
       }),

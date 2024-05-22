@@ -86,9 +86,15 @@ const Inventory: React.FC = () => {
     fetchInstockByPage()
   }, [])
 
+  const haveData = (): boolean => {
+    const count = pastInventoryData.reduce((sum, value) => sum + value['Recorded Invenotry'], 0)
+    if (count === 0) return false
+    return true
+  }
+
   // make charts for inventory recorded in last 10 days
   const populateChartData = (newItemArr: ChartData[]) => {
-    // if (newItemArr.length < 1) return
+    if (newItemArr.length < 1) return
     setPastInventoryData([])
     const arr: ChartData[] = []
     for (let i = 0; i < 10; i++) {
@@ -98,11 +104,13 @@ const Inventory: React.FC = () => {
       })
     }
     const arr1: ChartData[] = []
-    arr.map(item => {
-      const initem = newItemArr.find((newItem) => String(newItem['date']) === String(item.date))
-      arr1.push(initem === undefined ? item : initem)
-    })
-    setPastInventoryData(arr1.reverse())
+    if (newItemArr.find) {
+      arr.map(item => {
+        const initem = newItemArr.find((newItem) => String(newItem['date']) === String(item.date))
+        arr1.push(initem === undefined ? item : initem)
+      })
+      setPastInventoryData(arr1.reverse())
+    }
   }
 
   // fetch page with filters
@@ -132,6 +140,7 @@ const Inventory: React.FC = () => {
       populateChartData(data['chartData'])
     }).catch((err: AxiosError) => {
       setLoading(false)
+      console.log(err)
       alert('Failed Fetching Instock Records: ' + err.message)
     })
     setLoading(false)
@@ -401,12 +410,6 @@ const Inventory: React.FC = () => {
     )
   }
 
-  const haveData = (): boolean => {
-    const count = pastInventoryData.reduce((sum, value) => sum + value['Recorded Invenotry'], 0)
-    if (count === 0) return false
-    return true
-  }
-
   // shows howmany inventories sold in 10 days
   const renderOverviewChart = () => {
     return (
@@ -511,7 +514,7 @@ const Inventory: React.FC = () => {
           selectedInventory={selectedInstock}
           refreshTable={() => fetchInstockByPage(false)}
         />
-        <div className="flex top-12 absolute">
+        <div>
           <PageItemStatsBox
             totalItems={itemCount}
             itemsPerPage={itemsPerPage}

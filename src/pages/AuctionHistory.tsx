@@ -466,7 +466,7 @@ const AuctionHistory: React.FC = () => {
       <TableHeaderCell className="w-18 align-middle text-center">SKU</TableHeaderCell>
       <TableHeaderCell className="w-32">Lead</TableHeaderCell>
       <TableHeaderCell className="w-48">Desc</TableHeaderCell>
-      <TableHeaderCell className="w-32 align-middle text-center">MSRP<br />Reserve</TableHeaderCell>
+      <TableHeaderCell className="w-32 align-middle text-center">MSRP<br />Reserve<br />Start Bid</TableHeaderCell>
       <TableHeaderCell className="w-30 align-middle text-center">Shelf</TableHeaderCell>
     </TableRow>
   )
@@ -509,7 +509,9 @@ const AuctionHistory: React.FC = () => {
         <div className='grid justify-items-center'>
           <Badge color='emerald'>${item.msrp}</Badge>
           <FaAngleUp className="m-0" />
-          <Badge color='blue'>{item.reserve ?? 0}</Badge>
+          <Badge color='blue'>R: {item.reserve ?? 0}</Badge>
+          <FaAngleUp className="m-0" />
+          <Badge color='gray'>S: {item.startBid ?? 0}</Badge>
         </div>
       </TableCell>
       <TableCell>
@@ -533,7 +535,7 @@ const AuctionHistory: React.FC = () => {
       <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
         📜 Inventories on Auction
         <Badge color="orange" className="absolute right-20 font-bold">
-          {auction.itemsArr.filter((val) => (val.msrp && val.lead && val.description)).length}
+          {auction.itemsArr ? auction.itemsArr.filter((val) => (val.msrp && val.lead && val.description)).length : 0}
         </Badge>
       </AccordionHeader>
       <AccordionBody className="leading-6 p-2">
@@ -542,9 +544,9 @@ const AuctionHistory: React.FC = () => {
             {renderInventoryTableHead()}
           </TableHead>
           <TableBody>
-            {auction.itemsArr.map((item: InstockItem, index: number) => {
+            {auction.itemsArr ? auction.itemsArr.map((item: InstockItem, index: number) => {
               if (item.msrp && item.lead && item.description) return (renderAuctionTableRow(item, index, auction.lot, true))
-            })}
+            }) : undefined}
           </TableBody>
         </Table>
       </AccordionBody>
@@ -611,7 +613,7 @@ const AuctionHistory: React.FC = () => {
       <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
         ❓ Items With Missing Information
         <Badge color="orange" className="absolute right-20 font-bold">
-          {auction.itemsArr.filter((val) => (!val.msrp || !val.lead || !val.description)).length}
+          {auction.itemsArr ? auction.itemsArr.filter((val) => (!val.msrp || !val.lead || !val.description)).length : 0}
         </Badge>
       </AccordionHeader>
       <AccordionBody className="leading-6 p-2">
@@ -621,7 +623,7 @@ const AuctionHistory: React.FC = () => {
           </TableHead>
           <TableBody>
             {
-              auction.itemsArr.map((item: InstockItem) => {
+              auction.itemsArr ? auction.itemsArr.map((item: InstockItem) => {
                 if (!item.lead || !item.description || !item.msrp) return (
                   <TableRow key={item.sku}>
                     <TableCell>{item.lot}</TableCell>
@@ -646,7 +648,7 @@ const AuctionHistory: React.FC = () => {
                     </TableCell>
                   </TableRow>
                 )
-              })
+              }) : undefined
             }
           </TableBody>
         </Table>
@@ -679,14 +681,14 @@ const AuctionHistory: React.FC = () => {
   const renderAuctionCard = () => {
     if (auctionHistoryArr.map) {
       return auctionHistoryArr.map((val, index) => (
-        <Card key={index} className='!bg-[#223] !border-slate-500 border-2'>
+        <Card key={index} className='!bg-[#223] !border-slate-700 border-1'>
           <ImportUnsoldModal
             show={showImportUnsold}
             hide={() => setShowImportUnsold(false)}
             auctionLotNumber={targetAuctionLot}
             refreshAuction={getAuctionAndRemainingArr}
           />
-          <div className="flex gap-2">
+          <div className="flex gap-4">
             <Badge className="m-3">
               <FaHashtag className="m-auto" />
               <h4 className="m-auto pl-1"> Lot {val.lot}</h4>
@@ -707,7 +709,7 @@ const AuctionHistory: React.FC = () => {
               <FaFileCsv className="mr-1" /> CSV
             </Button>
           </div>
-          <p>Item Lot # Starts From {val.itemLotStart}</p>
+          <Badge color="amber">Lot # Starts From {val.itemLotStart}</Badge>
           <h6>{val.title}</h6>
           <hr />
           <div className="flex gap-6">
@@ -1277,8 +1279,9 @@ const AuctionHistory: React.FC = () => {
                 <FaRotate />
               </Button>
             </div>
+            <p>(Auction Inventory Will Always Sort Descending MSRP)</p>
             <hr />
-            <div className="grid gap-3">
+            <div className="grid gap-6">
               <div className="right-12 flex absolute">
                 <label>Edit Mode</label>
                 <Switch
@@ -1307,7 +1310,7 @@ const AuctionHistory: React.FC = () => {
             </div>
             <hr />
             <Subtitle></Subtitle>
-            <div className="grid gap-3">
+            <div className="grid gap-6">
               {renderRemainingCard()}
             </div>
           </Card>
