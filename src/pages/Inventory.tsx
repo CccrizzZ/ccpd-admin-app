@@ -94,6 +94,7 @@ const Inventory: React.FC = () => {
 
   // make charts for inventory recorded in last 10 days
   const populateChartData = (newItemArr: ChartData[]) => {
+    if (!newItemArr) return
     if (newItemArr.length < 1) return
     setPastInventoryData([])
     const arr: ChartData[] = []

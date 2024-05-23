@@ -54,7 +54,8 @@ import {
   getKwArr,
   usdToCadRate,
   stringToNumber,
-  isObjectsEqual
+  isObjectsEqual,
+  sleep
 } from '../utils/utils'
 import {
   Form,
@@ -359,6 +360,7 @@ const QARecords: React.FC = () => {
 
       // send delete requet to server
       const deleteImage = async () => {
+        setLoading(true)
         await axios({
           method: 'delete',
           url: server + '/imageController/deleteImageByName',
@@ -369,15 +371,18 @@ const QARecords: React.FC = () => {
             name: imagePopupUrl.replace(/^.*[\\/]/, '')
           }),
           withCredentials: true
-        }).then((res: AxiosResponse) => {
+        }).then(async (res: AxiosResponse) => {
           if (res.status === 200) {
             alert('Image Deleted')
+            await sleep(1000)
+            fetchImageUrlArr()
           }
         }).catch((res: AxiosError) => {
+          setLoading(false)
           console.warn(`Cannot Delete Image ${res.message}`)
         })
         setShowImagePopup(false)
-        fetchImageUrlArr()
+        setLoading(false)
       }
 
       // move rotation index according to direction
@@ -399,6 +404,7 @@ const QARecords: React.FC = () => {
 
       // send rotate image request to server
       const updateRotation = async () => {
+        setLoading(true)
         await axios({
           method: 'post',
           url: server + '/imageController/rotateImage',
@@ -416,9 +422,11 @@ const QARecords: React.FC = () => {
           }
         }).catch((res: AxiosError) => {
           console.warn(`Cannot Rotate Image ${res.response?.data}`)
+          setLoading(false)
         })
         clearImagePopup()
         fetchImageUrlArr()
+        setLoading(false)
       }
 
       return (
@@ -892,7 +900,7 @@ const QARecords: React.FC = () => {
     }).then((res: AxiosResponse) => {
       if (res.status === 200) {
         alert(`${res.data} ${sku}`)
-        setSelectedRecord(initQARecord)
+        // setSelectedRecord(initQARecord)
         fetchQARecordsByPage(false)
       }
     }).catch((err: AxiosError) => {
