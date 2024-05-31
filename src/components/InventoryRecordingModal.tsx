@@ -70,13 +70,18 @@ const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: 
     if (String(props.scrapeData.msrp) === 'NaN' || !props.scrapeData.msrp) return alert('MSRP of Scraped Data is Missing, Wait Until Scrape Finish')
     if (!description || !lead) return alert('Description or Lead is Missing')
     if (props.record.problem) return alert('Record is Problematic, Please Resolve it First')
+    setNewInv({ ...newInv, msrp: props.scrapeData.msrp ?? 0 })
     setLoading(true)
     await axios({
       method: 'post',
       url: server + '/inventoryController/createInstockInventory',
       responseType: 'text',
       timeout: 8000,
-      data: JSON.stringify({ ...newInv, lead: lead, description: description }),
+      data: JSON.stringify({
+        ...newInv,
+        lead: lead,
+        description: description
+      }),
       withCredentials: true
     }).then((res: AxiosResponse) => {
       if (res.status === 200) {

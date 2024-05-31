@@ -313,7 +313,7 @@ const QARecords: React.FC = () => {
       if (data.currency !== 'CAD') data.msrp = toCad(data.msrp, data.currency) ?? data.msrp
       setScrapeData(data)
     }).catch((res: AxiosError) => {
-      console.log('Failed Scraping: ' + res.response?.data)
+      console.log('Failed Scraping: ' + res.message)
     })
     setIsScraping(false)
   }

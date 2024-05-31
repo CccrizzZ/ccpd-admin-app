@@ -145,7 +145,7 @@ const Inventory: React.FC = () => {
       alert('Failed Fetching Instock Records: ' + err.message)
     })
     setLoading(false)
-    setCurrPage(0)
+    // setCurrPage(0)
     setChanged(false)
   }
 

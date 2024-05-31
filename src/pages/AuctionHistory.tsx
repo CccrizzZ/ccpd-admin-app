@@ -634,7 +634,9 @@ const AuctionHistory: React.FC = () => {
                       <div className='grid justify-items-center'>
                         <Badge color='emerald'>${item.msrp}</Badge>
                         <FaAngleUp className="m-0" />
-                        <Badge color='blue'>{item.reserve ?? 0}</Badge>
+                        <Badge color='blue'>R: {item.reserve ?? 0}</Badge>
+                        <FaAngleUp className="m-0" />
+                        <Badge color='gray'>S: {item.startBid ?? 0}</Badge>
                       </div>
                     </TableCell>
                     <TableCell>

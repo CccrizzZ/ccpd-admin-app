@@ -98,7 +98,6 @@ const App = () => {
     );
   }, [])
 
-
   // get user role and name info
   const getAdminRBACInfo = async (email: string): Promise<boolean> => {
     await axios({
