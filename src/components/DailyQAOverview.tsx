@@ -35,15 +35,16 @@ const DailyQAOverview = () => {
     setIsLoading(false)
   }
 
-  const exportToday = async () => {
+  const exportCSV = async (daysAgo: number) => {
     await axios({
-      method: 'get',
+      method: 'post',
       url: server + '/inventoryController/getAllShelfSheet',
       responseType: 'blob',
       timeout: 8000,
-      withCredentials: true
+      withCredentials: true,
+      data: { "daysAgo": daysAgo }
     }).then(async (res: AxiosResponse) => {
-      if (res.status > 200) return alert('No records found for today!')
+      if (res.status > 200) return alert('No records found!')
 
       // JSON parse csv content
       let file = new Blob([res.data], { type: 'text/csv' })
@@ -53,12 +54,12 @@ const DailyQAOverview = () => {
       // way to get custom file name
       let link = document.createElement("a");
       link.setAttribute("href", URL.createObjectURL(file));
-      link.setAttribute("download", `${moment().format('LL')}_Shelf_Sheet.csv`);
+      link.setAttribute("download", `${moment().subtract(daysAgo, "days").format('LL')}_Shelf_Sheet.csv`);
       document.body.appendChild(link);
       link.click()
       document.body.removeChild(link)
     }).catch((res: AxiosError) => {
-      alert('Cannot Get Shelf Sheet CSV: ' + res.message)
+      alert('Cannot Get Shelf Sheet CSV: ' + res.response?.statusText)
     })
   }
 
@@ -106,18 +107,33 @@ const DailyQAOverview = () => {
     )
   }
 
+  const renderExportCSVButtonRow = () => {
+    const daysAgoArr = [0, 1, 2, 3, 4, 5, 6]
+    if (data.length < 1) return
+    return (
+      <tr>
+        <td>CSV</td>
+        {daysAgoArr.reverse().map((val, index) => (
+          <td key={val + index}>
+            <Button
+              className="p-1"
+              color="emerald"
+              onClick={() => exportCSV(val)}
+              tooltip="Get Shelf Sheet CSV"
+            >
+              <FaFileCsv />
+            </Button>
+          </td>
+        ))}
+      </tr>
+    )
+  }
+
   return (
     <>
       <div className="flex">
         <Title>📆 Past 7 Days QA Records</Title>
-        <Button
-          className="absolute right-36"
-          color="emerald"
-          onClick={exportToday}
-          tooltip="Get Today's Shelf Sheet CSV"
-        >
-          <FaFileCsv />
-        </Button>
+
         <Button
           className="absolute right-16"
           color="emerald"
@@ -140,6 +156,7 @@ const DailyQAOverview = () => {
             <tbody>
               {renderTableBody()}
               {renderSumRow()}
+              {renderExportCSVButtonRow()}
             </tbody>
           </Table>
       }

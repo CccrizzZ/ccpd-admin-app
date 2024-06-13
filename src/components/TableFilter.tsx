@@ -154,7 +154,7 @@ const TableFilter: React.FC<TableFilterProps> = (props: TableFilterProps) => {
           value={props.queryFilter.timeRangeFilter}
         />
       </div>
-      <div className='absolute right-[420px] gap-2 flex'>
+      <div className='absolute right-[400px] gap-2 flex'>
         <div>
           <label className='text-gray-500'>Condition:</label>
           <Form.Select value={props.queryFilter.conditionFilter} onChange={onConditionFilterChange}>

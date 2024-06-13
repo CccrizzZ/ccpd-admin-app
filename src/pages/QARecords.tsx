@@ -285,15 +285,27 @@ const QARecords: React.FC = () => {
   const nextRecord = () => {
     if (isScraping) return
     const next = QARecordArr[QARecordArr.indexOf(selectedRecord) + 1]
+    fetchQARecordsByPage(false)
+    if (!next) return
+    setSelectedRecord(next)
     fetchImageUrlArr(String(next.sku))
-    if (next !== undefined) setSelectedRecord(next); setOriginalSelectedRecord(next); clearScrape(); scrapeRequest(next.sku);
+    setOriginalSelectedRecord(next)
+
+    clearScrape()
+    scrapeRequest(next.sku)
   }
 
   const prevRecord = () => {
     if (isScraping) return
     const prev = QARecordArr[QARecordArr.indexOf(selectedRecord) - 1]
+    fetchQARecordsByPage(false)
+    if (!prev) return
+    setSelectedRecord(prev)
     fetchImageUrlArr(String(prev.sku))
-    if (prev !== undefined) setSelectedRecord(prev); setOriginalSelectedRecord(prev); clearScrape(); scrapeRequest(prev.sku);
+    setOriginalSelectedRecord(prev)
+
+    clearScrape()
+    scrapeRequest(prev.sku)
   }
 
   const scrapeRequest = async (sku: number) => {

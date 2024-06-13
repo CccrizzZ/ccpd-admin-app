@@ -86,7 +86,6 @@ const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: 
     }).then((res: AxiosResponse) => {
       if (res.status === 200) {
         alert(`Instock Inventory Created: ${props.record.sku}`)
-        // props.handleClose()
         props.nextItem()
       }
     }).catch((res: AxiosError) => {
