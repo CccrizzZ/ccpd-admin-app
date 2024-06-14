@@ -237,7 +237,7 @@ const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: 
               </List>
             </Card>
           </Col>
-          <Col className='gap-2 grid'>
+          <Col className='gap-2 grid h-32'>
             <Button color='indigo' onClick={getLeadDesc}>Generate Lead & Desc with ChatGPT</Button>
           </Col>
         </Grid>

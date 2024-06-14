@@ -114,7 +114,7 @@ const DailyQAOverview = () => {
       <tr>
         <td>CSV</td>
         {daysAgoArr.reverse().map((val, index) => (
-          <td key={val + index}>
+          <td key={`${val}-${index}`}>
             <Button
               className="p-1"
               color="emerald"

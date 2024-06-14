@@ -15,8 +15,9 @@ type ImageUploadModalProps = {
 
 const ImageUploadModal: React.FC<ImageUploadModalProps> = (props: ImageUploadModalProps) => {
   const { setLoading } = useContext(AppContext)
-
+  // target image var
   const [targetImageUrl, setTargetImageUrl] = useState<string>('')
+  const [targetImagePrefix, setTargetImagePrefix] = useState<string>(`__${String(props.sku)}_`)
   const [targetImageName, setTargetImageName] = useState<string>('')
   const [selectedImages, setSelectedImages] = useState<File[]>([])
 
@@ -97,6 +98,7 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = (props: ImageUploadMod
     }
   }
 
+  const onTargetImagePrefixChange = (event: React.ChangeEvent<HTMLInputElement>) => setTargetImagePrefix(event.target.value)
   return (
     <Modal
       show={props.show}
@@ -108,7 +110,12 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = (props: ImageUploadMod
         <h5>Upload Image by URL: </h5>
         <InputGroup>
           <InputGroup.Text>Name</InputGroup.Text>
-          <InputGroup.Text>{props.sku + '_'}</InputGroup.Text>
+          {/* <InputGroup.Text>{props.sku + '_'}</InputGroup.Text> */}
+          <Form.Control
+            maxLength={16}
+            value={targetImagePrefix}
+            onChange={onTargetImagePrefixChange}
+          />
           <Form.Control
             maxLength={16}
             value={targetImageName}

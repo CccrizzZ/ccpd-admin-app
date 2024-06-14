@@ -282,10 +282,11 @@ const QARecords: React.FC = () => {
     setLoading(false)
   }
 
+  const getSelectedItemIndex = () => QARecordArr.findIndex(item => item.sku === selectedRecord.sku)
+
   const nextRecord = () => {
     if (isScraping) return
-    const next = QARecordArr[QARecordArr.indexOf(selectedRecord) + 1]
-    fetchQARecordsByPage(false)
+    const next = QARecordArr[getSelectedItemIndex() + 1]
     if (!next) return
     setSelectedRecord(next)
     fetchImageUrlArr(String(next.sku))
@@ -293,12 +294,12 @@ const QARecords: React.FC = () => {
 
     clearScrape()
     scrapeRequest(next.sku)
+    fetchQARecordsByPage(false)
   }
 
   const prevRecord = () => {
     if (isScraping) return
-    const prev = QARecordArr[QARecordArr.indexOf(selectedRecord) - 1]
-    fetchQARecordsByPage(false)
+    const prev = QARecordArr[getSelectedItemIndex() - 1]
     if (!prev) return
     setSelectedRecord(prev)
     fetchImageUrlArr(String(prev.sku))
@@ -306,6 +307,7 @@ const QARecords: React.FC = () => {
 
     clearScrape()
     scrapeRequest(prev.sku)
+    fetchQARecordsByPage(false)
   }
 
   const scrapeRequest = async (sku: number) => {
@@ -629,7 +631,7 @@ const QARecords: React.FC = () => {
       const renderB = () => (
         <div className='min-h-[500px]'>
           <Badge color={getPlatformBadgeColor(selectedRecord.platform)}>{selectedRecord.platform}</Badge>
-          <div className='flex m-2 gap-2'>
+          {/* <div className='flex gap-2'>
             <a
               className='max-w-28'
               href={extractHttpsFromStr(selectedRecord.link)}
@@ -637,7 +639,18 @@ const QARecords: React.FC = () => {
             >
               {extractHttpsFromStr(selectedRecord.link).slice(0, 100)}
             </a>
-          </div>
+          </div> */}
+          <InputGroup className='my-3'>
+            <InputGroup.Text>URL</InputGroup.Text>
+            <Form.Control
+              value={selectedRecord.link}
+              onChange={onLinkChange}
+              as="textarea"
+              className='resize-none h-32'
+            />
+            <Button size='xs' color='slate' onClick={() => setSelectedRecord({ ...selectedRecord, link: extractHttpsFromStr(selectedRecord.link) })}>Extract</Button>
+            <Button size='xs' color='gray' onClick={() => openLink(selectedRecord.link)}>Open</Button>
+          </InputGroup>
           <InputGroup size="sm" className="mb-3">
             <InputGroup.Text>Title</InputGroup.Text>
             <Form.Control
@@ -771,8 +784,8 @@ const QARecords: React.FC = () => {
 
   const renderInventoryTableBody = () => (
     <TableBody>
-      {QARecordArr?.map((record) => (
-        <TableRow key={record.sku}>
+      {QARecordArr?.map((record, index) => (
+        <TableRow key={`${index} + ${record.sku}`}>
           <TableCell>
             <p className={'absolute left-3 text-lg ' + (record.sku === selectedRecord.sku ? 'visible' : 'invisible')}>👉</p>
             <Button
