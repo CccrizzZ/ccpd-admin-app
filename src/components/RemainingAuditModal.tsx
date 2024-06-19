@@ -54,7 +54,9 @@ const RemainingAuditModal: React.FC<RemainigAuditModalProps> = (props: RemainigA
       responseType: 'text',
       timeout: 25000,
       withCredentials: true,
-      data: JSON.stringify({ 'remainingLotNumber': props.remainingRecord.lot })
+      data: JSON.stringify({
+        'remainingLotNumber': props.remainingRecord.lot
+      })
     }).then((res: AxiosResponse) => {
       if (res.status > 200) return alert('Failed to Fetch Auction Lot Numbers')
       // set processed flag to true
@@ -172,55 +174,6 @@ const RemainingAuditModal: React.FC<RemainigAuditModalProps> = (props: RemainigA
     </Table>
   )
 
-  // const renderRemainingTable = () => (
-  //   <Table>
-  //     <TableHead>
-  //       <TableRow>
-  //         <TableHeaderCell className='w-32'>Lot</TableHeaderCell>
-  //         <TableHeaderCell>SKU</TableHeaderCell>
-  //         <TableHeaderCell>Status</TableHeaderCell>
-  //       </TableRow>
-  //     </TableHead>
-  //     <TableBody>
-  //       {props.remainingRecord.soldItems.map((val, index) => (
-  //         <TableRow key={index}>
-  //           <TableCell>{val.clotNumber}</TableCell>
-  //           <TableCell><Badge color='emerald'>{val.sku}</Badge></TableCell>
-  //           <TableCell>{val.soldStatus}</TableCell>
-  //         </TableRow>
-  //       ))}
-  //       {props.remainingRecord.unsoldItems.map((val, index) => (
-  //         <TableRow key={index}>
-  //           <TableCell>{val.lot}</TableCell>
-  //           <TableCell><Badge color='rose'>{val.sku}</Badge></TableCell>
-  //           <TableCell>NS</TableCell>
-  //         </TableRow>
-  //       ))}
-  //     </TableBody>
-  //   </Table>
-  // )
-
-  // const renderErrorItems = () => (
-  //   <Table>
-  //     <TableHead>
-  //       <TableRow>
-  //         <TableHeaderCell className='w-28'>Lot</TableHeaderCell>
-  //         <TableHeaderCell>SKU</TableHeaderCell>
-  //         <TableHeaderCell className='w-64'>Reason</TableHeaderCell>
-  //       </TableRow>
-  //     </TableHead>
-  //     <TableBody>
-  //       {errorItems.map((val, index) => (
-  //         <TableRow key={index}>
-  //           <TableCell>{val.lot}</TableCell>
-  //           <TableCell><Badge color='rose' className='font-bold'>{val.sku}</Badge></TableCell>
-  //           <TableCell>{val.reason}</TableCell>
-  //         </TableRow>
-  //       ))}
-  //     </TableBody>
-  //   </Table>
-  // )
-
   const getTotalSoldAmount = () => {
     let i = 0
     props.remainingRecord.soldItems.map((val) => i += val.bidAmount)
@@ -263,6 +216,7 @@ const RemainingAuditModal: React.FC<RemainigAuditModalProps> = (props: RemainigA
       </TableBody>
     </Table>
   )
+
   const renderDatabaseDeduction = () => (
     <Table>
       <TableHead>
@@ -311,6 +265,7 @@ const RemainingAuditModal: React.FC<RemainigAuditModalProps> = (props: RemainigA
       keyboard={false}
       size='xl'
     >
+      {props.remainingRecord.lot}
       <br />
       <Grid numItems={2} className='p-6 gap-2'>
         <Col className='text-center'>
@@ -323,10 +278,10 @@ const RemainingAuditModal: React.FC<RemainigAuditModalProps> = (props: RemainigA
           <Card>
             <h4 className='text-emerald-500'>Total Items: {props.remainingRecord.soldCount} </h4>
             <h4 className='text-emerald-500'>Total Sold Amount: ${getTotalSoldAmount()}</h4>
-            <h4>No Database Deduction: (Top Row Sold)</h4>
+            <h4>Top Row Sold: (No Database Deduction)</h4>
             {renderTopRowResult()}
             <hr />
-            <h4>Database Deduction: </h4>
+            <h4>Bottom Inventory Database Deduction: </h4>
             {renderDatabaseDeduction()}
           </Card>
         </Col>

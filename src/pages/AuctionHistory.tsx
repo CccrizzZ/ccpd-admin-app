@@ -20,7 +20,13 @@ import {
   Switch,
 } from "@tremor/react"
 import moment from "moment"
-import { FaAngleDown, FaFileCsv, FaHashtag, FaPencil, FaRotate } from "react-icons/fa6"
+import {
+  FaAngleDown,
+  FaFileCsv,
+  FaHashtag,
+  FaPencil,
+  FaRotate
+} from "react-icons/fa6"
 import {
   RemainingInfo,
   AuctionInfo,
@@ -38,6 +44,7 @@ import {
 import { FaAngleUp, FaTrashCan } from 'react-icons/fa6'
 import ImportUnsoldModal from "../components/ImportUnsoldModal"
 import RemainingAuditModal from "../components/RemainingAuditModal"
+import { RiTimeFill } from "react-icons/ri"
 
 const AuctionHistory: React.FC = () => {
   const { setLoading } = useContext(AppContext)
@@ -577,30 +584,30 @@ const AuctionHistory: React.FC = () => {
     setLoading(false)
   }
 
-  const renderLastAuctionItemTable = (auction: AuctionInfo) => {
+  const renderUnsoldItemTable = (auction: AuctionInfo) => {
     if (!auction.previousUnsoldArr) return undefined
-    return Object.entries(auction.previousUnsoldArr).map(([key, item], index) => (
+    return auction.previousUnsoldArr.map((val, index) => (
       <Accordion key={index}>
         <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
-          📦 Unsold From Auction {key} (Randomly Sorted)
+          📦 Unsold From Auction {val.lot} (Randomly Sorted)
           <Badge color="orange" className="absolute right-20 font-bold">
-            {item.length}
+            {val.items.length}
           </Badge>
-        </AccordionHeader>
-        <AccordionBody className="leading-6 p-2">
           <Button
-            className="ml-6"
+            className="ml-16"
             color="rose"
-            onClick={() => deleteUnsold(auction.lot, Number(key))}
+            onClick={() => deleteUnsold(auction.lot, val.lot)}
           >
             Delete
           </Button>
+        </AccordionHeader>
+        <AccordionBody className="leading-6 p-2">
           <Table>
             <TableHead>
               {renderInventoryTableHead()}
             </TableHead>
             <TableBody>
-              {item.map((item: InstockItem, index: number) => (renderAuctionTableRow(item, index, auction.lot)))}
+              {val.items.length > 0 ? val.items.map((item: InstockItem, index: number) => (renderAuctionTableRow(item, index, auction.lot))) : <></>}
             </TableBody>
           </Table>
         </AccordionBody>
@@ -670,7 +677,7 @@ const AuctionHistory: React.FC = () => {
         {renderMissingInfoItemTable(auctionInfo)}
       </div>
       <div className="mt-3">
-        {renderLastAuctionItemTable(auctionInfo)}
+        {renderUnsoldItemTable(auctionInfo)}
       </div>
     </>
   )
@@ -684,12 +691,6 @@ const AuctionHistory: React.FC = () => {
     if (auctionHistoryArr.map) {
       return auctionHistoryArr.map((val, index) => (
         <Card key={index} className='!bg-[#223] !border-slate-700 border-1'>
-          <ImportUnsoldModal
-            show={showImportUnsold}
-            hide={() => setShowImportUnsold(false)}
-            auctionLotNumber={targetAuctionLot}
-            refreshAuction={getAuctionAndRemainingArr}
-          />
           <div className="flex gap-4">
             <Badge className="m-3">
               <FaHashtag className="m-auto" />
@@ -726,9 +727,13 @@ const AuctionHistory: React.FC = () => {
           {renderItemTable(val)}
           <hr />
           <div className="flex p-4 pb-0">
-            <div>
-              <p className="!text-slate-500">Open Time: {moment(val.openTime).format('LLL')}</p>
-              <p className="!text-slate-500">Close Time: {moment(val.closeTime).format('LLL')}</p>
+            <div className="grid gap-3">
+              <Badge className="!text-slate-500">
+                <RiTimeFill />Open Time: {moment(val.openTime).format('LLL')}
+              </Badge>
+              <Badge className="!text-slate-500">
+                <RiTimeFill />Close Time: {moment(val.closeTime).format('LLL')}
+              </Badge>
             </div>
             <div className="absolute right-16 mt-1">
               {renderCountDown(val.closeTime, val.openTime)}
@@ -1022,9 +1027,11 @@ const AuctionHistory: React.FC = () => {
             remainingRecord={remainingRecord}
             auctionRecord={findAuction(remainingRecord.lot)}
           />
-          <h4>
-            {remainingRecord.isProcessed ? <>✅</> : undefined}Lot #{remainingRecord.lot}
-          </h4>
+          <Badge color='amber'>
+            <h4 className="m-0">
+              {remainingRecord.isProcessed ? <>✅</> : undefined}Lot #{remainingRecord.lot}
+            </h4>
+          </Badge>
           {editMode ?
             <Button
               color="rose"
@@ -1038,7 +1045,7 @@ const AuctionHistory: React.FC = () => {
             Total Items: {remainingRecord.totalItems} Items
           </Badge>
           <Badge color="emerald" className="absolute right-20 font-bold text-base	">
-            Total Bid: ${remainingRecord.totalBidAmount}
+            Total Bid: ${remainingRecord.totalBidAmount?.toFixed(2)}
           </Badge>
           <div className="mt-3">
             {renderSoldTopRow(remainingRecord)}
@@ -1120,19 +1127,21 @@ const AuctionHistory: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableHeaderCell className="w-16 align-middle text-center">Lot#</TableHeaderCell>
-              <TableHeaderCell className="w-32">Lead</TableHeaderCell>
-              <TableHeaderCell className="w-20 align-middle text-center">Sold Status</TableHeaderCell>
-              <TableHeaderCell className="w-32 align-middle text-center">Bid</TableHeaderCell>
+              <TableHeaderCell className="w-16 align-middle text-center">SKU#</TableHeaderCell>
+              <TableHeaderCell className="w-32">Desc</TableHeaderCell>
+              <TableHeaderCell className="w-20 align-middle text-center">Shelf Location</TableHeaderCell>
+              <TableHeaderCell className="w-32 align-middle text-center">Condition</TableHeaderCell>
+              <TableHeaderCell className="w-32 align-middle text-center">Lot#</TableHeaderCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {record.notInRemaining?.map((unsold: NotInAuctionItem, index: number) => (
-              <TableRow key={index}>
-                <TableCell className={tableCellClass(unsold)}>{unsold.lot}</TableCell>
-                <TableCell className="text-wrap">{unsold.lead}</TableCell>
-                <TableCell className={tableCellClass(unsold)}>{unsold.sold}</TableCell>
-                <TableCell className={tableCellClass(unsold)}>{unsold.bid}</TableCell>
+              <TableRow key={`${index} ${unsold.sku}`}>
+                <TableCell className={tableCellClass(unsold)}>{unsold.sku}</TableCell>
+                <TableCell className="text-wrap">{unsold.description}</TableCell>
+                <TableCell className={tableCellClass(unsold)}>{unsold.shelfLocation}</TableCell>
+                <TableCell className={tableCellClass(unsold)}>{unsold.condition}</TableCell>
+                <TableCell className={`${tableCellClass(unsold)} w-20`}>{unsold.lot}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -1265,8 +1274,15 @@ const AuctionHistory: React.FC = () => {
 
   return (
     <div ref={topRef}>
+      <ImportUnsoldModal
+        show={showImportUnsold}
+        hide={() => setShowImportUnsold(false)}
+        auctionLotNumber={targetAuctionLot}
+        refreshAuction={getAuctionAndRemainingArr}
+      />
       {renderImportRemainingRecordModal()}
       {renderEditModal()}
+      <h2>{server}</h2>
       <Grid numItems={2} className="gap-3">
         <Col>
           <Card className="min-h-[90vh]">
@@ -1281,7 +1297,7 @@ const AuctionHistory: React.FC = () => {
                 <FaRotate />
               </Button>
             </div>
-            <p>(Auction Inventory Will Always Sort Descending MSRP)</p>
+            <p>(Auction Inventory Bottom Row Will Always Sort Descending MSRP)</p>
             <hr />
             <div className="grid gap-6">
               <div className="right-12 flex absolute">

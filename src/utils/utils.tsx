@@ -18,7 +18,17 @@ import { DateRangePickerValue } from "@tremor/react";
 
 // server connection
 export const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+const getServer = () => {
+  // 
+  if (import.meta.env.VITE_NODE_ENV == 'production') {
+    return import.meta.env.VITE_APP_SERVER_DEV
+  } else {
+    return import.meta.env.VITE_APP_SERVER_PROD
+  }
+}
 export const server = import.meta.env.VITE_APP_SERVER
+
+
 
 // conversion rate
 export const usdToCadRate = 1.38

@@ -3,4 +3,4 @@ build
 npm-debug.log
 dist
 workflow.png
-# .env
+.env.development

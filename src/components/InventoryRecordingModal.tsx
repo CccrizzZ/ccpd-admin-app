@@ -50,7 +50,6 @@ const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: 
     "Please generate a product description in the format '[Item Condition] - [Item information]', The character limit for Item information is 250 characters."
   )
 
-
   useEffect(() => {
     setNewInv({
       ...getInstockInventory(props.record, userInfo.name),

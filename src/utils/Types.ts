@@ -189,6 +189,11 @@ export type InstockItem = {
   reserve?: number,
 }
 
+export type PreviousUnsold = {
+  lot: number,
+  items: InstockItem[]
+}
+
 export type AuctionInfo = {
   lot: number,
   totalItems: number,
@@ -196,7 +201,7 @@ export type AuctionInfo = {
   closeTime: string,
   itemsArr: InstockItem[],
   topRow: InstockItem[],
-  previousUnsoldArr: Record<number, InstockItem[]>,  // { lot: [items...] }
+  previousUnsoldArr: PreviousUnsold[],
   title?: string,
   description?: string,
   minMSRP?: number,
@@ -236,10 +241,14 @@ export type SoldItem = {
 }
 
 export type NotInAuctionItem = {
-  lot: number,
-  sold: boolean,
-  lead: string,
+  sku: number,
+  shelfLocation: boolean,
+  description: string,
   bid: number,
+  sold?: boolean,
+  lead?: string,
+  lot?: number,
+  condition?: string,
 }
 
 export type AdminSettings = {
