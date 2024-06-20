@@ -25,7 +25,10 @@ import {
   FaFileCsv,
   FaHashtag,
   FaPencil,
-  FaRotate
+  FaRotate,
+  FaAngleUp,
+  FaTrashCan,
+  FaArrowUp
 } from "react-icons/fa6"
 import {
   RemainingInfo,
@@ -41,7 +44,6 @@ import {
   downloadCustomNameFile,
   initInstockItem
 } from "../utils/utils"
-import { FaAngleUp, FaTrashCan } from 'react-icons/fa6'
 import ImportUnsoldModal from "../components/ImportUnsoldModal"
 import RemainingAuditModal from "../components/RemainingAuditModal"
 import { RiTimeFill } from "react-icons/ri"
@@ -49,7 +51,6 @@ import { RiTimeFill } from "react-icons/ri"
 const AuctionHistory: React.FC = () => {
   const { setLoading } = useContext(AppContext)
   const topRef = useRef<HTMLDivElement>(null)
-  // const [dragging, setDragging] = useState<boolean>(false)
   const [showremainingModal, setShowremainingModal] = useState<boolean>(false)
   const [auctionHistoryArr, setAuctionHistoryArr] = useState<AuctionInfo[]>([])
   const [remainingHistoryArr, setRemainingHistoryArr] = useState<RemainingInfo[]>([])
@@ -64,6 +65,9 @@ const AuctionHistory: React.FC = () => {
   const [showEditAuctionItemModal, setShowEditAuctionItemModal] = useState<boolean>(false)
   const [targetEditingItem, setTargetEditingItem] = useState<InstockItem>(initInstockItem)
   const [targetEditingAuction, setTargetEditingAuction] = useState<number>(0)
+
+  // audit
+  const [targetRemainingToAudit, setTargetRemainingToAudit] = useState<RemainingInfo>({} as RemainingInfo)
 
   useEffect(() => {
     getAuctionAndRemainingArr()
@@ -585,9 +589,9 @@ const AuctionHistory: React.FC = () => {
   }
 
   const renderUnsoldItemTable = (auction: AuctionInfo) => {
-    if (!auction.previousUnsoldArr) return undefined
-    return auction.previousUnsoldArr.map((val, index) => (
-      <Accordion key={index}>
+    if (!auction.previousUnsoldArr) return
+    return auction.previousUnsoldArr.map !== undefined ? auction.previousUnsoldArr.map((val, index) => (
+      <Accordion className="mt-3" key={index}>
         <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
           📦 Unsold From Auction {val.lot} (Randomly Sorted)
           <Badge color="orange" className="absolute right-20 font-bold">
@@ -612,7 +616,7 @@ const AuctionHistory: React.FC = () => {
           </Table>
         </AccordionBody>
       </Accordion>
-    ))
+    )) : <></>
   }
 
   const renderMissingInfoItemTable = (auction: AuctionInfo) => (
@@ -860,7 +864,10 @@ const AuctionHistory: React.FC = () => {
         <Button
           className="w-32"
           color='orange'
-          onClick={() => setShowAuditModal(true)}
+          onClick={() => {
+            setShowAuditModal(true)
+            setTargetRemainingToAudit(record)
+          }}
         >
           Audit
         </Button>
@@ -1020,13 +1027,6 @@ const AuctionHistory: React.FC = () => {
     if (remainingHistoryArr.map) {
       return remainingHistoryArr.map((remainingRecord, index) => (
         <Card key={index} className={`!bg-[#223] border-2 ${remainingRecord.isProcessed ? '!border-emerald-600' : '!border-slate-500'}`}>
-          <RemainingAuditModal
-            show={showAuditModal}
-            close={() => setShowAuditModal(false)}
-            refresh={getAuctionAndRemainingArr}
-            remainingRecord={remainingRecord}
-            auctionRecord={findAuction(remainingRecord.lot)}
-          />
           <Badge color='amber'>
             <h4 className="m-0">
               {remainingRecord.isProcessed ? <>✅</> : undefined}Lot #{remainingRecord.lot}
@@ -1274,11 +1274,32 @@ const AuctionHistory: React.FC = () => {
 
   return (
     <div ref={topRef}>
+      <div className="fixed bottom-4 right-4 z-[1000]">
+        <Button
+          className="py-2 rounded-xl shadow-lg"
+          color='emerald'
+          tooltip="Back To Top"
+          onClick={() => topRef.current?.scrollIntoView()}
+        >
+          <FaArrowUp />
+        </Button>
+      </div>
+
       <ImportUnsoldModal
         show={showImportUnsold}
         hide={() => setShowImportUnsold(false)}
         auctionLotNumber={targetAuctionLot}
         refreshAuction={getAuctionAndRemainingArr}
+      />
+      <RemainingAuditModal
+        show={showAuditModal}
+        close={() => {
+          setShowAuditModal(false)
+          setTargetRemainingToAudit({} as RemainingInfo)
+        }}
+        refresh={getAuctionAndRemainingArr}
+        remainingRecord={targetRemainingToAudit}
+        auctionRecord={findAuction(targetRemainingToAudit.lot)}
       />
       {renderImportRemainingRecordModal()}
       {renderEditModal()}

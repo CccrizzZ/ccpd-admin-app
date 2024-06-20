@@ -74,11 +74,13 @@ const RemainingAuditModal: React.FC<RemainigAuditModalProps> = (props: RemainigA
     if (props.auctionRecord && props.auctionRecord.topRow) {
       // construct an all item array
       let allItems = [...props.auctionRecord.itemsArr, ...props.auctionRecord.topRow]
+      // populate previous unsold
       if (props.auctionRecord.previousUnsoldArr) {
-        Object.entries(props.auctionRecord.previousUnsoldArr).map(([lot, itemArr]) => {
-          allItems = [...allItems, ...itemArr]
-          console.log(lot)
-        })
+        for (const obj of props.auctionRecord.previousUnsoldArr) {
+          obj.items.map((val) => {
+            allItems.push(val)
+          })
+        }
       }
 
       // check for item does not exist in remaining record but is in the auction record
@@ -161,24 +163,28 @@ const RemainingAuditModal: React.FC<RemainigAuditModalProps> = (props: RemainigA
         )) : <></>}
       </TableBody>
       <TableBody>
-        {props.auctionRecord && props.auctionRecord.previousUnsoldArr ? Object.entries(props.auctionRecord.previousUnsoldArr).map(([lot, itemArr]) => (
-          itemArr.map((val, index) => (
+        {/* {props.auctionRecord && props.auctionRecord.previousUnsoldArr ? props.auctionRecord.previousUnsoldArr.map((val) => (
+          val.items.map((item, index) => (
             <TableRow key={index}>
-              <TableCell>{val.lot} (from #{lot})</TableCell>
-              <TableCell><Badge color='blue'>{val.sku}</Badge></TableCell>
-              <TableCell>{checkRemainingForItem(val)}</TableCell>
+              <TableCell>{item.lot} (from #{val.lot})</TableCell>
+              <TableCell><Badge color='blue'>{item.sku}</Badge></TableCell>
+              <TableCell>{checkRemainingForItem(item)}</TableCell>
             </TableRow>
           ))
-        )) : <></>}
+        )) : <></>} */}
       </TableBody>
     </Table>
   )
 
   const getTotalSoldAmount = () => {
     let i = 0
-    props.remainingRecord.soldItems.map((val) => i += val.bidAmount)
-    props.remainingRecord.soldTopRow.map((val) => i += val.bidAmount)
-    return i
+    if (props.remainingRecord.soldItems !== undefined) {
+      props.remainingRecord.soldItems.map((val) => i += val.bidAmount)
+    }
+    if (props.remainingRecord.soldTopRow !== undefined) {
+      props.remainingRecord.soldTopRow.map((val) => i += val.bidAmount)
+    }
+    return i.toFixed(2)
   }
 
   const renderTopRowResult = () => (
@@ -195,7 +201,7 @@ const RemainingAuditModal: React.FC<RemainigAuditModalProps> = (props: RemainigA
         </TableRow>
       </TableHead>
       <TableBody>
-        {props.remainingRecord.soldTopRow.map((val, index) => (
+        {props.remainingRecord.soldTopRow !== undefined ? props.remainingRecord.soldTopRow.map((val, index) => (
           <TableRow key={index}>
             <TableCell>{val.clotNumber}</TableCell>
             <TableCell>
@@ -212,7 +218,7 @@ const RemainingAuditModal: React.FC<RemainigAuditModalProps> = (props: RemainigA
               {/* </div> */}
             </TableCell>
           </TableRow>
-        ))}
+        )) : <></>}
       </TableBody>
     </Table>
   )
@@ -231,7 +237,7 @@ const RemainingAuditModal: React.FC<RemainigAuditModalProps> = (props: RemainigA
         </TableRow>
       </TableHead>
       <TableBody>
-        {props.remainingRecord.soldItems.map((val, index) => (
+        {props.remainingRecord.soldItems !== undefined ? props.remainingRecord.soldItems.map((val, index) => (
           <TableRow key={index}>
             <TableCell>{val.clotNumber}</TableCell>
             <TableCell>
@@ -252,7 +258,7 @@ const RemainingAuditModal: React.FC<RemainigAuditModalProps> = (props: RemainigA
               </div>
             </TableCell>
           </TableRow>
-        ))}
+        )) : <></>}
       </TableBody>
     </Table>
   )
@@ -261,11 +267,9 @@ const RemainingAuditModal: React.FC<RemainigAuditModalProps> = (props: RemainigA
     <Modal
       show={props.show}
       onHide={props.close}
-      backdrop="static"
       keyboard={false}
       size='xl'
     >
-      {props.remainingRecord.lot}
       <br />
       <Grid numItems={2} className='p-6 gap-2'>
         <Col className='text-center'>
@@ -277,7 +281,7 @@ const RemainingAuditModal: React.FC<RemainigAuditModalProps> = (props: RemainigA
         <Col>
           <Card>
             <h4 className='text-emerald-500'>Total Items: {props.remainingRecord.soldCount} </h4>
-            <h4 className='text-emerald-500'>Total Sold Amount: ${getTotalSoldAmount()}</h4>
+            <h4 className='text-emerald-500'>Total Amount Sold: ${getTotalSoldAmount()}</h4>
             <h4>Top Row Sold: (No Database Deduction)</h4>
             {renderTopRowResult()}
             <hr />
