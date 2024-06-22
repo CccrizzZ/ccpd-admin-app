@@ -575,6 +575,7 @@ const Inventory: React.FC = () => {
         show={showAddToAuctionModal}
         hide={() => setShowAddToAuctionModal(false)}
         filter={queryFilter}
+        itemCount={itemCount}
       />
       <InstockStagingModal
         show={showStagePopup}

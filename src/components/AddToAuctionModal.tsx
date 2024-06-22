@@ -1,29 +1,51 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import {
-  Button,
-  Form,
-  InputGroup,
   Modal
 } from 'react-bootstrap'
 import { InstockQueryFilter } from '../utils/Types'
-import { server, stringToNumber } from '../utils/utils'
+import { server } from '../utils/utils'
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import { AppContext } from '../App'
-import { Switch } from '@tremor/react'
+import { SearchSelect, SearchSelectItem, Switch, Button } from '@tremor/react'
 
 type AddToAuctionModalProps = {
   show: boolean,
   hide: () => void,
-  filter: InstockQueryFilter
+  filter: InstockQueryFilter,
+  itemCount: number
 }
 
-const AddToAuctionModal: React.FC<AddToAuctionModalProps> = (props: AddToAuctionModalProps) => {
+const AddToAuctionModal: React.FC<AddToAuctionModalProps> = (
+  props: AddToAuctionModalProps
+) => {
   const { setLoading } = useContext(AppContext)
-  const [targetAuction, setTargetAuction] = useState<number>(0)
+  const [targetAuction, setTargetAuction] = useState<string>('')
   const [isDuplicate, setIsDuplicate] = useState<boolean>(false)
+  const [auctionLotArr, setAuctionLotArr] = useState<number[]>([])
 
-  const onTargetAuctionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setTargetAuction(stringToNumber(event.target.value))
+  useEffect(() => {
+    if (props.show && props.itemCount > 0) {
+      getAuctionsLotNumber()
+    } else {
+      props.hide()
+    }
+  }, [props.show])
+
+  const getAuctionsLotNumber = async () => {
+    await axios({
+      method: 'get',
+      url: `${server}/inventoryController/getAuctionLotNumbers`,
+      responseType: 'text',
+      timeout: 8000,
+      withCredentials: true
+    }).then((res: AxiosResponse) => {
+      if (res.data) {
+        setAuctionLotArr(JSON.parse(res.data))
+        console.log(res.data)
+      }
+    }).catch((err: AxiosError) => {
+      alert(`Cannot Get Auction Lot Numbers: ${err.response?.data}`)
+    })
   }
 
   const onConfirmAdd = async () => {
@@ -41,17 +63,32 @@ const AddToAuctionModal: React.FC<AddToAuctionModalProps> = (props: AddToAuction
       withCredentials: true
     }).then((res: AxiosResponse) => {
       if (res.status < 201) {
-        alert('Auction Record Created')
-
+        alert('Added to Auction Record Bottom Row')
         props.hide()
       } else {
         alert('Failed to Add Selected Inventory Items to Auction Record')
       }
     }).catch((err: AxiosError) => {
       setLoading(false)
-      alert('Failed Creating Auction Record: ' + err.response?.data)
+      alert('Failed Add to Auction Record: ' + err.response?.data)
     })
     setLoading(false)
+  }
+
+  const renderAuctionLotNumberSelection = () => {
+    if (auctionLotArr.map) {
+      return (
+        <SearchSelect value={targetAuction} onValueChange={setTargetAuction}>
+          {auctionLotArr.map((val, index) => (
+            <SearchSelectItem key={index} value={String(val)}>
+              {String(val)}
+            </SearchSelectItem>
+          ))}
+        </SearchSelect>
+      )
+    } else {
+      return <p>No Auction Records Found</p>
+    }
   }
 
   return (
@@ -67,28 +104,23 @@ const AddToAuctionModal: React.FC<AddToAuctionModalProps> = (props: AddToAuction
         <Modal.Title>Add Current Selection to Auction</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <InputGroup className='mb-12'>
-          <InputGroup.Text>Target Auction</InputGroup.Text>
-          <Form.Control
-            type='number'
-            value={targetAuction}
-            min={0}
-            onChange={onTargetAuctionChange}
-          />
-        </InputGroup>
-        <div className='flex absolute right-12 bottom-3'>
+        <span className='text-gray-500'>Repetitive Items Will Be Ignored</span>
+        <span>Add to Auction</span>
+        {renderAuctionLotNumberSelection()}
+        <br />
+        <div className='flex gap-2 justify-center'>
+          <span>Duplicate Row</span>
           <Switch
-            className='mr-3'
+            className='ml-3'
             color='rose'
             onChange={() => setIsDuplicate(!isDuplicate)}
             checked={isDuplicate}
           />
-          <span>Duplicate Row</span>
         </div>
       </Modal.Body>
       <Modal.Footer>
         <Button color='slate' onClick={props.hide}>Close</Button>
-        <Button color='blue' onClick={onConfirmAdd}>Confirm</Button>
+        <Button color='emerald' onClick={onConfirmAdd}>Confirm</Button>
       </Modal.Footer>
     </Modal>
 

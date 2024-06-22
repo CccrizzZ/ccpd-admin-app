@@ -3,12 +3,14 @@ import { Modal } from 'react-bootstrap'
 import {
   SearchSelect,
   SearchSelectItem,
-  Button
+  Button,
+  TextInput
 } from '@tremor/react';
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import { server } from '../utils/utils';
 import { AppContext } from '../App';
 import { FaRotate } from 'react-icons/fa6';
+import { RiSpace } from 'react-icons/ri';
 
 type ImportUnsoldModalProps = {
   hide: () => void,
@@ -24,10 +26,11 @@ const ImportUnsoldModal: React.FC<ImportUnsoldModalProps> = (
   const { setLoading } = useContext(AppContext)
   const [remainingLotNumbers, setRemainingLotNumbers] = useState<number[]>([])
   const [lotToImport, setLotToImport] = useState<string>('')
+  const [gapSize, setGapSize] = useState<string>('100')
 
   useEffect(() => {
-    // getAuctionLotNumbers(false)
-  }, [])
+    if (props.show) getAuctionLotNumbers(false)
+  }, [props.show])
 
   const getAuctionLotNumbers = async (closeModal: boolean) => {
     setLoading(true)
@@ -50,6 +53,7 @@ const ImportUnsoldModal: React.FC<ImportUnsoldModalProps> = (
   }
 
   const onConfirmImport = async () => {
+    if (lotToImport === '') return
     setLoading(true)
     await axios({
       method: 'post',
@@ -59,11 +63,11 @@ const ImportUnsoldModal: React.FC<ImportUnsoldModalProps> = (
       withCredentials: true,
       data: JSON.stringify({
         'auctionLotNumber': props.auctionLotNumber,
-        'remainingLotNumber': lotToImport
+        'remainingLotNumber': lotToImport,
+        'gapSize': Number(gapSize) ? Number(gapSize) : 0
       })
     }).then((res: AxiosResponse) => {
       if (res.status > 200) return alert('Failed to Import Previous Auction Items')
-
       props.refreshAuction()
       props.hide()
     }).catch((err: AxiosError) => {
@@ -77,9 +81,11 @@ const ImportUnsoldModal: React.FC<ImportUnsoldModalProps> = (
     if (remainingLotNumbers.length > 0) {
       return (
         <SearchSelect value={lotToImport} onValueChange={setLotToImport}>
-          {remainingLotNumbers.map((val, index) => (<SearchSelectItem key={index} value={String(val)}>
-            {String(val)}
-          </SearchSelectItem>))}
+          {remainingLotNumbers.map((val, index) => (
+            <SearchSelectItem key={index} value={String(val)}>
+              {String(val)}
+            </SearchSelectItem>
+          ))}
         </SearchSelect>
       )
     } else {
@@ -100,19 +106,25 @@ const ImportUnsoldModal: React.FC<ImportUnsoldModalProps> = (
         <Modal.Title>Import Unsold Items to Lot #{props.auctionLotNumber}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <Button
-          className='absolute right-6'
-          color='emerald'
-          onClick={() => getAuctionLotNumbers(false)}
-        >
-          <FaRotate />
-        </Button>
-        <p>Select Remaining Lot for Unsold Items</p>
+        <div className='grid'>
+          <Button
+            // className='absolute right-6'
+            color='emerald'
+            onClick={() => getAuctionLotNumbers(false)}
+          >
+            <FaRotate />
+          </Button>
+        </div>
+        <br />
+        <p className='mt-3 mb-0'>Import Unsold From Remaining Lot</p>
         {renderRemainingLotNumberSelection()}
+        <br />
+        <p className='mt-3 mb-0'>Lot Number Gap Size (From the last item in auction)</p>
+        <TextInput icon={RiSpace} value={gapSize} placeholder="Gap Size" onValueChange={setGapSize} />
       </Modal.Body>
       <Modal.Footer>
         <Button color='slate' onClick={props.hide}>Close</Button>
-        <Button color='blue' onClick={onConfirmImport}>Confirm</Button>
+        <Button color='emerald' onClick={onConfirmImport}>Confirm</Button>
       </Modal.Footer>
     </Modal>
   )

@@ -546,7 +546,7 @@ const AuctionHistory: React.FC = () => {
       <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
         📜 Inventories on Auction
         <Badge color="orange" className="absolute right-20 font-bold">
-          {auction.itemsArr ? auction.itemsArr.filter((val) => (val.msrp && val.lead && val.description)).length : 0}
+          {auction.itemsArr.filter !== undefined ? auction.itemsArr.filter((val) => (val.msrp && val.lead && val.description)).length : 0}
         </Badge>
       </AccordionHeader>
       <AccordionBody className="leading-6 p-2">
@@ -555,7 +555,7 @@ const AuctionHistory: React.FC = () => {
             {renderInventoryTableHead()}
           </TableHead>
           <TableBody>
-            {auction.itemsArr ? auction.itemsArr.map((item: InstockItem, index: number) => {
+            {auction.itemsArr.filter !== undefined ? auction.itemsArr.map((item: InstockItem, index: number) => {
               if (item.msrp && item.lead && item.description) return (renderAuctionTableRow(item, index, auction.lot, true))
             }) : undefined}
           </TableBody>
@@ -624,7 +624,7 @@ const AuctionHistory: React.FC = () => {
       <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
         ❓ Items With Missing Information
         <Badge color="orange" className="absolute right-20 font-bold">
-          {auction.itemsArr ? auction.itemsArr.filter((val) => (!val.msrp || !val.lead || !val.description)).length : 0}
+          {auction.itemsArr.filter !== undefined ? auction.itemsArr.filter((val) => (!val.msrp || !val.lead || !val.description)).length : 0}
         </Badge>
       </AccordionHeader>
       <AccordionBody className="leading-6 p-2">
@@ -634,7 +634,7 @@ const AuctionHistory: React.FC = () => {
           </TableHead>
           <TableBody>
             {
-              auction.itemsArr ? auction.itemsArr.map((item: InstockItem) => {
+              auction.itemsArr.filter !== undefined ? auction.itemsArr.map((item: InstockItem) => {
                 if (!item.lead || !item.description || !item.msrp) return (
                   <TableRow key={item.sku}>
                     <TableCell>{item.lot}</TableCell>
@@ -694,7 +694,7 @@ const AuctionHistory: React.FC = () => {
   const renderAuctionCard = () => {
     if (auctionHistoryArr.map) {
       return auctionHistoryArr.map((val, index) => (
-        <Card key={index} className='!bg-[#223] !border-slate-700 border-1'>
+        <Card key={index} className='!bg-[#223] !border-slate-700 border-1 p-3'>
           <div className="flex gap-4">
             <Badge className="m-3">
               <FaHashtag className="m-auto" />
@@ -1026,7 +1026,7 @@ const AuctionHistory: React.FC = () => {
   const renderRemainingCard = () => {
     if (remainingHistoryArr.map) {
       return remainingHistoryArr.map((remainingRecord, index) => (
-        <Card key={index} className={`!bg-[#223] border-2 ${remainingRecord.isProcessed ? '!border-emerald-600' : '!border-slate-500'}`}>
+        <Card key={index} className={`!bg-[#223] p-3 border-2 ${remainingRecord.isProcessed ? '!border-emerald-600' : '!border-slate-500'}`}>
           <Badge color='amber'>
             <h4 className="m-0">
               {remainingRecord.isProcessed ? <>✅</> : undefined}Lot #{remainingRecord.lot}
@@ -1284,7 +1284,6 @@ const AuctionHistory: React.FC = () => {
           <FaArrowUp />
         </Button>
       </div>
-
       <ImportUnsoldModal
         show={showImportUnsold}
         hide={() => setShowImportUnsold(false)}
@@ -1303,7 +1302,6 @@ const AuctionHistory: React.FC = () => {
       />
       {renderImportRemainingRecordModal()}
       {renderEditModal()}
-      <h2>{server}</h2>
       <Grid numItems={2} className="gap-3">
         <Col>
           <Card className="min-h-[90vh]">
