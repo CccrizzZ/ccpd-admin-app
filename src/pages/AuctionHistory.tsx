@@ -1065,13 +1065,16 @@ const AuctionHistory: React.FC = () => {
           <div className="mt-3">
             {renderItemNotInRemainingRecord(remainingRecord)}
           </div>
+          <div className="mt-3">
+            {renderErrorItem(remainingRecord)}
+          </div>
           <hr />
           <div className="mt-3">
             {renderDatabaseResultTable(remainingRecord)}
           </div>
           <hr />
-          <Badge className="font-bold" color='rose'>
-            Time Closed: {moment(remainingRecord.timeClosed).format('LLL')}
+          <Badge className="font-bold" color='blue'>
+            Time Created: {moment(remainingRecord.timeClosed).format('LLL')}
           </Badge>
         </Card>
       ))
@@ -1080,7 +1083,7 @@ const AuctionHistory: React.FC = () => {
     }
   }
 
-  const tableCellClass = (unsold: NotInAuctionItem) => `text-wrap align-middle text-center ${unsold.bid === 0 ? 'text-rose-500' : 'text-emerald-500'}`
+  const tableCellClass = (unsold?: NotInAuctionItem) => `text-wrap align-middle text-center ${unsold?.bid === 0 ? 'text-rose-500' : 'text-emerald-500'}`
 
   const renderNotInAuctionTable = (record: RemainingInfo) => (
     <Accordion>
@@ -1142,6 +1145,41 @@ const AuctionHistory: React.FC = () => {
                 <TableCell className={tableCellClass(unsold)}>{unsold.shelfLocation}</TableCell>
                 <TableCell className={tableCellClass(unsold)}>{unsold.condition}</TableCell>
                 <TableCell className={`${tableCellClass(unsold)} w-20`}>{unsold.lot}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </AccordionBody>
+    </Accordion >
+  )
+
+  const renderErrorItem = (record: RemainingInfo) => (
+    <Accordion>
+      <AccordionHeader className="text-sm font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
+        ❌ Error Items (out of stock)
+        <Badge color="gray" className="font-bold absolute right-20">
+          {record.errorItems?.length ?? 0}
+        </Badge>
+      </AccordionHeader>
+      <AccordionBody className="leading-6 p-2">
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableHeaderCell className="w-32">Lot#</TableHeaderCell>
+              <TableHeaderCell className="w-16">SKU#</TableHeaderCell>
+              <TableHeaderCell className="w-32">Lead</TableHeaderCell>
+              <TableHeaderCell className="w-20">Shelf Location</TableHeaderCell>
+              <TableHeaderCell className="w-32">Condition</TableHeaderCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {record.errorItems?.map((item: InstockItem, index: number) => (
+              <TableRow key={`${index} ${item.sku}`}>
+                <TableCell className={`w-20`}>{item.lot}</TableCell>
+                <TableCell>{item.sku}</TableCell>
+                <TableCell className="text-wrap">{item.lead}</TableCell>
+                <TableCell>{item.shelfLocation}</TableCell>
+                <TableCell>{item.condition}</TableCell>
               </TableRow>
             ))}
           </TableBody>

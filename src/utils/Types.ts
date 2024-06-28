@@ -221,7 +221,7 @@ export type RemainingInfo = {
   unsoldTopRow: InstockItem[] // unsold item from top row
   timeClosed: string,
   isProcessed?: boolean,      // weather if the record is processed into DB
-  errorItems?: SoldItem[],    // sold but out of stock
+  errorItems?: InstockItem[],    // sold but out of stock
   deducted?: SoldItem[],      // all items caused database update
   totalBidAmount?: number,    // top row bid sum + item arr bid sum
   notInAuction?: NotInAuctionItem[],

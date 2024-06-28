@@ -37,7 +37,7 @@ const CreateUserModal: React.FC<CreateUserModalProps> = (props: CreateUserModalP
         ...newUser,
         name: newUser.name.trim(),
         password: newUser.password,
-        email: deSpace(newUser.email.trim())
+        email: deSpace(newUser.email.trim())    // eliminate all space for user information
       },
       withCredentials: true
     }).then((res) => {
@@ -46,7 +46,7 @@ const CreateUserModal: React.FC<CreateUserModalProps> = (props: CreateUserModalP
         setNewUser(initCreateUser)
       }
     }).catch((err) => {
-      alert('Create User Failed: ' + err.message)
+      alert('Create User Failed: ' + err.response.data)
     })
     setLoading(false)
     props.handleClose(true)
