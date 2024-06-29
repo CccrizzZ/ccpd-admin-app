@@ -58,10 +58,6 @@ const App = () => {
 
   // admin settings
   const [showAdminSettingsModal, setShowAdminSettingsModal] = useState<boolean>(false)
-  const [adminSettings, setAdminSettings] = useState<AdminSettings>({
-    daysQACanDeleteRecord: 0,
-    isQAPermittedAfterHours: false
-  })
 
   // wait a moment before fetching all datas
   // received "Token used too early" error because system time
@@ -175,8 +171,6 @@ const App = () => {
       return (
         <div className='wrapper'>
           <AdminSettingsModal
-            settings={adminSettings}
-            setSettings={setAdminSettings}
             show={showAdminSettingsModal}
             hide={() => setShowAdminSettingsModal(false)}
           />

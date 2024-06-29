@@ -252,6 +252,7 @@ export type NotInAuctionItem = {
 }
 
 export type AdminSettings = {
-  daysQACanDeleteRecord: number,
-  isQAPermittedAfterHours: boolean
+  shelfLocationsDef: string[],
+  daysQACanDeleteRecord?: number,
+  isQAPermittedAfterHours?: boolean,
 }
