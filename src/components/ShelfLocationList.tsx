@@ -3,7 +3,8 @@ import {
   ListItem,
   Card,
   TextInput,
-  Button
+  Button,
+  Badge
 } from '@tremor/react'
 import React, { useState } from 'react'
 import { FaTrash } from 'react-icons/fa6'
@@ -17,8 +18,10 @@ const ShelfLocationList: React.FC<ShelfLocationListProps> = (props: ShelfLocatio
   const [newShelfLocation, setNewShelfLocation] = useState<string>('')
 
   const addNewShelfLocation = () => {
-    if (props.shelfLocationsArr.includes(newShelfLocation.toLowerCase())) return
-    props.setShelfLocationArr([...props.shelfLocationsArr, newShelfLocation])
+    if (newShelfLocation === '') return
+    if (props.shelfLocationsArr.includes((newShelfLocation).toUpperCase())) return alert("Location Exist")
+    props.setShelfLocationArr([...props.shelfLocationsArr, (newShelfLocation).toUpperCase()])
+    setNewShelfLocation('')
   }
 
   const removeShelfLocationByName = (name: string) => {
@@ -26,7 +29,7 @@ const ShelfLocationList: React.FC<ShelfLocationListProps> = (props: ShelfLocatio
   }
 
   return (
-    <Card>
+    <Card className='min-h-[600px]'>
       <h2>Shelf Location Definition</h2>
       <div className='flex gap-2 justify-center'>
         <TextInput
@@ -34,8 +37,16 @@ const ShelfLocationList: React.FC<ShelfLocationListProps> = (props: ShelfLocatio
           type='text'
           value={newShelfLocation}
           onValueChange={setNewShelfLocation}
+          onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
+            if (event.key === 'Enter') addNewShelfLocation()
+          }}
         />
-        <Button size='sm' className='m-auto w-32' onClick={addNewShelfLocation}>
+        <Button
+          size='sm'
+          className='m-auto w-32'
+          onClick={addNewShelfLocation}
+          color='emerald'
+        >
           Add
         </Button>
       </div>
@@ -43,7 +54,11 @@ const ShelfLocationList: React.FC<ShelfLocationListProps> = (props: ShelfLocatio
       <List className='px-0'>
         {props.shelfLocationsArr !== undefined ? props.shelfLocationsArr.map((val, index) => (
           <ListItem key={`${val} ${index}`}>
-            <span>{val}</span>
+            <span>
+              <Badge color='sky'>
+                {val}
+              </Badge>
+            </span>
             <span>
               <Button color='red' onClick={() => removeShelfLocationByName(val)}>
                 <FaTrash />

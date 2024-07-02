@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import { Modal } from 'react-bootstrap';
 import { AppContext } from '../App';
 import axios, { AxiosError, AxiosResponse } from 'axios';
-import { server } from '../utils/utils';
+import { getObjectDifference, isObjectsEqual, server } from '../utils/utils';
 import { AdminSettings } from '../utils/Types';
 import ShelfLocationList from './ShelfLocationList';
 import { Button, Col, Grid, Switch, TextInput } from '@tremor/react';
@@ -15,6 +15,8 @@ type AdminSettingsModalProps = {
 
 const AdminSettingsModal: React.FC<AdminSettingsModalProps> = (props: AdminSettingsModalProps) => {
   const { setLoading } = useContext(AppContext)
+  const [ogSettings, setOgSettings] = useState<AdminSettings>({} as AdminSettings)
+
   const [settings, setSettings] = useState<AdminSettings>({} as AdminSettings)
 
   useEffect(() => {
@@ -32,7 +34,7 @@ const AdminSettingsModal: React.FC<AdminSettingsModalProps> = (props: AdminSetti
       withCredentials: true
     }).then((res: AxiosResponse) => {
       setSettings(JSON.parse(res.data))
-      console.log(res.data)
+      setOgSettings(JSON.parse(res.data))
     }).catch((res: AxiosError) => {
       alert('Failed Getting Admin Settings: ' + res.response?.data)
     })
@@ -40,17 +42,24 @@ const AdminSettingsModal: React.FC<AdminSettingsModalProps> = (props: AdminSetti
   }
 
   const updateSettings = async () => {
+    // return if no changes was made
+    if (isObjectsEqual(ogSettings, settings)) return alert('Please Make Changes Before Submition')
+
+    // get changes made
+    const obj = getObjectDifference(ogSettings, settings)
     setLoading(true)
+
     await axios({
       method: 'post',
       url: server + '/adminController/updateAdminSettings',  // super admin only
       responseType: 'text',
       timeout: 8000,
-      data: '',
+      data: obj,
       withCredentials: true
     }).then((res: AxiosResponse) => {
       if (res.status === 200) {
         alert('Admin Settings Updated')
+        props.hide()
       }
     }).catch((res: AxiosError) => {
       alert('Failed Getting Admin Settings: ' + res.response?.data)
@@ -58,6 +67,7 @@ const AdminSettingsModal: React.FC<AdminSettingsModalProps> = (props: AdminSetti
     setLoading(false)
   }
 
+  // limits QA personal to delete their record within x days
   const renderQADeleteRecordLimit = () => (
     <div className='mb-3 font-bold'>
       <span>Q&A Personal Record Delete Time Limit (Days)</span>
@@ -71,6 +81,7 @@ const AdminSettingsModal: React.FC<AdminSettingsModalProps> = (props: AdminSetti
     </div>
   )
 
+  // can user with QA personal role access service outside of working hour
   const renderIsQAPermittedAfterHour = () => (
     <div className='mb-3 font-bold'>
       <span>Is Q&A Personal Permitted After Hours</span>
@@ -78,7 +89,6 @@ const AdminSettingsModal: React.FC<AdminSettingsModalProps> = (props: AdminSetti
         checked={settings.isQAPermittedAfterHours}
         onChange={(val) => {
           setSettings({ ...settings, isQAPermittedAfterHours: val })
-          console.log(val)
         }}
         className='mt-3'
       />
@@ -95,6 +105,7 @@ const AdminSettingsModal: React.FC<AdminSettingsModalProps> = (props: AdminSetti
         size='xl'
         centered
         keyboard={false}
+        scrollable={true}
       >
         <Modal.Header closeButton>
           <Modal.Title>⚙️ Admin Settings</Modal.Title>
@@ -112,7 +123,7 @@ const AdminSettingsModal: React.FC<AdminSettingsModalProps> = (props: AdminSetti
             </Col>
             <Col>
               <ShelfLocationList
-                shelfLocationsArr={settings.shelfLocationsDef}
+                shelfLocationsArr={settings.shelfLocationsDef ?? []}
                 setShelfLocationArr={(val) => setSettings({ ...settings, 'shelfLocationsDef': val })}
               />
             </Col>
@@ -120,7 +131,7 @@ const AdminSettingsModal: React.FC<AdminSettingsModalProps> = (props: AdminSetti
         </Modal.Body>
         <Modal.Footer>
           <Button color='gray' onClick={props.hide}>Close</Button>
-          <Button color='emerald' onClick={() => { updateSettings(); props.hide() }}>Update Settings</Button>
+          <Button color='emerald' onClick={() => { updateSettings() }}>Update Settings</Button>
         </Modal.Footer>
       </Modal>
 

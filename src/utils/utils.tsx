@@ -401,6 +401,20 @@ export const toCad = (input: number, currency: string): number | undefined => {
 
 export const isObjectsEqual = (a: Object, b: Object) => JSON.stringify(a) === JSON.stringify(b)
 
+// compare 2 objects, returns object with differences key and val
+type AnyObject = { [key: string]: any };
+export const getObjectDifference = (a: AnyObject, b: AnyObject) => {
+  const changes: AnyObject = {}
+  for (const key in a) {
+    if (a.hasOwnProperty(key)) {
+      if (JSON.stringify(a[key]) !== JSON.stringify(b[key])) {
+        changes[key] = b[key]
+      }
+    }
+  }
+  return changes
+}
+
 export const getKwArr = (skey: string, refresh?: boolean) => {
   return skey.length > 0 && !refresh ? skey.split(/(\s+)/).filter((item) => { return item.trim().length > 0 }) : []
 }

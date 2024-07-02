@@ -114,7 +114,7 @@ const QARecords: React.FC = () => {
 
   // paging and count
   const [currPage, setCurrPage] = useState<number>(0)
-  const [itemsPerPage, setItemsPerPage] = useState<number>(20)
+  const [itemsPerPage, setItemsPerPage] = useState<number>(50)
   const [itemCount, setItemCount] = useState<number>(0)
   const [recordedCount, setRecordedCount] = useState<number>(0)
   const prevItemButtonRef = useRef<HTMLButtonElement>(null);
@@ -1046,7 +1046,7 @@ const QARecords: React.FC = () => {
               <TableHeaderCell>Platform</TableHeaderCell>
               <TableHeaderCell>Target Marketplace</TableHeaderCell>
               <TableHeaderCell className='w-36'>Amount</TableHeaderCell>
-              <TableHeaderCell>Time Created</TableHeaderCell>
+              <TableHeaderCell className='w-[130px]'>Time Created</TableHeaderCell>
             </TableRow>
           </TableHead>
           {renderInventoryTableBody()}

@@ -125,6 +125,7 @@ const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: 
     })
   }
 
+  // generate lead and description with chat GPT
   const getLeadDesc = async () => {
     if (props.scrapeData.title === '') return alert('Title of Scraped Data is Missing, Wait Until Scrape Finish')
     setLoading(true)
