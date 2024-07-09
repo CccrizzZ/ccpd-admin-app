@@ -99,7 +99,7 @@ const AuctionHistory: React.FC = () => {
       method: 'post',
       url: server + '/inventoryController/getAuctionCsv',
       responseType: 'blob',
-      timeout: 25000,
+      timeout: 2500000,
       data: {
         'lot': lot,
       },

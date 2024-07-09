@@ -13,6 +13,7 @@ import {
   InstockQueryFilter,
   Platform,
   InstockItem,
+  ScrapedData,
 } from "./Types";
 import { DateRangePickerValue } from "@tremor/react";
 
@@ -245,7 +246,8 @@ export const initQARecord: QARecord = {
   platform: 'Amazon',
   shelfLocation: '',
   amount: 0,
-  owner: ''
+  owner: '',
+  scrapedData: {} as ScrapedData
 }
 
 export const initRetailRecord: RetailRecord = {

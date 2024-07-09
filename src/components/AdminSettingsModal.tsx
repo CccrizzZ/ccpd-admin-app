@@ -16,7 +16,6 @@ type AdminSettingsModalProps = {
 const AdminSettingsModal: React.FC<AdminSettingsModalProps> = (props: AdminSettingsModalProps) => {
   const { setLoading } = useContext(AppContext)
   const [ogSettings, setOgSettings] = useState<AdminSettings>({} as AdminSettings)
-
   const [settings, setSettings] = useState<AdminSettings>({} as AdminSettings)
 
   useEffect(() => {
@@ -95,6 +94,9 @@ const AdminSettingsModal: React.FC<AdminSettingsModalProps> = (props: AdminSetti
     </div>
   )
 
+  // check if setting is modified
+  const isChanged = () => !isObjectsEqual(ogSettings, settings)
+
   return (
     <div>
       <Modal
@@ -131,7 +133,7 @@ const AdminSettingsModal: React.FC<AdminSettingsModalProps> = (props: AdminSetti
         </Modal.Body>
         <Modal.Footer>
           <Button color='gray' onClick={props.hide}>Close</Button>
-          <Button color='emerald' onClick={() => { updateSettings() }}>Update Settings</Button>
+          <Button color={isChanged() ? 'amber' : 'emerald'} onClick={() => { updateSettings() }}>Update Settings</Button>
         </Modal.Footer>
       </Modal>
 

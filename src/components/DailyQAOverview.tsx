@@ -40,7 +40,7 @@ const DailyQAOverview = () => {
       method: 'post',
       url: server + '/inventoryController/getAllShelfSheet',
       responseType: 'blob',
-      timeout: 8000,
+      timeout: 800000,
       withCredentials: true,
       data: { "daysAgo": daysAgo }
     }).then(async (res: AxiosResponse) => {

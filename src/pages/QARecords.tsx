@@ -293,7 +293,9 @@ const QARecords: React.FC = () => {
     setOriginalSelectedRecord(next)
 
     clearScrape()
-    scrapeRequest(next.sku)
+    // check if record have scraped data
+    if (next.scrapedData) setScrapeData(next.scrapedData)
+    // scrapeRequest(next.sku)
     fetchQARecordsByPage(false)
   }
 
@@ -306,7 +308,9 @@ const QARecords: React.FC = () => {
     setOriginalSelectedRecord(prev)
 
     clearScrape()
-    scrapeRequest(prev.sku)
+    // check if record have scraped data
+    if (prev.scrapedData) setScrapeData(prev.scrapedData)
+    // scrapeRequest(prev.sku)
     fetchQARecordsByPage(false)
   }
 
@@ -779,6 +783,7 @@ const QARecords: React.FC = () => {
     // fetch images
     setLoading(true)
     fetchImageUrlArr(String(record.sku))
+    setScrapeData(record.scrapedData)
     setLoading(false)
   }
 
@@ -792,7 +797,7 @@ const QARecords: React.FC = () => {
               className={'text-white'}
               color={record.recorded ? 'emerald' : 'zinc'}
               tooltip={record.problem ? 'This Record Have Problem' : record.recorded ? 'Already Recorded' : 'Not Recorded'}
-              onClick={() => { setSelectedRecordByRecord(record); clearScrape(); scrapeRequest(record.sku); }}
+              onClick={() => { clearScrape(); setSelectedRecordByRecord(record) }}
             >
               {record.sku}
             </Button>
@@ -1041,10 +1046,10 @@ const QARecords: React.FC = () => {
               <TableHeaderCell className='w-36'>Owner</TableHeaderCell>
               <TableHeaderCell className='w-36'>Shelf Location</TableHeaderCell>
               <TableHeaderCell className='w-36'>Condition</TableHeaderCell>
-              <TableHeaderCell>Comment</TableHeaderCell>
+              <TableHeaderCell className='w-64'>Comment</TableHeaderCell>
               <TableHeaderCell>Link</TableHeaderCell>
               <TableHeaderCell>Platform</TableHeaderCell>
-              <TableHeaderCell>Target Marketplace</TableHeaderCell>
+              <TableHeaderCell>Marketplace</TableHeaderCell>
               <TableHeaderCell className='w-36'>Amount</TableHeaderCell>
               <TableHeaderCell className='w-[130px]'>Time Created</TableHeaderCell>
             </TableRow>

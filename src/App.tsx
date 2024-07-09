@@ -10,7 +10,7 @@ import axios, { AxiosError, AxiosResponse } from 'axios'
 import Dashboard from './pages/Dashboard'
 import Inventory from './pages/Inventory'
 import {
-  AdminSettings,
+  // AdminSettings,
   UserInfo
 } from './utils/Types'
 import {

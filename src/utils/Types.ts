@@ -115,6 +115,7 @@ export interface QARecord {
   marketplace?: Platform;
   recorded?: boolean;
   problem?: boolean;
+  scrapedData: ScrapedData
 }
 
 // for user info context in App.tsx
