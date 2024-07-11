@@ -122,7 +122,9 @@ export interface QARecord {
 export type UserInfo = {
   id: string,
   name: string,
-  role?: string
+  role?: string,
+  fid?: string | null,
+  email?: string | null,
 }
 
 // used in user manager
@@ -136,6 +138,7 @@ export type UserDetail = CreateUser & {
   _id: string,
   registrationDate: string,
   userActive: boolean,
+  fid: string
 }
 
 export type CreateUser = {

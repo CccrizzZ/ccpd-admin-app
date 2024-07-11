@@ -137,6 +137,7 @@ const QARecords: React.FC = () => {
     }
   }, [])
 
+  // keyboard event to navigate between records
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === ']') {
       console.log('Go right')
@@ -147,7 +148,10 @@ const QARecords: React.FC = () => {
     }
   }
 
+  // reset scraped Amazon data
   const clearScrape = () => setScrapeData(initScrapeData)
+
+  // total page according to the item number and per page count
   const getTotalPage = () => Math.ceil(itemCount / itemsPerPage) - 1
 
   // called on component mount
@@ -223,6 +227,7 @@ const QARecords: React.FC = () => {
     setLoading(false)
   }
 
+  // fetch qa record by page number
   const pageAxios = async (newPage: number) => {
     await axios({
       method: 'post',
@@ -282,8 +287,10 @@ const QARecords: React.FC = () => {
     setLoading(false)
   }
 
+  // returns the selected item's index in QA record page array
   const getSelectedItemIndex = () => QARecordArr.findIndex(item => item.sku === selectedRecord.sku)
 
+  // goto next record in page
   const nextRecord = () => {
     if (isScraping) return
     const next = QARecordArr[getSelectedItemIndex() + 1]
@@ -299,6 +306,7 @@ const QARecords: React.FC = () => {
     fetchQARecordsByPage(false)
   }
 
+  // goto previous record in page
   const prevRecord = () => {
     if (isScraping) return
     const prev = QARecordArr[getSelectedItemIndex() - 1]
@@ -314,6 +322,7 @@ const QARecords: React.FC = () => {
     fetchQARecordsByPage(false)
   }
 
+  // scrape button function
   const scrapeRequest = async (sku: number) => {
     if (isScraping) return
     if (selectedRecord.platform !== 'Amazon') return
@@ -355,6 +364,8 @@ const QARecords: React.FC = () => {
     const onLinkChange = (event: React.ChangeEvent<HTMLInputElement>) => setSelectedRecord({ ...selectedRecord, link: event.target.value })
     const onPlatformChange = (event: React.ChangeEvent<HTMLSelectElement>) => setSelectedRecord({ ...selectedRecord, platform: event.target.value as Platform })
     const onRecordTimeChange = (event: React.ChangeEvent<HTMLInputElement>) => setSelectedRecord({ ...selectedRecord, time: event.target.value })
+
+    // close qa gallery image popup and reset the input
     const clearImagePopup = () => {
       setImagePopupUrl('')
       setShowImagePopup(false)
@@ -773,6 +784,7 @@ const QARecords: React.FC = () => {
     )
   }
 
+  // set record panel cursor to show certain record
   const setSelectedRecordByRecord = async (record: QARecord) => {
     setSelectedRecord(record)
     setOriginalSelectedRecord(record)
@@ -783,7 +795,7 @@ const QARecords: React.FC = () => {
     // fetch images
     setLoading(true)
     fetchImageUrlArr(String(record.sku))
-    setScrapeData(record.scrapedData)
+    if (record.scrapedData) setScrapeData(record.scrapedData)
     setLoading(false)
   }
 
@@ -834,38 +846,21 @@ const QARecords: React.FC = () => {
     </TableBody>
   )
 
-  // // chart that shows item condition percentage
-  // const renderTopOverViewChart = () => {
-  //   return (
-  //     <>
-  //       <Title>Overview</Title>
-  //       <Subtitle>Last 7 Days (Dec 7 - Dec 14)</Subtitle>
-  //       <BarChart
-  //         className="h-64"
-  //         data={qaRecentData}
-  //         index="name"
-  //         categories={["Number of Items"]}
-  //         colors={["rose"]}
-  //         valueFormatter={valueFormatter}
-  //         yAxisWidth={32}
-  //         showAnimation={true}
-  //       />
-  //     </>
-  //   )
-  // }
-
+  // scroll up to top of QA record table
   const scrollToTable = () => {
     if (tableRef.current) tableRef.current.scrollIntoView({
       behavior: 'instant'
     })
   }
 
+  // scroll to top of the page
   const scrollToTop = () => {
     if (topRef.current) topRef.current.scrollIntoView({
       behavior: 'instant'
     })
   }
 
+  // QA table filter
   const renderFilter = () => {
     const resetFilters = () => {
       setQueryFilter(initQAQueryFilter)
@@ -907,16 +902,19 @@ const QARecords: React.FC = () => {
     )
   }
 
+  // if no QA record found in DB this will render
   const renderPlaceHolder = () => {
     if (!QARecordArr || !QARecordArr.length) return <h4 className='text-red-400 w-max ml-auto mr-auto mt-12 mb-12'>No Q&A Records Found!</h4>
   }
 
+  // onchange function for items per page selection
   const onItemsPerPageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setCurrPage(0)
     setItemsPerPage(Number(event.target.value))
     fetchQARecordsByPage(false, Number(event.target.value))
   }
 
+  // update QA record in QA database
   const updateQARecord = async (sku: number) => {
     setLoading(true)
     if (isObjectsEqual(selectedRecord, originalSelectedRecord)) return alert('Cannot Submit Unchanged Record')
@@ -940,6 +938,7 @@ const QARecords: React.FC = () => {
     setLoading(false)
   }
 
+  // delete QA record from QA database
   const deleteQARecord = async (sku: number) => {
     await axios({
       method: 'delete',
@@ -959,6 +958,7 @@ const QARecords: React.FC = () => {
     })
   }
 
+  // QA record manipulation buttons
   const renderOperationButtons = () => (
     <div className='absolute right-16 flex top-6 gap-2'>
       <Button color='rose' onClick={() => setDeleteConfirmation(true)}><FaTrashCan className='m-0' /></Button>

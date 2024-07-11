@@ -72,7 +72,7 @@ const ImportUnsoldModal: React.FC<ImportUnsoldModalProps> = (
       props.hide()
     }).catch((err: AxiosError) => {
       setLoading(false)
-      alert(`Failed to Import Unsold From Lot#${lotToImport}: ${err.response?.data}`)
+      alert(`Failed to Import Unsold From Lot#${lotToImport}: ${err.response?.statusText}`)
     })
     setLoading(false)
   }

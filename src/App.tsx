@@ -38,6 +38,9 @@ import {
 import AuctionHistory from './pages/AuctionHistory'
 import AdminSettingsModal from './components/AdminSettingsModal'
 import { auth } from './utils/firebase'
+import { Badge } from '@tremor/react'
+import { useAtom } from 'jotai'
+import { isUserLogin, userInformation } from './utils/atom'
 
 // context passed to all child component
 type ContextType = {
@@ -48,31 +51,35 @@ type ContextType = {
 // loading spinner context
 export const AppContext = createContext({} as ContextType)
 const App = () => {
+  // atoms
+  const [userInfo, setUserInfo] = useAtom(userInformation)
+
   // user login
   const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [isLogin, setIsLogin] = useState<boolean>(false)
-  const [userInfo, setUserInfo] = useState<UserInfo>({
-    id: '',
-    name: ''
-  })
+  const [isLogin, setIsLogin] = useAtom(isUserLogin)
 
   // admin settings
   const [showAdminSettingsModal, setShowAdminSettingsModal] = useState<boolean>(false)
 
   // wait a moment before fetching all datas
   // received "Token used too early" error because system time
-  const waitLogin = async (email: string | null) => {
+  const waitLogin = async (email: string | null, fid: string | null) => {
     setIsLoading(true)
     await sleep(2000)
     if (email) {
       await getAdminRBACInfo(email)
+      setUserInfo((prev) => ({
+        ...prev,
+        fid: fid,
+        email: email,
+      }))
     }
   }
 
   useEffect(() => {
     auth.onAuthStateChanged(async (user) => {
       if (user) {
-        await waitLogin(user.email)
+        await waitLogin(user.email, user.uid)
         console.log("User is logged in")
         return
       } else {
@@ -106,7 +113,13 @@ const App = () => {
       }),
       withCredentials: true
     }).then((res: AxiosResponse) => {
-      setUserInfo(JSON.parse(res.data))
+      const data = JSON.parse(res.data)
+      setUserInfo({
+        ...userInfo,
+        id: data['id'],
+        name: data['name'],
+        role: data['role'],
+      })
       setIsLogin(true)
       return true
     }).catch((err: AxiosError) => {
@@ -166,13 +179,15 @@ const App = () => {
   const renderHome = () => {
     // if not login prompt login else show app
     if (!isLogin) {
-      return <Login setLogin={setIsLogin} setUserInfo={setUserInfo} setLoading={setIsLoading} />
+      return <Login setUserInfo={setUserInfo} setLoading={setIsLoading} />
     } else {
       return (
         <div className='wrapper'>
           <AdminSettingsModal
             show={showAdminSettingsModal}
-            hide={() => setShowAdminSettingsModal(false)}
+            hide={() => {
+              setShowAdminSettingsModal(false)
+            }}
           />
           <TabContainer defaultActiveKey="Q&A Records" data-bs-theme="dark">
             {/* side navigation */}
@@ -182,15 +197,20 @@ const App = () => {
               </Nav>
               {/* side panel footer */}
               <div className='bottom-2.5 absolute'>
-                <p className='mt-3 text-[#6B7280]'>Signed in As: {userInfo.name}</p>
-                {/* <p className='mt-3 text-[#6B7280]'>ID: {userInfo.id}</p> */}
-                <p className='mt-3 text-[#6B7280]'>Role: {userInfo.role}</p>
+                <Badge className='mt-3 text-[#6B7280]' color='stone'>Signed in As: {userInfo.name}</Badge>
+                {/* <Badge className='mt-3 text-[#6B7280]' color='stone'>Signed in As: {userInfo.email}</Badge> */}
+                <Badge className='mt-3 text-[#6B7280]' color='stone'>Role: {userInfo.role}</Badge>
+                <br />
+                <br />
                 <Button className='mr-3' variant='danger' onClick={logout}>
                   <FaDoorOpen className='m-auto' />
                 </Button>
                 {
                   userInfo.role === 'Super Admin' ?
-                    <Button variant='secondary' onClick={() => setShowAdminSettingsModal(true)}>
+                    <Button variant='secondary' onClick={() => {
+                      setShowAdminSettingsModal(true)
+                      setIsLoading(true)
+                    }}>
                       <FaGear className='m-auto' />
                     </Button> : <></>
                 }

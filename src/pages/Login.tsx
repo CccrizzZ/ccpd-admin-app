@@ -6,14 +6,20 @@ import { Form } from 'react-bootstrap'
 import { auth } from '../utils/firebase'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { Button } from '@tremor/react'
+import { useAtom } from 'jotai'
+import { isUserLogin } from '../utils/atom'
+// import { useSetAtom } from 'jotai'
+// import { userInformation } from '../utils/atom'
 
 type LoginProp = {
-  setLogin: React.Dispatch<React.SetStateAction<boolean>>,
   setLoading: React.Dispatch<React.SetStateAction<boolean>>
   setUserInfo: React.Dispatch<React.SetStateAction<UserInfo>>
 }
 
 const Login: React.FC<LoginProp> = (prop: LoginProp) => {
+  // const setUserInfo = useSetAtom(userInformation)
+  const [isLogin] = useAtom(isUserLogin)
+
   const [userEmail, setUserEmail] = useState<string>('')
   const [userPass, setUserPass] = useState<string>('')
   const [isLogging, setIsLogging] = useState<boolean>(false)
@@ -33,7 +39,7 @@ const Login: React.FC<LoginProp> = (prop: LoginProp) => {
   }
 
   const firebaseLogin = async () => {
-    if (isLogging) return
+    if (isLogin) return
     if (userEmail === '' || userPass === '') return alert('Please Enter Both Username and Password')
     setIsLogging(true)
     prop.setLoading(true)

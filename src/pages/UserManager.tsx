@@ -27,7 +27,7 @@ import {
   FaPenToSquare
 } from "react-icons/fa6";
 import { server, initUser } from '../utils/utils'
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 import '../style/UserManager.css'
 import moment from 'moment';
 import { isExpired } from '../utils/utils';
@@ -39,6 +39,8 @@ import {
   UserDetail,
   InvitationCode,
 } from '../utils/Types'
+import { userInformation } from '../utils/atom';
+import { useAtom } from 'jotai';
 
 const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format(number).toString()} Members`
 type chartData = {
@@ -49,7 +51,8 @@ type chartData = {
 // to manage existing users and add new users
 // need user table pagination
 const UserManager: React.FC = () => {
-  const { userInfo, setLoading } = useContext(AppContext)
+  const { setLoading } = useContext(AppContext)
+  const [userInfo] = useAtom(userInformation)
   const [userArr, setUserArr] = useState<UserDetail[]>([])
   const [invitationArr, setInvitationArr] = useState<InvitationCode[]>([])
   const [pieOverviewData, setPieOverviewData] = useState<chartData[]>([])
@@ -204,14 +207,18 @@ const UserManager: React.FC = () => {
       method: 'delete',
       url: server + '/adminController/deleteUserById',
       responseType: 'text',
-      data: { id: targetUser._id },
+      data: {
+        id: targetUser._id,
+        fid: targetUser.fid
+      },
       withCredentials: true
-    }).then(() => {
-      fetchAllUserInfo()
-    }).catch((err) => {
-      if (err.response?.status === 403) {
-        console.warn('Failed Deleting User: Only Super Admin Allowed')
+    }).then((res: AxiosResponse) => {
+      if (res.status === 200) {
+        alert(`User ${targetUser._id} Deleted`)
+        fetchAllUserInfo()
       }
+    }).catch((err: AxiosError) => {
+      alert(`Failed to Delete: ${err.response?.data}`)
     })
     setLoading(false)
     setShowDeletePopup(false)

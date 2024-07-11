@@ -5,8 +5,18 @@ import axios, { AxiosError, AxiosResponse } from 'axios';
 import { getObjectDifference, isObjectsEqual, server } from '../utils/utils';
 import { AdminSettings } from '../utils/Types';
 import ShelfLocationList from './ShelfLocationList';
-import { Button, Col, Grid, Switch, TextInput } from '@tremor/react';
-import { FaCalendar, FaRecycle } from 'react-icons/fa6';
+import {
+  Button,
+  Col,
+  Grid,
+  Switch,
+  TextInput
+} from '@tremor/react';
+import { FaCalendar, FaLock, FaRecycle } from 'react-icons/fa6';
+import { auth } from '../utils/firebase';
+import { isUserLogin, userInformation } from '../utils/atom';
+import { useAtom, useSetAtom } from 'jotai';
+import firebase from 'firebase/compat/app';
 
 type AdminSettingsModalProps = {
   show: boolean,
@@ -15,8 +25,14 @@ type AdminSettingsModalProps = {
 
 const AdminSettingsModal: React.FC<AdminSettingsModalProps> = (props: AdminSettingsModalProps) => {
   const { setLoading } = useContext(AppContext)
+  const [userInfo] = useAtom(userInformation)
   const [ogSettings, setOgSettings] = useState<AdminSettings>({} as AdminSettings)
   const [settings, setSettings] = useState<AdminSettings>({} as AdminSettings)
+  const setIsLogin = useSetAtom(isUserLogin)
+
+  // change password
+  const [newPass, setNewPass] = useState<string>()
+  const [confirmPass, setConfirmPass] = useState<string>()
 
   useEffect(() => {
     // get settings on load
@@ -66,6 +82,35 @@ const AdminSettingsModal: React.FC<AdminSettingsModalProps> = (props: AdminSetti
     setLoading(false)
   }
 
+  // update admin password
+  const sendAdminChangePasssword = async () => {
+    if (newPass === '' || confirmPass === '') return alert('Please Enter New Password')
+    if (newPass !== confirmPass) return alert('Confirm Password Does Not Match Password')
+    setLoading(true)
+    await axios({
+      method: 'post',
+      url: server + '/adminController/updateAdminPassword',  // super admin only
+      responseType: 'text',
+      timeout: 8000,
+      data: {
+        fid: auth.currentUser?.uid,
+        uid: userInfo.id,
+        newPass: newPass
+      },
+      withCredentials: true
+    }).then(async (res: AxiosResponse) => {
+      if (res.status === 200) {
+        alert('Admin Settings Updated, Please Login With New Identity')
+        setIsLogin(false)
+        await firebase.auth().signOut()
+        props.hide()
+      }
+    }).catch((res: AxiosError) => {
+      alert('Failed Updating Admin Password: ' + res.response?.data)
+    })
+    setLoading(false)
+  }
+
   // limits QA personal to delete their record within x days
   const renderQADeleteRecordLimit = () => (
     <div className='mb-3 font-bold'>
@@ -91,6 +136,29 @@ const AdminSettingsModal: React.FC<AdminSettingsModalProps> = (props: AdminSetti
         }}
         className='mt-3'
       />
+    </div>
+  )
+
+  const renderResetOwnPassword = () => (
+    <div className='mb-3 font-bold grid gap-3'>
+      <p>
+        Change My Password ({userInfo.email})
+      </p>
+      <TextInput
+        icon={FaLock}
+        placeholder='Enter Your New Password...'
+        type='password'
+        value={newPass}
+        onValueChange={setNewPass}
+      />
+      <TextInput
+        icon={FaLock}
+        placeholder='Confirm Your New Password...'
+        type='password'
+        value={confirmPass}
+        onValueChange={setConfirmPass}
+      />
+      <Button color='indigo' onClick={sendAdminChangePasssword}>Confirm Reset Password</Button>
     </div>
   )
 
@@ -121,6 +189,8 @@ const AdminSettingsModal: React.FC<AdminSettingsModalProps> = (props: AdminSetti
               {renderQADeleteRecordLimit()}
               <hr />
               {renderIsQAPermittedAfterHour()}
+              <hr />
+              {renderResetOwnPassword()}
               <hr />
             </Col>
             <Col>

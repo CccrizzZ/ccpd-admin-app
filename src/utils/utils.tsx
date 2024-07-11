@@ -227,7 +227,8 @@ export const initUser: UserDetail = {
   password: '',
   role: '',
   registrationDate: '',
-  userActive: false
+  userActive: false,
+  fid: ''
 }
 
 export const initCreateUser: CreateUser = {

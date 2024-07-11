@@ -132,3 +132,5 @@ dist
 
 .env.development
 .env.production
+# Million Lint
+.million

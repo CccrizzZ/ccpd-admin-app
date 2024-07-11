@@ -99,7 +99,7 @@ const AuctionHistory: React.FC = () => {
       method: 'post',
       url: server + '/inventoryController/getAuctionCsv',
       responseType: 'blob',
-      timeout: 2500000,
+      timeout: 3000000,
       data: {
         'lot': lot,
       },
@@ -131,15 +131,15 @@ const AuctionHistory: React.FC = () => {
         method: 'post',
         url: `${server}/inventoryController/createRemainingRecord`,
         responseType: 'blob',
-        timeout: 25000,
+        timeout: 250000,
         data: formData,
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true
       }).then(async (res: AxiosResponse) => {
-        if (res.status > 200) return alert('Failed to Get CSV')
+        if (res.status > 200) return alert(`Failed to Create Remaining Record ${res.status}`)
       }).catch((err: AxiosError) => {
         setLoading(false)
-        alert('Failed Fetching Auction CSV: ' + err.response?.data)
+        alert('Failed to Create Remaining Record: ' + err.response?.data)
       })
       setLoading(false)
       setShowremainingModal(false)
@@ -186,8 +186,19 @@ const AuctionHistory: React.FC = () => {
         </div>
         <hr />
         <div className="flex">
-          <Button color="slate" onClick={() => setShowremainingModal(false)}>Close</Button>
-          <Button className="absolute right-6" color="emerald" onClick={createRemainingRecord}>Submit</Button>
+          <Button
+            color="slate"
+            onClick={() => setShowremainingModal(false)}
+          >
+            Close
+          </Button>
+          <Button
+            className="absolute right-6"
+            color="emerald"
+            onClick={createRemainingRecord}
+          >
+            Submit
+          </Button>
         </div>
       </div>
     </Modal>
@@ -527,7 +538,7 @@ const AuctionHistory: React.FC = () => {
       </TableCell>
       <TableCell>
         {canEdit && editMode && auctionLot ?
-          <>
+          <div>
             <Button className="p-1 mb-1" color="rose" onClick={() => deleteItemFromAuction(item.lot, auctionLot)}>
               <FaTrashCan />
             </Button>
@@ -535,7 +546,7 @@ const AuctionHistory: React.FC = () => {
             <Button className="p-1" color="amber" onClick={() => ShowEditAuctionItemModal(item, auctionLot)}>
               <FaPencil />
             </Button>
-          </>
+          </div>
           : <Badge color="purple" className="font-bold">{item.shelfLocation}</Badge>}
       </TableCell>
     </TableRow>
@@ -597,14 +608,14 @@ const AuctionHistory: React.FC = () => {
           <Badge color="orange" className="absolute right-20 font-bold">
             {val.items.length}
           </Badge>
-          <Button
-            className="ml-16"
-            color="rose"
-            onClick={() => deleteUnsold(auction.lot, val.lot)}
-          >
-            Delete
-          </Button>
         </AccordionHeader>
+        <Button
+          className="ml-12 mb-3"
+          color="rose"
+          onClick={() => deleteUnsold(auction.lot, val.lot)}
+        >
+          Delete
+        </Button>
         <AccordionBody className="leading-6 p-2">
           <Table>
             <TableHead>

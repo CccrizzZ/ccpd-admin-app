@@ -31,6 +31,7 @@ const ShelfLocationsSelection: React.FC<ShelfLocationsSelectionProps> = (props: 
   }
 
   const renderShelfLocations = () => {
+    if (shelfLocations === undefined) return
     if (shelfLocations.map) {
       return shelfLocations.map((location, index) => (
         <MultiSelectItem value={location} key={index}>
