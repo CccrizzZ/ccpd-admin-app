@@ -55,7 +55,7 @@ const InstockStagingModal: React.FC<InstockStagingModalProps> = (props: InstockS
         itemLotStart: itemLotStart,
         endDate: endDate,
         filter: filter,
-        duplicate: duplicate
+        duplicate: duplicate,
       },
       withCredentials: true
     }).then((res: AxiosResponse) => {
@@ -151,6 +151,8 @@ const InstockStagingModal: React.FC<InstockStagingModalProps> = (props: InstockS
             <Form.Control
               value={lot}
               onChange={onLotChange}
+              step='0.01'
+              type='number'
             />
           </InputGroup>
           <InputGroup size='sm' className='mb-3'>

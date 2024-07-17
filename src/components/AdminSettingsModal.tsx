@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import { Modal } from 'react-bootstrap';
 import { AppContext } from '../App';
 import axios, { AxiosError, AxiosResponse } from 'axios';
-import { getObjectDifference, isObjectsEqual, server } from '../utils/utils';
+import { downloadCustomNameFile, getObjectDifference, isObjectsEqual, server } from '../utils/utils';
 import { AdminSettings } from '../utils/Types';
 import ShelfLocationList from './ShelfLocationList';
 import {
@@ -165,6 +165,28 @@ const AdminSettingsModal: React.FC<AdminSettingsModalProps> = (props: AdminSetti
   // check if setting is modified
   const isChanged = () => !isObjectsEqual(ogSettings, settings)
 
+  const fixDB = async () => {
+    await axios({
+      method: 'post',
+      url: server + '/inventoryController/fixAuctionRecord',  // super admin only
+      responseType: 'blob',
+      timeout: 90000,
+      withCredentials: true
+    }).then(async (res: AxiosResponse) => {
+      if (res.status === 200) {
+        alert('fixed')
+        // JSON parse csv content
+        let file = new Blob([res.data], { type: 'text/csv' })
+        const csv = JSON.parse(await file.text())
+        file = new Blob([csv], { type: 'text/csv' })
+
+        downloadCustomNameFile(file, `${212}_AuctionRecord.csv`, document)
+      }
+    }).catch((res: AxiosError) => {
+      alert('Failed Fix: ' + res.response?.data)
+    })
+  }
+
   return (
     <div>
       <Modal
@@ -184,6 +206,7 @@ const AdminSettingsModal: React.FC<AdminSettingsModalProps> = (props: AdminSetti
           </Button>
         </Modal.Header>
         <Modal.Body className='min-h-96'>
+          <Button onClick={fixDB}>Fix DB</Button>
           <Grid numItems={2} className='gap-6'>
             <Col>
               {renderQADeleteRecordLimit()}
