@@ -488,8 +488,11 @@ const Inventory: React.FC = () => {
             <Badge color='orange'>{instock.adminName}</Badge>
           </div>
         </TableCell>
-        <TableCell>
-          <Text>{instock.time ? moment(instock.time).format('LLL') : undefined}</Text>
+        <TableCell className='px-0'>
+          <div className='grid gap-1 justify-items-center'>
+            <Badge color='slate'>{instock.qaTime ? moment(instock.qaTime).format('LLL') : 'N/A'}</Badge>
+            <Badge color='orange'>{instock.time ? moment(instock.time).format('LLL') : undefined}</Badge>
+          </div>
         </TableCell>
       </TableRow>
     ))
@@ -540,15 +543,17 @@ const Inventory: React.FC = () => {
               <TableHeaderCell className='w-36 text-center'>Shelf Location & <br /> Condition</TableHeaderCell>
               <TableHeaderCell className='w-28 text-center'>MSRP<br />($CAD)</TableHeaderCell>
               <TableHeaderCell className='w-36'>Lead</TableHeaderCell>
-              <TableHeaderCell>Desc</TableHeaderCell>
+              <TableHeaderCell className='w-36'>Desc</TableHeaderCell>
               <TableHeaderCell className='w-28'>URL</TableHeaderCell>
               <TableHeaderCell className='w-32'>QAComment</TableHeaderCell>
               <TableHeaderCell className='w-36 text-center'>Platform &<br />Marketplace</TableHeaderCell>
-              <TableHeaderCell className='w-28 text-center'>Instock &<br /><p className='text-rose-500'>Sold</p></TableHeaderCell>
+              <TableHeaderCell className='w-24 text-center'>Instock &<br /><p className='text-rose-500'>Sold</p></TableHeaderCell>
               <TableHeaderCell className='w-36 text-center'>
                 <div>QAPersonal &<br /><p className='text-orange-500'>Admin</p></div>
               </TableHeaderCell>
-              <TableHeaderCell className='w-36 text-center'>Time<br />(EST)</TableHeaderCell>
+              <TableHeaderCell className='w-40 text-center'>
+                <div>QA Time &<br /><p className='text-orange-500'>Recorded Time</p></div>
+              </TableHeaderCell>
             </TableRow>
           </TableHead>
           <TableBody>

@@ -92,6 +92,7 @@ export interface InstockInventory {
   adminName: string;
   qaName: string;
   time: string;
+  qaTime?: string;
   msrp?: number;         // scraped
   lead?: string;         // chat gpt generated from scraped data
   description?: string;  // chat gpt generated from scraped data

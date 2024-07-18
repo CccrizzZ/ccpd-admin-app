@@ -21,9 +21,9 @@ import { DateRangePickerValue } from "@tremor/react";
 export const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 export const server = import.meta.env.VITE_APP_SERVER
 
-// conversion rate
-export const usdToCadRate = 1.38
-export const eurToCadRate = 1.55
+// // conversion rate
+// export const usdToCadRate = 1.38
+// export const eurToCadRate = 1.55
 
 // time zones
 export const est = 'America/Toronto'
@@ -280,6 +280,7 @@ export const initInstockInventory: InstockInventory = {
   adminName: '',
   qaName: '',
   time: '',
+  qaTime: '',
 }
 
 export const initReturnRecord: ReturnRecord = {
@@ -387,20 +388,20 @@ export const convertCommentsInitial = (input: string) => {
   return input
 }
 
-export const toCad = (input: number, currency: string): number | undefined => {
-  switch (currency) {
-    case 'CAD':
-      return input
-    case 'USD':
-      return Number((input * 1.3).toFixed(2))
-    case 'EUR':
-      return Number((input * 1.45).toFixed(2))
-    case 'GBP':
-      return Number((input * 1.7).toFixed(2))
-    default:
-      break;
-  }
-}
+// export const toCad = (input: number, currency: string): number | undefined => {
+//   switch (currency) {
+//     case 'CAD':
+//       return input
+//     case 'USD':
+//       return Number((input * 1.3).toFixed(2))
+//     case 'EUR':
+//       return Number((input * 1.45).toFixed(2))
+//     case 'GBP':
+//       return Number((input * 1.7).toFixed(2))
+//     default:
+//       break;
+//   }
+// }
 
 export const isObjectsEqual = (a: Object, b: Object) => JSON.stringify(a) === JSON.stringify(b)
 

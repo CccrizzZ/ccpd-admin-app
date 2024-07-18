@@ -37,6 +37,7 @@ import {
   FaTrashCan,
   FaRotateLeft,
   FaRotateRight,
+  FaXmark,
 } from 'react-icons/fa6'
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import {
@@ -50,9 +51,7 @@ import {
   openLink,
   initQAQueryFilter,
   extractHttpsFromStr,
-  toCad,
   getKwArr,
-  usdToCadRate,
   stringToNumber,
   isObjectsEqual,
   sleep
@@ -91,6 +90,7 @@ const QARecords: React.FC = () => {
   const [selectedRecord, setSelectedRecord] = useState<QARecord>(initQARecord)
   const [originalSelectedRecord, setOriginalSelectedRecord] = useState<QARecord>(initQARecord)
   const [selectedRecordImagesArr, setSelectedRecordImagesArr] = useState<string[]>([])
+  const [exchangeRate, setExchangeRate] = useState<number>(1.42)
 
   // image
   const [imagePopupUrl, setImagePopupUrl] = useState<string>('')
@@ -337,7 +337,7 @@ const QARecords: React.FC = () => {
     }).then((res: AxiosResponse) => {
       const data: ScrapedData = JSON.parse(res.data)
       // if not CAD, convert to CAD
-      if (data.currency !== 'CAD') data.msrp = toCad(data.msrp, data.currency) ?? data.msrp
+      // if (data.currency !== 'CAD') data.msrp = toCad(data.msrp, data.currency) ?? data.msrp
       setScrapeData(data)
     }).catch((res: AxiosError) => {
       console.log('Failed Scraping: ' + res.message)
@@ -364,6 +364,7 @@ const QARecords: React.FC = () => {
     const onLinkChange = (event: React.ChangeEvent<HTMLInputElement>) => setSelectedRecord({ ...selectedRecord, link: event.target.value })
     const onPlatformChange = (event: React.ChangeEvent<HTMLSelectElement>) => setSelectedRecord({ ...selectedRecord, platform: event.target.value as Platform })
     const onRecordTimeChange = (event: React.ChangeEvent<HTMLInputElement>) => setSelectedRecord({ ...selectedRecord, time: event.target.value })
+    const onExRateChange = (event: React.ChangeEvent<HTMLInputElement>) => setExchangeRate(stringToNumber(event.target.value))
 
     // close qa gallery image popup and reset the input
     const clearImagePopup = () => {
@@ -694,7 +695,25 @@ const QARecords: React.FC = () => {
               type='number'
               step={0.01}
             />
-            <InputGroup.Text>{scrapeData.currency === 'USD' ? `${(Number(scrapeData.msrp) / 1.3).toFixed(2)}USD x ${usdToCadRate ?? 0} = ${Number(scrapeData.msrp) ?? 0} $CAD 🍁` : ''}</InputGroup.Text>
+            {scrapeData.currency !== 'CAD' && scrapeData.currency ?
+              <>
+                <InputGroup.Text>
+                  <FaXmark />
+                  {/* {scrapeData.currency === 'USD' ? `${(Number(scrapeData.msrp) / 1.3).toFixed(2)} USD x  ${usdToCadRate ?? 0} = ${Number(scrapeData.msrp) ?? 0} $CAD 🍁` : ''} */}
+                </InputGroup.Text>
+                <Form.Control
+                  value={exchangeRate}
+                  onChange={onExRateChange}
+                  type='number'
+                  step={0.01}
+                />
+                <InputGroup.Text>
+                  <span className='text-amber-500'>
+                    = {(scrapeData.msrp * exchangeRate).toFixed(2)} $CAD
+                  </span>
+                </InputGroup.Text>
+              </>
+              : <></>}
           </InputGroup>
           <hr />
           <p>First Stock Image:</p>
@@ -773,6 +792,7 @@ const QARecords: React.FC = () => {
             record={selectedRecord}
             scrapeData={scrapeData}
             nextItem={nextRecord}
+            exRate={exchangeRate}
           />
         </div>
         <div className='absolute bottom-3 w-full'>

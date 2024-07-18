@@ -12,7 +12,6 @@ import {
   server,
   getInstockInventory,
   convertCommentsInitial,
-  toCad
 } from '../utils/utils'
 import { AppContext } from '../App'
 import {
@@ -31,6 +30,7 @@ type InventoryRecordingModalProps = {
   record: QARecord,
   scrapeData: ScrapedData,
   nextItem: () => void,
+  exRate?: number
 }
 
 // Chat GPT generation panel
@@ -55,10 +55,9 @@ const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: 
       ...getInstockInventory(props.record, userInfo.name),
       url: extractHttpsFromStr(props.record.link),
       comment: convertCommentsInitial(props.record.comment) ?? '',
-      msrp: toCad(props.scrapeData.msrp, props.scrapeData.currency) ?? props.scrapeData.msrp,
-      time: 'today' // let the server decide
+      time: 'today', // let the server decide
+      qaTime: props.record.time,  // time when qa record was created
     })
-
     return (() => {
       setDescription('')
       setLead('')
@@ -67,9 +66,9 @@ const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: 
 
   const recordInventory = async () => {
     if (String(props.scrapeData.msrp) === 'NaN' || !props.scrapeData.msrp) return alert('MSRP of Scraped Data is Missing, Wait Until Scrape Finish')
+    if (typeof props.scrapeData.msrp !== "number") return alert('MSRP of Scraped Data is Missing')
     if (!description || !lead) return alert('Description or Lead is Missing')
     if (props.record.problem) return alert('Record is Problematic, Please Resolve it First')
-    setNewInv({ ...newInv, msrp: props.scrapeData.msrp ?? 0 })
     setLoading(true)
     await axios({
       method: 'post',
@@ -79,7 +78,9 @@ const InventoryRecordingModal: React.FC<InventoryRecordingModalProps> = (props: 
       data: JSON.stringify({
         ...newInv,
         lead: lead,
-        description: description
+        description: description,
+        // factor in the exchange rate if exchange rate exist
+        msrp: (props.scrapeData.currency !== 'CAD' && props.exRate) ? (props.scrapeData.msrp * props.exRate).toFixed(2) : props.scrapeData.msrp,
       }),
       withCredentials: true
     }).then((res: AxiosResponse) => {

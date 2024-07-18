@@ -1,4 +1,4 @@
-import MillionLint from '@million/lint';
+// import MillionLint from '@million/lint';
 import { defineConfig } from 'vite';
 import legacy from '@vitejs/plugin-legacy';
 import react from '@vitejs/plugin-react';

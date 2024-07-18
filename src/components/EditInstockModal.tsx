@@ -129,6 +129,9 @@ const EditInstockModal: React.FC<EditInstockModalProps> = (props: EditInstockMod
   const onPlatformChange = (event: React.ChangeEvent<HTMLSelectElement>) => setInstockDetail({ ...instockDetail, platform: event.target.value as Platform })
   const onMarketplaceChange = (event: React.ChangeEvent<HTMLSelectElement>) => setInstockDetail({ ...instockDetail, marketplace: event.target.value as Platform })
 
+  const onQATimeChange = (event: React.ChangeEvent<HTMLInputElement>) => setInstockDetail({ ...instockDetail, qaTime: event.target.value })
+  const onAdminNameChange = (event: React.ChangeEvent<HTMLInputElement>) => setInstockDetail({ ...instockDetail, adminName: event.target.value })
+
   const onQuantityInstockChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInstockDetail({ ...instockDetail, quantityInstock: stringToNumber(event.target.value) })
     setInstockChartData([
@@ -229,6 +232,20 @@ const EditInstockModal: React.FC<EditInstockModalProps> = (props: EditInstockMod
               <Form.Control
                 value={instockDetail.qaName}
                 onChange={onQANameChange}
+              />
+            </InputGroup>
+            <InputGroup className="mb-3">
+              <InputGroup.Text>QA Time</InputGroup.Text>
+              <Form.Control
+                value={instockDetail.qaTime}
+                onChange={onQATimeChange}
+              />
+            </InputGroup>
+            <InputGroup className="mb-3">
+              <InputGroup.Text>Admin Name</InputGroup.Text>
+              <Form.Control
+                value={instockDetail.adminName}
+                onChange={onAdminNameChange}
               />
             </InputGroup>
             <InputGroup className="mb-3">

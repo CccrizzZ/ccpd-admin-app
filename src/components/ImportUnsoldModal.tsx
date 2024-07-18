@@ -56,7 +56,7 @@ const ImportUnsoldModal: React.FC<ImportUnsoldModalProps> = (
       withCredentials: true,
     }).then((res: AxiosResponse) => {
       if (res.status > 200) return alert('Failed to Fetch Auction Lot Numbers')
-      setRemainingLots(JSON.parse(res.data))
+      setRemainingLots(JSON.parse(res.data).reverse())
       props.refreshAuction()
       closeModal ? props.hide() : undefined
     }).catch((err: AxiosError) => {
