@@ -150,29 +150,30 @@ export type CreateUser = {
 }
 
 export type QAQueryFilter = {
-  timeRangeFilter: DateRangePickerValue;
-  keywordFilter: string[];
-  conditionFilter: string;
-  platformFilter: string;
-  marketplaceFilter: string;
-  qaFilter: string[];
-  adminFilter: string[];
-  shelfLocationFilter: string[];
+  timeRangeFilter: DateRangePickerValue,
+  keywordFilter: string[],
+  conditionFilter: string,
+  platformFilter: string,
+  marketplaceFilter: string,
+  qaFilter: string[],
+  adminFilter: string[],
+  shelfLocationFilter: string[],
   sku?: {
     gte?: string,
     lte?: string,
-  }
+  },
   targetSku?: string,
-  showRecordedOnly: boolean
+  showRecordedOnly: boolean,
 }
 
 export type InstockQueryFilter = {
-  instockFilter: string;
+  instockFilter: string,
   msrpFilter: {
     gte: string,
     lt: string,
-  };
-  adminFilter: string[];
+  },
+  adminFilter: string[],
+  qaTime: DateRangePickerValue,
 } & QAQueryFilter
 
 export type ScrapedData = {

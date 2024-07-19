@@ -273,6 +273,10 @@ const Inventory: React.FC = () => {
       setQueryFilter({ ...queryFilter, targetSku: event.target.value })
       setChanged(true)
     }
+    const onQADatePickerChange = (value: DateRangePickerValue) => {
+      setQueryFilter({ ...queryFilter, qaTime: value })
+      setChanged(true)
+    }
 
     const getInstockColor = (instock: string) => instock === 'in' ? '#10b981' : instock === 'out' ? '#f43f5e' : '#3b82f6'
     return (
@@ -364,6 +368,16 @@ const Inventory: React.FC = () => {
               <CustomDatePicker
                 onValueChange={onDatePickerChange}
                 value={queryFilter.timeRangeFilter}
+                placeholder='Admin Time'
+                type='instock'
+              />
+            </InputGroup>
+            <InputGroup size='sm' className='mb-3'>
+              <CustomDatePicker
+                onValueChange={onQADatePickerChange}
+                value={queryFilter.qaTime}
+                placeholder='QA Time'
+                type='instock'
               />
             </InputGroup>
             <ShelfLocationsSelection

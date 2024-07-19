@@ -25,19 +25,6 @@ export const server = import.meta.env.VITE_APP_SERVER
 // export const usdToCadRate = 1.38
 // export const eurToCadRate = 1.55
 
-// time zones
-export const est = 'America/Toronto'
-// get iso format dates
-export const getEndOfDay = (day: Date) => moment.tz(day, est).endOf('day').toDate()
-export const getStartOfToday = () => moment.tz(moment(), est).startOf('day').toDate()
-export const getEndOfToday = () => moment.tz(moment(), est).endOf('day').toDate()
-export const getYesterday = () => moment.tz(moment(), est).subtract(1, 'day').toDate().toDateString()
-export const getStartOfYesterday = () => moment.tz(moment(), est).subtract(1, 'day').startOf('day').toDate()
-export const getEndOfYesterday = () => moment.tz(moment(), est).subtract(1, 'day').endOf('day').toDate()
-export const getStartOfThisWeek = () => moment.tz(moment(), est).startOf('week').toDate()
-export const getEndOfThisWeek = () => moment.tz(moment(), est).endOf('week').toDate()
-export const getStartOfThisMonth = () => moment.tz(moment(), est).startOf('month').toDate()
-export const getEndOfThisMonth = () => moment.tz(moment(), est).endOf('month').toDate()
 
 // color
 export const bgDark = '#212332'
@@ -338,6 +325,7 @@ export const initQAQueryFilter: QAQueryFilter = {
 
 export const initInstockQueryFilter: InstockQueryFilter = {
   timeRangeFilter: {} as DateRangePickerValue,
+  qaTime: {} as DateRangePickerValue,
   conditionFilter: '' as Condition,
   platformFilter: '' as Platform,
   marketplaceFilter: '' as Platform,
