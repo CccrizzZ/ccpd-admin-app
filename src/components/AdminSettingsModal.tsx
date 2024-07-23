@@ -168,7 +168,7 @@ const AdminSettingsModal: React.FC<AdminSettingsModalProps> = (props: AdminSetti
   const fixDB = async () => {
     await axios({
       method: 'post',
-      url: server + '/inventoryController/fixAuctionRecord',  // super admin only
+      url: server + '/inventoryController/fixInstockTime',  // super admin only
       responseType: 'blob',
       timeout: 90000,
       withCredentials: true
@@ -229,7 +229,6 @@ const AdminSettingsModal: React.FC<AdminSettingsModalProps> = (props: AdminSetti
           <Button color={isChanged() ? 'amber' : 'emerald'} onClick={() => { updateSettings() }}>Update Settings</Button>
         </Modal.Footer>
       </Modal>
-
     </div>
   )
 }

@@ -560,6 +560,7 @@ const AuctionHistory: React.FC = () => {
           {auction.itemsArr.filter !== undefined ? auction.itemsArr.filter((val) => (val.msrp && val.lead && val.description)).length : 0}
         </Badge>
       </AccordionHeader>
+      <Badge className="m-3"> Inventory Time Range: {auction.timeRange}</Badge>
       <AccordionBody className="leading-6 p-2">
         <Table>
           <TableHead>

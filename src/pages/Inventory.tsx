@@ -46,7 +46,7 @@ import ShelfLocationsSelection from '../components/ShelfLocationsSelection'
 import EditInstockModal from '../components/EditInstockModal'
 import AdminNameSelection from '../components/AdminNameSelection'
 import QANameSelection from '../components/QANameSelection'
-import { FaAnglesDown } from 'react-icons/fa6'
+import { FaAnglesDown, FaAnglesUp } from 'react-icons/fa6'
 import InstockStagingModal from '../components/InstockStagingModal'
 import AddToAuctionModal from '../components/AddToAuctionModal'
 
@@ -56,6 +56,14 @@ const valueFormatter = (number: number) => `${new Intl.NumberFormat("us").format
 type ChartData = {
   date: string,
   'Recorded Invenotry': number
+}
+
+type SortingMethod = {
+  time: boolean,
+}
+
+const initSortingMethod = {
+  time: false
 }
 
 const Inventory: React.FC = () => {
@@ -77,6 +85,8 @@ const Inventory: React.FC = () => {
   const [searchKeyword, setSearchKeyword] = useState<string>('')
   // query filters
   const [queryFilter, setQueryFilter] = useState<InstockQueryFilter>(initInstockQueryFilter)
+  // sorting method
+  const [sortingMethod, setSortingMethod] = useState<SortingMethod>(initSortingMethod)
   // flag
   const [changed, setChanged] = useState<boolean>(false)
   const [showStagePopup, setShowStagePopup] = useState<boolean>(false)
@@ -119,7 +129,9 @@ const Inventory: React.FC = () => {
     return skey.length > 0 && !refresh ? skey.split(/(\s+)/).filter((item) => { return item.trim().length > 0 }) : []
   }
   const getTotalPage = () => Math.ceil(itemCount / itemsPerPage) - 1
-  const fetchInstockByPage = async (refresh?: boolean, newItemsPerPage?: number) => {
+  const fetchInstockByPage = async (refresh?: boolean, newItemsPerPage?: number, sorting?: SortingMethod) => {
+    // if sorting passed, set sorting to state
+    if (sorting) setSortingMethod(sorting)
     // if refresh use init query filter
     const filter = refresh ? initInstockQueryFilter : { ...queryFilter, keywordFilter: getKwArr(searchKeyword, refresh) }
     setLoading(true)
@@ -129,9 +141,10 @@ const Inventory: React.FC = () => {
       responseType: 'text',
       timeout: 8000,
       data: {
-        page: refresh ? 0 : currPage,
+        page: refresh || sorting ? 0 : currPage,
         itemsPerPage: newItemsPerPage ?? itemsPerPage,
         filter: filter,
+        sorting: sorting ?? sortingMethod
       },
       withCredentials: true
     }).then((res: AxiosResponse) => {
@@ -158,7 +171,8 @@ const Inventory: React.FC = () => {
       data: {
         page: newPage,
         itemsPerPage: itemsPerPage,
-        filter: { ...queryFilter, keywordFilter: getKwArr(searchKeyword) }
+        filter: { ...queryFilter, keywordFilter: getKwArr(searchKeyword) },
+        sorting: sortingMethod
       },
       withCredentials: true
     }).then((res: AxiosResponse) => {
@@ -214,6 +228,7 @@ const Inventory: React.FC = () => {
     setQueryFilter(initInstockQueryFilter)
     setChanged(false)
     fetchInstockByPage(true)
+    setSortingMethod(initSortingMethod)
   }
 
   const renderFilterPanel = () => {
@@ -518,6 +533,9 @@ const Inventory: React.FC = () => {
     })
   }
 
+  // sorting event
+  const sortByTime = () => fetchInstockByPage(false, undefined, { ...sortingMethod, time: !sortingMethod.time })
+
   const renderInstockTable = () => {
     const onItemsPerPageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
       setCurrPage(0)
@@ -554,19 +572,32 @@ const Inventory: React.FC = () => {
           <TableHead>
             <TableRow className='th-row'>
               <TableHeaderCell className='w-28'>SKU</TableHeaderCell>
-              <TableHeaderCell className='w-36 text-center'>Shelf Location & <br /> Condition</TableHeaderCell>
-              <TableHeaderCell className='w-28 text-center'>MSRP<br />($CAD)</TableHeaderCell>
+              <TableHeaderCell className='w-36 text-center'>
+                Shelf Location & <br /> Condition
+              </TableHeaderCell>
+              <TableHeaderCell className='w-28 text-center'>
+                MSRP<br />($CAD)
+              </TableHeaderCell>
               <TableHeaderCell className='w-36'>Lead</TableHeaderCell>
               <TableHeaderCell className='w-36'>Desc</TableHeaderCell>
               <TableHeaderCell className='w-28'>URL</TableHeaderCell>
               <TableHeaderCell className='w-32'>QAComment</TableHeaderCell>
-              <TableHeaderCell className='w-36 text-center'>Platform &<br />Marketplace</TableHeaderCell>
-              <TableHeaderCell className='w-24 text-center'>Instock &<br /><p className='text-rose-500'>Sold</p></TableHeaderCell>
+              <TableHeaderCell className='w-36 text-center'>
+                Platform &<br />Marketplace
+              </TableHeaderCell>
+              <TableHeaderCell className='w-24 text-center'>
+                Instock &<br /><p className='text-rose-500'>Sold</p>
+              </TableHeaderCell>
               <TableHeaderCell className='w-36 text-center'>
                 <div>QAPersonal &<br /><p className='text-orange-500'>Admin</p></div>
               </TableHeaderCell>
               <TableHeaderCell className='w-40 text-center'>
-                <div>QA Time &<br /><p className='text-orange-500'>Recorded Time</p></div>
+                <div className='flex'>
+                  <div>QA Time &<br /><p className='text-orange-500'>Recorded Time</p></div>
+                  <div className='justify-center align-middle' onClick={sortByTime}>
+                    {sortingMethod.time ? <FaAnglesUp className='m-auto cursor-pointer mt-2' /> : <FaAnglesDown className='m-auto cursor-pointer mt-2' />}
+                  </div>
+                </div>
               </TableHeaderCell>
             </TableRow>
           </TableHead>

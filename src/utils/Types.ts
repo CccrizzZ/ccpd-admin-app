@@ -213,7 +213,8 @@ export type AuctionInfo = {
   minMSRP?: number,
   maxMSRP?: number,
   remainingResolved?: boolean,
-  itemLotStart?: number
+  itemLotStart?: number,
+  timeRange?: string,
 }
 
 export type RemainingInfo = {
