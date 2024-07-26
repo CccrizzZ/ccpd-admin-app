@@ -163,7 +163,7 @@ export type QAQueryFilter = {
     lte?: string,
   },
   targetSku?: string,
-  showRecordedOnly: boolean,
+  showRecorded: string,
 }
 
 export type InstockQueryFilter = {
@@ -173,6 +173,7 @@ export type InstockQueryFilter = {
     lt: string,
   },
   adminFilter: string[],
+  adminHour: number,
   qaTime: DateRangePickerValue,
 } & QAQueryFilter
 

@@ -15,6 +15,7 @@ import {
   Text,
   DateRangePickerValue,
   BarChart,
+  NumberInput,
 } from '@tremor/react'
 import {
   Condition,
@@ -46,7 +47,7 @@ import ShelfLocationsSelection from '../components/ShelfLocationsSelection'
 import EditInstockModal from '../components/EditInstockModal'
 import AdminNameSelection from '../components/AdminNameSelection'
 import QANameSelection from '../components/QANameSelection'
-import { FaAnglesDown, FaAnglesUp } from 'react-icons/fa6'
+import { FaAnglesDown, FaAnglesUp, FaClock } from 'react-icons/fa6'
 import InstockStagingModal from '../components/InstockStagingModal'
 import AddToAuctionModal from '../components/AddToAuctionModal'
 
@@ -292,6 +293,10 @@ const Inventory: React.FC = () => {
       setQueryFilter({ ...queryFilter, qaTime: value })
       setChanged(true)
     }
+    const onAdminHourChange = (value: number) => {
+      setQueryFilter((prev) => ({ ...prev, adminHour: value }))
+    }
+
 
     const getInstockColor = (instock: string) => instock === 'in' ? '#10b981' : instock === 'out' ? '#f43f5e' : '#3b82f6'
     return (
@@ -386,6 +391,17 @@ const Inventory: React.FC = () => {
                 placeholder='Admin Time'
                 type='instock'
               />
+              <div className='flex my-3 gap-3'>
+                <span>
+                  Starting Hour (24H):
+                </span>
+                <NumberInput
+                  icon={FaClock}
+                  enableStepper={false}
+                  value={queryFilter.adminHour}
+                  onValueChange={onAdminHourChange}
+                />
+              </div>
             </InputGroup>
             <InputGroup size='sm' className='mb-3'>
               <CustomDatePicker

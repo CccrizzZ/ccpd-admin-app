@@ -2,9 +2,9 @@ import React, { useState } from 'react'
 import CustomDatePicker from './DateRangePicker'
 import { Form, InputGroup, Modal } from 'react-bootstrap'
 import { QAQueryFilter } from '../utils/Types'
-import { Button, DateRangePickerValue } from '@tremor/react'
+import { Button, DateRangePickerValue, Select, SelectItem } from '@tremor/react'
 import { renderItemConditionOptions, renderMarketPlaceOptions, renderPlatformOptions } from '../utils/utils'
-import { FaFilterCircleXmark, FaFilter } from 'react-icons/fa6'
+import { FaFilterCircleXmark, FaFilter, FaFileCircleCheck } from 'react-icons/fa6'
 import QANameSelection from './QANameSelection'
 import ShelfLocationsSelection from './ShelfLocationsSelection'
 
@@ -106,15 +106,20 @@ const TableFilter: React.FC<TableFilterProps> = (props: TableFilterProps) => {
               onShelfLocationChange={onShelfLocationsChange}
               shelfLocationSelection={props.queryFilter.shelfLocationFilter}
             />
-            <div className='flex text-center'>
-              <Form.Check
-                className='m-auto'
-                inline
-                label="Show Recorded Only"
-                type="checkbox"
-                checked={props.queryFilter.showRecordedOnly}
-                onChange={() => props.setQueryFilter({ ...props.queryFilter, showRecordedOnly: !props.queryFilter.showRecordedOnly })}
-              />
+            <div className='flex text-center gap-3'>
+              <span>Recorded Status</span>
+              <Select
+                icon={FaFileCircleCheck}
+                placeholder="Select Recorded Status"
+                defaultValue="all"
+                value={props.queryFilter.showRecorded}
+                onValueChange={(val: string) => props.setQueryFilter({ ...props.queryFilter, showRecorded: val })}
+              >
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="recorded">Recorded Only</SelectItem>
+                <SelectItem value="notRecorded">Not Recorded Only</SelectItem>
+              </Select>
+
             </div>
             <InputGroup>
               <InputGroup.Text>Keyword / Tags<br />(Separate By Space)<br />(Case Sensitive)<br />(Or Operator)</InputGroup.Text>

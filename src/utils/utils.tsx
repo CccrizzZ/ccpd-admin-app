@@ -320,11 +320,12 @@ export const initQAQueryFilter: QAQueryFilter = {
     lte: ''
   },
   targetSku: '',
-  showRecordedOnly: false
+  showRecorded: 'all'
 }
 
 export const initInstockQueryFilter: InstockQueryFilter = {
   timeRangeFilter: {} as DateRangePickerValue,
+  adminHour: 0,
   qaTime: {} as DateRangePickerValue,
   conditionFilter: '' as Condition,
   platformFilter: '' as Platform,
@@ -343,7 +344,7 @@ export const initInstockQueryFilter: InstockQueryFilter = {
     lte: ''
   },
   targetSku: '',
-  showRecordedOnly: false
+  showRecorded: 'all',
 }
 
 export const getInstockInventory = (qaRecord: QARecord, adminName: string): InstockInventory => {
