@@ -297,7 +297,6 @@ const Inventory: React.FC = () => {
       setQueryFilter((prev) => ({ ...prev, adminHour: value }))
     }
 
-
     const getInstockColor = (instock: string) => instock === 'in' ? '#10b981' : instock === 'out' ? '#f43f5e' : '#3b82f6'
     return (
       <Card className='h-full'>

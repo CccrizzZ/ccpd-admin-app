@@ -41,22 +41,9 @@ Administration control console, full control over ccpd backend.
 - Q&A Records component adds records to here, retail manager takes records from here.
 - Inventory overview charts.
 - Inventory table.
-    - Instock vs sold statistics for each item in table row.
     - Filtering & Keyword search panel.
-    - Popup modal for inventory photo albums and instock stats graph.
     - Edit and delete instock inventory records (edit mode).
-    - Pagination.
 - Inventory CSV export (filtered).
-```
-
-### Retail & Return
-```
-- Retail & Return records table (separate).
-    - Sorting and filtering.
-    - Retail & Return records status graph (for filtered result).
-- Form for creating new retail & return records.
-- Modal for editing and deleting retail & return records.
-- Financial statement CSV export
 ```
 
 ### User Management

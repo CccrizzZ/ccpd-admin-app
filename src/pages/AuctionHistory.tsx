@@ -28,7 +28,9 @@ import {
   FaRotate,
   FaAngleUp,
   FaTrashCan,
-  FaArrowUp
+  FaArrowUp,
+  FaMicroscope,
+  FaMagnifyingGlass
 } from "react-icons/fa6"
 import {
   RemainingInfo,
@@ -47,6 +49,7 @@ import {
 import ImportUnsoldModal from "../components/ImportUnsoldModal"
 import RemainingAuditModal from "../components/RemainingAuditModal"
 import { RiTimeFill } from "react-icons/ri"
+import AuctionItemSearchModal from "../components/AuctionItemSearchModal"
 
 const AuctionHistory: React.FC = () => {
   const { setLoading } = useContext(AppContext)
@@ -65,6 +68,7 @@ const AuctionHistory: React.FC = () => {
   const [showEditAuctionItemModal, setShowEditAuctionItemModal] = useState<boolean>(false)
   const [targetEditingItem, setTargetEditingItem] = useState<InstockItem>(initInstockItem)
   const [targetEditingAuction, setTargetEditingAuction] = useState<number>(0)
+  const [showSearchItemModal, setShowSearchItemModal] = useState<boolean>(false)
 
   // audit
   const [targetRemainingToAudit, setTargetRemainingToAudit] = useState<RemainingInfo>({} as RemainingInfo)
@@ -1334,6 +1338,10 @@ const AuctionHistory: React.FC = () => {
           <FaArrowUp />
         </Button>
       </div>
+      <AuctionItemSearchModal
+        show={showSearchItemModal}
+        close={() => setShowSearchItemModal(false)}
+      />
       <ImportUnsoldModal
         show={showImportUnsold}
         hide={() => setShowImportUnsold(false)}
@@ -1357,14 +1365,22 @@ const AuctionHistory: React.FC = () => {
           <Card className="min-h-[90vh]">
             <div className="flex">
               <h2>💰 Auction History</h2>
-              <Button
-                color='emerald'
-                className="absolute right-12"
-                tooltip="Refresh Both Column"
-                onClick={() => getAuctionAndRemainingArr()}
-              >
-                <FaRotate />
-              </Button>
+              <div className="flex absolute right-12 gap-2">
+                <Button
+                  onClick={() => setShowSearchItemModal(true)}
+                  color="blue"
+                  tooltip="Search Item By SKU"
+                >
+                  <FaMagnifyingGlass />
+                </Button>
+                <Button
+                  color='emerald'
+                  tooltip="Refresh Both Column"
+                  onClick={() => getAuctionAndRemainingArr()}
+                >
+                  <FaRotate />
+                </Button>
+              </div>
             </div>
             <p>(Auction Inventory Bottom Row Will Always Sort Descending MSRP)</p>
             <hr />

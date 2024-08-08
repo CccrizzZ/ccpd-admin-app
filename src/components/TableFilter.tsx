@@ -119,7 +119,6 @@ const TableFilter: React.FC<TableFilterProps> = (props: TableFilterProps) => {
                 <SelectItem value="recorded">Recorded Only</SelectItem>
                 <SelectItem value="notRecorded">Not Recorded Only</SelectItem>
               </Select>
-
             </div>
             <InputGroup>
               <InputGroup.Text>Keyword / Tags<br />(Separate By Space)<br />(Case Sensitive)<br />(Or Operator)</InputGroup.Text>
